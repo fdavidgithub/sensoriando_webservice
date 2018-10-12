@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block boby %}
+  <h1>Criar conta</h1>
+
+  <form class="form-account" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <button type="submit">Cadastrar</button>
+  </form>
+{% endblock %}
+

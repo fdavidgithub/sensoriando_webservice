@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+<script>
+    {% include 'charts.js' %}
+</script>
+
+{% block boby %}
+    <div class="dashboard-export">
+        <h1> Exportar dados</h1>
+    </div>
+
+    <div class="dashboard-chart">
+        <h1> Gráficos </h1>
+
+        {% for i in contexts %}
+            <canvas id="myChart{{ forloop.counter }}" width="200" height="200"></canvas>
+        {% endfor %} 
+    </div>
+{% endblock %}
+

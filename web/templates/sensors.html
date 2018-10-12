@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <h1>Sensores públicos</h1>
+
+    {% for context in contexts %}
+        <div class="box-sensor">
+            <div class="sensor-title">
+                <p>ID <a href="">---</a></p>
+            </div>
+
+            <div class="sensor-detail">
+                <p>Sensor <a href="">{{ context.sensor }}</a></p>
+                <p>Local <a href="">{{ context.local }}</a></p>
+                <p>Categoria <a href="">{{context.categ }}</a></p>
+                <p>Cidade ---</p>
+            </div>
+
+            <div class="sensor-tag">
+                tags
+                {% for flag in context.flags %}
+                    <a href="">{{ flag }}</a>     
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+
+    <div class="search-sensor">
+        <h1>Pesquisar</h1>
+        <h2>por Tag</h2>
+        <h2>por Categoria</h2>
+    </div>
+{% endblock %}
+
