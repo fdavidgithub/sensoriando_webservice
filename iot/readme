@@ -1,0 +1,16 @@
+sudo apt-get update
+sudo apt-get upgrade
+
+sudo apt-get install build-essential gcc make cmake cmake-gui cmake-curses-gui
+sudo apt-get install libssl-dev 
+sudo apt-get install doxygen
+
+sudo apt-get install mosquitto mosquitto-clients
+sudo apt-get install sqlite3 libsqlite3-dev 
+
+git clone https://github.com/eclipse/paho.mqtt.c.git
+cd paho.mqtt.c
+make
+make html
+sudo make install
+
