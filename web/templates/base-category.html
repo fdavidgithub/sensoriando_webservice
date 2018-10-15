@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block body %}
+  <h1>Categorias</h1>
+
+  <form action="new" class="form-category" method="post">
+    {% csrf_token %}
+    {{ form.as_p }} 
+    <button type="submit">Novo</button>
+  </form>
+
+  <div class='list-category'>
+    <ul>  
+    {% for category in categories %}
+        <li> {{ category.name }} </li>    
+    {% endfor %}
+    </ul>
+  </div>
+{% endblock %}
+
