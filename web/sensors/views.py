@@ -1,5 +1,6 @@
 from django.shortcuts import render, HttpResponse
 from base.models import Category
+from . models import Sensor, Local, Flag
 
 # Create your views here.
 def sensors(request):
