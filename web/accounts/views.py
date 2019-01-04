@@ -2,6 +2,7 @@ from django.shortcuts import render, HttpResponse
 from accounts.forms import NewUser
 
 from django.contrib.auth import authenticate, login, logout
+
 # Create your views here.
 def index(request):
     form = NewUser(request.POST)

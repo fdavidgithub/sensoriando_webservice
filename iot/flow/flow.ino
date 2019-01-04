@@ -24,10 +24,13 @@
  * 4              GPIO
  *
  * REQUIREMENT
- *  Board ESP8266
+ *  Board NodeMCU
+ *  Tools>>Board (NodeMCU 1.0)
+ *  
  *  Libraries (Sketch >> Include Library >> Manage Libraies)
  *      PubSubClient (MQTT Client)  
  *      WifiManager (Wifi ESSID)
+ *      
  *  Server MQTT
  */
 #include <ESP8266WiFi.h>    

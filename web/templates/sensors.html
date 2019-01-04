@@ -3,32 +3,38 @@
 {% block body %}
     <h1>Sensores públicos</h1>
 
+    <div class="row">
+    <div class="col-xs-12 col-sm-9">
+ 
+    <div class="col-md-4 col-sm-6 col-xs-12">
+    
     {% for context in contexts %}
-        <div class="box-sensor">
-            <div class="sensor-title">
-                <p>ID <a href="">---</a></p>
+           <div class="sensor-title">
+                <p>ID <a href="">{{ context.id }}</a></p>
             </div>
 
             <div class="sensor-detail">
                 <p>Sensor <a href="">{{ context.sensor }}</a></p>
                 <p>Local <a href="">{{ context.local }}</a></p>
                 <p>Categoria <a href="">{{context.categ }}</a></p>
-                <p>Cidade ---</p>
+                <p>Cidade {{ context.city }} / {{ context.uf }}</p>
             </div>
 
             <div class="sensor-tag">
-                tags
+                flags
                 {% for flag in context.flags %}
-                    <a href="">{{ flag }}</a>     
+                    <a href="">{{ flag.name }}</a>     
                 {% endfor %}
             </div>
-        </div>
     {% endfor %}
+    </div>
+    </div>
 
     <div class="search-sensor">
         <h1>Pesquisar</h1>
         <h2>por Tag</h2>
         <h2>por Categoria</h2>
     </div>
+    <div>
 {% endblock %}
 
