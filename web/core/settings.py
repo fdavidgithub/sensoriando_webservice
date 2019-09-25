@@ -20,20 +20,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'xv6#tgb3)q=cbf9+-p1don!wy+l-1*tq^7!b=i-&#f0i$&cy2c'
+SECRET_KEY = 'bbk!v&t!d9b(+%4zd-g13=^v2s(3j^x)e571y8f_fb#_a+$3rn'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
 LOCAL_APPS = [
         'base',
-        'accounts',
-        'sensors',
-        'dashboard',
 ]
 
 DEFAULT_APPS = [
@@ -62,7 +59,7 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR + "/templates/"],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -81,13 +78,22 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#    }
+#}
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'sensoriando',
+        'USER': 'postgres',
+        'PASSWORD': 'masterkey',
+        'HOST': 'localhost',
+        'PORT': '',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-password-validators
@@ -111,18 +117,22 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/dev/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'pt-br'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Sao_Paulo'
 
 USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
-STATIC_URL = BASE_DIR + '/static/'
+STATIC_URL = os.path.join(BASE_DIR, 'static/')
+
+# Setting to specify this route
+LOGIN_REDIRECT_URL = 'home'
+LOGOUT_REDIRECT_URL = 'home'

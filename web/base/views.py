@@ -1,23 +1,51 @@
-#from django.shortcuts import render, HttpResponse, redirect
-#from base.forms import category_form
-#from base.models import Category
-#from django.contrib.admin.views.decorators import staff_member_required
+from django.shortcuts import render
+from django.http import HttpResponse
+from django.template import loader
+from django.views.decorators.csrf import csrf_exempt
+from django.core.exceptions import ObjectDoesNotExist
+
+import unicodecsv
+
+from .models import Sensor, Account
 
 # Create your views here.
-#@staff_member_required
-#def category(request):
-#    context = {'title_page': "Categorias",
-#               'form': category_form(request.POST),
-#               'categories': Category.objects.all(),
-#    }
-#
-#    return render(request, "base-category.html", context)
-#
-#def new(request):
-#    form = category_form(request.POST)
-#
-#    if form.is_valid():
-#        form.save()
-#
-#    return redirect('category')
+@csrf_exempt
+def topics(request):
+    # Monta resposta em CSV
+    response = HttpResponse(content_type='text/csv')
+    writer = unicodecsv.writer(response, encoding='UTF-8')
+
+    valid = Account.objects.filter(username=request.POST.get("username"), 
+                                   password=request.POST.get("password"),
+                                  )
+    
+    regs = Sensor.objects.filter(user_ptr_id=valid[0].user_ptr_id)
+
+    for r in regs:
+        name="{}/{}".format(r.id_local, r.name)
+        row = [r.id, name, r.token]
+
+        writer.writerow(row)
+
+    return response
+
+@csrf_exempt
+def export_csv(request):
+    # Monta resposta em CSV
+    response = HttpResponse(content_type='text/csv')
+    writer = unicodecsv.writer(response, encoding='UTF-8')
+
+    valid = Account.objects.filter(username=request.POST.get("username"), 
+                                   password=request.POST.get("password"),
+                                  )
+    
+    regs = Sensor.objects.filter(user_ptr_id=valid[0].user_ptr_id)
+
+    for r in regs:
+        name="{}/{}".format(r.id_local, r.name)
+        row = [r.id, name, r.token]
+
+        writer.writerow(row)
+
+    return response
 
