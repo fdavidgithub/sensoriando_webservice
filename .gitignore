@@ -1,0 +1,7 @@
+sensoriando.log
+subscriber
+*.o
+*.swp
+a.out
+*.*~
+
