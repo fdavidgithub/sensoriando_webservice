@@ -1,7 +1,7 @@
-#Sensoriando
+# Sensoriando
 **Hub de Sensores**
 
-##Plano de negocio
+## Plano de negocio
 Consiste em vender sensores pronto, acabados e prontos para o uso para o publico não técnico.
 
 Cada sensor vendido ou montado terá um numero de identificacao unico (serialkey) que vai permitir enviar os dados.
@@ -30,30 +30,30 @@ O dono do sensor tem que ter a opção de informar manualmente um broker caso n�
 
 O app vai ser somente um subscribe que após informar usuário e senha, recebe os sensores cadastrados e mostra os dados.
 
-##Requeriments
+## Requeriments
 ```console
 sudo apt-get update
 sudo apt-get upgrade
 ```
 
-###Database
+### Database
 ```console
 sudo apt-get postgresql
 ```
 
-###Framework
+### Framework
 ```console
 sudo apt-get install python3-pip
 pip install django psycopg2 psycopg2-binary
 sudo apt-get install python-psycopg2
 ```
 
-###Broker MQTT
+### Broker MQTT
 ```console
 sudo apt-get install mosquitto mosquitto-clients
 ```
 
-###NTP
+### NTP
 ```console
 sudo apt-get install ntp
 sudo timedatectl set-timezone America/Sao_Paulo
@@ -64,7 +64,7 @@ sudo ntpdate a.ntp.br
 sudo service ntp start
 ```
 
-###Development
+### Development
 ```console
 sudo apt-get install build-essential gcc make cmake cmake-gui cmake-curses-gui
 sudo apt-get install libssl-dev 
