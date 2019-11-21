@@ -1,2 +1,0 @@
-#Sensoriando
-**Deploy project**

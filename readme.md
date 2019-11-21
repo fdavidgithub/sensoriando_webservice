@@ -3,11 +3,7 @@
 
 ## [Business Plan](businessplan.md)
 
-## [Requirement](reequirement.md)
-
-## [Work flow](workflow.md)
+## [Requirement](requirement.md)
 
 ## [Setup](setup.md)
-
-## [Deploy Project](deploy.md)
 
