@@ -37,53 +37,61 @@ if [ ! -e $LOG ]; then
     touch $LOG
 fi
 
+#
+# Functions
+#
+setdatabase() {
+    TABLES=$SQL/tables.sql
+    FUNCTIONS=$SQL/functions.sql
+    TRIGGERS=$SQL/triggers.sql
+    INSERTS=$SQL/inserts.sql
+
+    MSG="Create database... "
+    createdb -U $DB_USER $DB_NAME
+    logging "$MSG"
+
+    MSG="Creating tables:"
+    if [ -e $TABLES ]; then
+        psql -U $DB_USER -d $DB_NAME -f $TABLES
+        MSG="${MSG} OK"
+    else
+        MSG="${MSG} FAIL"
+    fi   
+    logging "$MSG"
+
+    MSG="Insert records:"
+    if [ -e $INSERTS ]; then
+        psql -U $DB_USER -d $DB_NAME -f $INSERTS
+        MSG="${MSG} OK"
+    else
+        MSG="${MSG} FAIL"
+    fi   
+    logging "$MSG"
+
+    MSG="Creating functions:"
+    if [ -e $FUNCTIONS ]; then
+        psql -U $DB_USER -d $DB_NAME -f $FUNCTIONS
+        MSG="${MSG} OK"
+    else
+        MSG="${MSG} FAIL"
+    fi   
+    logging "$MSG"
+
+    MSG="Creating triggers:"
+    if [ -e $TRIGGERS ]; then
+        psql -U $DB_USER -d $DB_NAME -f $TRIGGERS
+        MSG="${MSG} OK"
+    else
+        MSG="${MSG} FAIL"
+    fi   
+    logging "$MSG"
+}
+
+
 # 
 # Main script
 #
-TABLES=$SQL/tables.sql
-FUNCTIONS=$SQL/functions.sql
-TRIGGERS=$SQL/triggers.sql
-INSERTS=$SQL/inserts.sql
-
-MSG="Create database... "
-createdb -U $DB_USER $DB_NAME
-logging "$MSG"
-
-MSG="Creating tables:"
-if [ -e $TABLES ]; then
-   psql -U $DB_USER -d $DB_NAME -f $TABLES
-   MSG="${MSG} OK"
-else
-   MSG="${MSG} FAIL"
-fi   
-logging "$MSG"
-
-MSG="Insert records:"
-if [ -e $INSERTS ]; then
-   psql -U $DB_USER -d $DB_NAME -f $INSERTS
-   MSG="${MSG} OK"
-else
-   MSG="${MSG} FAIL"
-fi   
-logging "$MSG"
-
-MSG="Creating functions:"
-if [ -e $FUNCTIONS ]; then
-   psql -U $DB_USER -d $DB_NAME -f $FUNCTIONS
-   MSG="${MSG} OK"
-else
-   MSG="${MSG} FAIL"
-fi   
-logging "$MSG"
-
-MSG="Creating triggers:"
-if [ -e $TRIGGERS ]; then
-   psql -U $DB_USER -d $DB_NAME -f $TRIGGERS
-   MSG="${MSG} OK"
-else
-   MSG="${MSG} FAIL"
-fi   
-logging "$MSG"
+setdatabase
 
 exit 0
 
