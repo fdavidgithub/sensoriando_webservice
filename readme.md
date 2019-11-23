@@ -1,9 +1,9 @@
 # Sensoriando
 **Hub de Sensores**
 
-## [Business Plan](businessplan.md)
+## [Business Plan](doc/businessplan.md)
 
-## [Requirement](requirement.md)
+## [Requirement](doc/requirement.md)
 
-## [Setup](setup.md)
+## [Setup](doc/setup.md)
 
