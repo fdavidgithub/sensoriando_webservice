@@ -1,7 +1,7 @@
 sensoriando.log
 subscriber
-*.o
-*.swp
-a.out
-*.*~
+*/*.o
+*/*.swp
+*/a.out
+*/*.*~
 
