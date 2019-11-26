@@ -22,14 +22,14 @@ const char verbose_param[]  = "-v";
  *  Global variables
  */
 int verbose = 0;
-char config_file[LEN_BUFFER]   = "server.conf";
+char config_file[LEN_BUFFER]   = "sensoriando.conf";
 
-char db_host[LEN_BUFFER] = "localhost";
+char db_host[LEN_BUFFER];
 char db_name[LEN_BUFFER];
 char db_username[LEN_BUFFER];
 char db_password[LEN_BUFFER];
 
-char mqtt_server[LEN_BUFFER] = "localhost";
+char mqtt_server[LEN_BUFFER];
 char mqtt_username[LEN_BUFFER];
 char mqtt_password[LEN_BUFFER];
 
@@ -95,12 +95,17 @@ main(int argc, char *argv[])
     /* 
      * Init MQTT (conect & subscribe) 
      */
-    MQTTClient_create(&client, mqtt_server, MQTT_ID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+    rc = MQTTClient_create(&client, mqtt_server, MQTT_ID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+
+    if ( rc != MQTTCLIENT_SUCCESS ) {
+	    printf("Error on create MQTTClient, return code: %d\n", rc);
+	    return 1;
+    }
 
     conn_opts.keepAliveInterval = 20;
     conn_opts.cleansession = 1;
-    //conn_opts.username = "teste";
-    //conn_opts.password = "teste"; 
+    conn_opts.username = mqtt_username;
+    conn_opts.password = mqtt_password; 
 
     MQTTClient_setCallbacks(client, NULL, NULL, on_message, NULL);
 
@@ -112,6 +117,11 @@ main(int argc, char *argv[])
     }
 
     MQTTClient_subscribe(client, MQTT_TOPIC, MQTT_QOS);
+
+    if ( verbose ) {
+        printf("\nWaiting payload... \n");
+    }
+
    
     while (1) {       
 
@@ -207,28 +217,32 @@ setconfig()
         fgets( buffer, LEN_BUFFER, fd );
 
         if ( buffer[0] != '#' ) {
-            if ( strstr(buffer, "host") ) {
-                sscanf(buffer, "host=%s\n", mqtt_server);
+            if ( strstr(buffer, "mqtt_host") ) {
+                sscanf(buffer, "mqtt_host=%s\n", mqtt_server);
             }
 
-            if ( strstr(buffer, "username") ) {
-                sscanf(buffer, "username=%s\n", mqtt_username);
+            if ( strstr(buffer, "mqtt_user") ) {
+                sscanf(buffer, "mqtt_user=%s\n", mqtt_username);
             }
 
-            if ( strstr(buffer, "password") ) {
-                sscanf(buffer, "password=%s\n", mqtt_password);
+            if ( strstr(buffer, "mqtt_passwd") ) {
+                sscanf(buffer, "mqtt_passwd=%s\n", mqtt_password);
             }
 
-            if ( strstr(buffer, "name") ) {
-                sscanf(buffer, "name=%s\n", db_name);
+            if ( strstr(buffer, "db_host") ) {
+                sscanf(buffer, "db_host=%s\n", db_host);
             }
  
-            if ( strstr(buffer, "dbuser") ) {
-                sscanf(buffer, "dbuser=%s\n", db_username);
+            if ( strstr(buffer, "db_name") ) {
+                sscanf(buffer, "db_name=%s\n", db_name);
+            }
+ 
+            if ( strstr(buffer, "db_user") ) {
+                sscanf(buffer, "db_user=%s\n", db_username);
             }
 
-            if ( strstr(buffer, "dbpasswd") ) {
-                sscanf(buffer, "dbpasswd=%s\n", db_password);
+            if ( strstr(buffer, "db_passwd") ) {
+                sscanf(buffer, "db_passwd=%s\n", db_password);
             }
 
         }

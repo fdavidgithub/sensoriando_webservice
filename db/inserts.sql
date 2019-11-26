@@ -25,7 +25,7 @@ BEGIN
 	        (Force),
             (Power);
 
-    INSERT INTO Units (name, initial, precision, id_category)
+    INSERT INTO CategoriesUnits (name, initial, precision, id_category)
     VALUES	('Litro',               'l',    3, (SELECT id FROM Categories WHERE name = Volume)),
             ('Centimetro Cubico',   'cm^3', 3, (SELECT id FROM Categories WHERE name = Volume)),
     	    ('Metro Cubico',        'm^3',  3, (SELECT id FROM Categories WHERE name = Volume)),
@@ -53,6 +53,20 @@ BEGIN
 	        ('Kilograma força',     'Kgf',  3, (SELECT id FROM Categories WHERE name = Force)),
             ('Watt',                'W',    2, (SELECT id FROM Categories WHERE name = Power)),
 	        ('Miliwatt',            'mW',   3, (SELECT id FROM Categories WHERE name = Power));
+
+
+    INSERT INTO Accounts (city, uf) 
+    VALUES ('Ribeirao Preto', 'SP');
+
+    INSERT INTO AccountsLocals (name, id_account)
+    VALUES ('Base', 1);
+
+    INSERT INTO Iots (id_account, id_local, name)
+    VALUES (1, 1, 'IOT_TEST');
+
+    INSERT INTO IotsSensors (id_iot, id_unit)
+    VALUES (1, 1);
+
 
 END;
 $$ LANGUAGE plpgsql;

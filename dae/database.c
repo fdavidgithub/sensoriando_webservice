@@ -59,9 +59,9 @@ sensor_serialkey_get(PGconn *conn, char *serialkey)
     char sql[256];
     int rows;
 
-    sprintf(sql, "SELECT id, dt, user_ptr_id, id_local, id_category, name, serialkey \
-                  FROM Sensor \
-                  WHERE serialkey = '%s'", serialkey);
+    sprintf(sql, "SELECT id, dt, id_local, id_account, name, token \
+                  FROM Iots \
+                  WHERE token = '%s'", serialkey);
 
     res = PQexec(conn, sql);    
     rows = PQntuples(res);
@@ -72,11 +72,10 @@ sensor_serialkey_get(PGconn *conn, char *serialkey)
         if ( data != NULL ) {
             data->id = atoi(PQgetvalue(res, 0, 0));
             sprintf(data->dt, "%s", PQgetvalue(res, 0, 1));
-            data->user_ptr_id = atoi(PQgetvalue(res, 0, 2));
-            data->id_local = atoi(PQgetvalue(res, 0, 3));
-            data->id_category = atoi(PQgetvalue(res, 0, 4));
-            sprintf(data->name, "%s", PQgetvalue(res, 0, 5));
-            sprintf(data->serialkey, "%s", PQgetvalue(res, 0, 6));
+            data->id_local = atoi(PQgetvalue(res, 0, 2));
+            data->id_account = atoi(PQgetvalue(res, 0, 3));
+            sprintf(data->name, "%s", PQgetvalue(res, 0, 4));
+            sprintf(data->serialkey, "%s", PQgetvalue(res, 0, 5));
         } else {
             printf("Error malloc\n");
         }

@@ -18,9 +18,9 @@
 typedef struct {
     int id;
     char dt[20];
-    int user_ptr_id;
     int id_local;
     int id_category;
+    int id_account;
     char name[30];
     char serialkey[64];
 } Sensor;
