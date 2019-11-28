@@ -48,7 +48,6 @@ CREATE TABLE IotsSensors (
     dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     id_iot      INTEGER NOT NULL REFERENCES Iots (id),
     id_unit     INTEGER NOT NULL REFERENCES CategoriesUnits (id),
-    factor      FLOAT NOT NULL DEFAULT 0,
 
     UNIQUE (id_iot, id_unit)
 );

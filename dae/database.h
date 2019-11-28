@@ -19,27 +19,24 @@ typedef struct {
     int id;
     char dt[20];
     int id_local;
-    int id_category;
     int id_account;
     char name[30];
-    char serialkey[64];
-} Sensor;
+    char token[64];
+} Iot;
 
 typedef struct {
     int id;
     char dt[20];
-    int id_sensor;
-    char dt_stream[20];
-    float value;
+    int id_iot;
     char payload[256];
-} Data;
+} Datum;
 
 /* 
  * Prototypes
  */
 void do_exit(PGconn *);
 PGconn* do_connect(char *, char *, char *, char *);
-Sensor* sensor_serialkey_get(PGconn *, char *);
-int data_insert(PGconn *, Data *);
+Iot* iot_serialkey_get(PGconn *, char *);
+int data_insert(PGconn *, Datum *);
 
 #endif

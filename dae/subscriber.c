@@ -153,40 +153,42 @@ void
 msg_storage(char *topic, char *payload)
 {
     PGconn *conn = do_connect(db_name, db_username, db_password, db_host);
-    struct Record *records;
-    int rows, i;
-    Sensor *sensor;
-    Data data;
+    Iot *iot;
+    Datum datum;
+    char dt_stream[14];
+    float value;
+    int id_sensor;
 
     if ( conn ) {
         if ( verbose ) {
             printf("\tPosgresSQL Connected!\n");
         }
 
-        sensor = sensor_serialkey_get(conn, topic);
+        iot = iot_serialkey_get(conn, topic);
 
-        if ( sensor != NULL ) {
-            strcpy(data.payload, payload);
-            data.id_sensor = sensor->id;
-            sscanf(payload, "{\"dt\":\"%14s\", \"value\":%f}", data.dt_stream, &data.value);
+        if ( iot != NULL ) {
+            strcpy(datum.payload, payload);
+            datum.id_iot = iot->id; 
 
             if ( verbose ) {
-                printf("\tSensor ID#%d and Name: %s \n", sensor->id, sensor->name);
-                printf("\tTopic: %s\n", sensor->serialkey);
-                printf("\tPayload: %s\n", data.payload);
-                printf("\tDt Stream: %s\n", data.dt_stream);
-                printf("\tValue: %f\n", data.value);
+                sscanf(payload, "{\"dt\":\"%14s\", \"sensor\":%d, \"value\":%f}", dt_stream, id_sensor, value);
+
+                printf("\tIoT ID#%d and IoT Name: %s\n", iot->id, iot->name);
+                printf("\tTopic: %s\n\n", iot->token);
+                printf("\tSensor ID#%d\n", id_sensor);
+                printf("\tPayload: %s\n", payload);
+                printf("\tDt Stream: %s\n", dt_stream);
+                printf("\tValue: %f\n", value);
                 printf("\n");
             }
 
-            if ( !data_insert(conn, &data) ) {
-                printf("Error while insert data of sensor\n");    
+            if ( !data_insert(conn, &datum) ) {
+                printf("Error while insert datum of sensor\n");    
             }
         }
 
         do_exit(conn);
     }
-
 }
 
 void 
