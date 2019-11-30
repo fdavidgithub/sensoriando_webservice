@@ -36,9 +36,9 @@ data_insert(PGconn *conn, Datum *datum)
     PGresult *res;
     char sql[256];
 
-    sprintf(sql, "INSERT INTO IotsData (id_iot, payload) \
+    sprintf(sql, "INSERT INTO ThingsData (id_thing, payload) \
                   VALUES (%d, '%s')", \
-                  datum->id_iot, datum->payload);
+                  datum->id_thing, datum->payload);
 
 #ifdef DEBUG
     printf("%s\n", sql);
@@ -51,31 +51,31 @@ data_insert(PGconn *conn, Datum *datum)
 }
 
 
-Iot *
-iot_serialkey_get(PGconn *conn, char *serialkey)
+Thing *
+thing_serialkey_get(PGconn *conn, char *serialkey)
 {
     PGresult *res;
-    Iot *iot = NULL;
+    Thing *thing = NULL;
     char sql[256];
     int rows;
 
     sprintf(sql, "SELECT id, dt, id_local, id_account, name, token \
-                  FROM Iots \
+                  FROM Things \
                   WHERE token = '%s'", serialkey);
 
     res = PQexec(conn, sql);    
     rows = PQntuples(res);
 
     if ( (PQresultStatus(res) == PGRES_TUPLES_OK) && rows ) {
-        iot = malloc(sizeof *iot);
+        thing = malloc(sizeof *thing);
 
-        if ( iot != NULL ) {
-            iot->id = atoi(PQgetvalue(res, 0, 0));
-            sprintf(iot->dt, "%s", PQgetvalue(res, 0, 1));
-            iot->id_local = atoi(PQgetvalue(res, 0, 2));
-            iot->id_account = atoi(PQgetvalue(res, 0, 3));
-            sprintf(iot->name, "%s", PQgetvalue(res, 0, 4));
-            sprintf(iot->token, "%s", PQgetvalue(res, 0, 5));
+        if ( thing != NULL ) {
+            thing->id = atoi(PQgetvalue(res, 0, 0));
+            sprintf(thing->dt, "%s", PQgetvalue(res, 0, 1));
+            thing->id_local = atoi(PQgetvalue(res, 0, 2));
+            thing->id_account = atoi(PQgetvalue(res, 0, 3));
+            sprintf(thing->name, "%s", PQgetvalue(res, 0, 4));
+            sprintf(thing->token, "%s", PQgetvalue(res, 0, 5));
         } else {
             printf("Error malloc\n");
         }
@@ -84,6 +84,6 @@ iot_serialkey_get(PGconn *conn, char *serialkey)
     } 
 
     PQclear(res);
-    return iot;
+    return thing;
 }
 

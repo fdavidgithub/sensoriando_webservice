@@ -61,10 +61,10 @@ BEGIN
     INSERT INTO AccountsLocals (name, id_account)
     VALUES ('Base', 1);
 
-    INSERT INTO Iots (id_account, id_local, name)
-    VALUES (1, 1, 'IOT_TEST');
+    INSERT INTO Things (id_account, id_local, name)
+    VALUES (1, 1, 'THING_TEST');
 
-    INSERT INTO IotsSensors (id_iot, id_unit)
+    INSERT INTO ThingsSensors (id_thing, id_unit)
     VALUES (1, 1);
 
 

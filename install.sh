@@ -45,6 +45,7 @@ setdatabase() {
     FUNCTIONS=$SQL/functions.sql
     TRIGGERS=$SQL/triggers.sql
     INSERTS=$SQL/inserts.sql
+    VIEWS=$SQL/views.sql
 
     MSG="Create database... "
     createdb -U $DB_USER $DB_NAME
@@ -53,6 +54,15 @@ setdatabase() {
     MSG="Creating tables:"
     if [ -e $TABLES ]; then
         psql -U $DB_USER -d $DB_NAME -f $TABLES
+        MSG="${MSG} OK"
+    else
+        MSG="${MSG} FAIL"
+    fi   
+    logging "$MSG"
+
+    MSG="Creating views:"
+    if [ -e $VIEWS ]; then
+        psql -U $DB_USER -d $DB_NAME -f $VIEWS
         MSG="${MSG} OK"
     else
         MSG="${MSG} FAIL"

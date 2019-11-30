@@ -153,7 +153,7 @@ void
 msg_storage(char *topic, char *payload)
 {
     PGconn *conn = do_connect(db_name, db_username, db_password, db_host);
-    Iot *iot;
+    Thing *thing;
     Datum datum;
     char dt_stream[14];
     float value;
@@ -164,17 +164,17 @@ msg_storage(char *topic, char *payload)
             printf("\tPosgresSQL Connected!\n");
         }
 
-        iot = iot_serialkey_get(conn, topic);
+        thing = thing_serialkey_get(conn, topic);
 
-        if ( iot != NULL ) {
+        if ( thing != NULL ) {
             strcpy(datum.payload, payload);
-            datum.id_iot = iot->id; 
+            datum.id_thing = thing->id; 
 
             if ( verbose ) {
                 sscanf(payload, "{\"dt\":\"%14s\", \"sensor\":%d, \"value\":%f}", dt_stream, id_sensor, value);
 
-                printf("\tIoT ID#%d and IoT Name: %s\n", iot->id, iot->name);
-                printf("\tTopic: %s\n\n", iot->token);
+                printf("\tThing ID#%d Name: %s\n", thing->id, thing->name);
+                printf("\tTopic: %s\n\n", thing->token);
                 printf("\tSensor ID#%d\n", id_sensor);
                 printf("\tPayload: %s\n", payload);
                 printf("\tDt Stream: %s\n", dt_stream);

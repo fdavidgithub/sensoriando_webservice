@@ -22,12 +22,12 @@ typedef struct {
     int id_account;
     char name[30];
     char token[64];
-} Iot;
+} Thing;
 
 typedef struct {
     int id;
     char dt[20];
-    int id_iot;
+    int id_thing;
     char payload[256];
 } Datum;
 
@@ -36,7 +36,7 @@ typedef struct {
  */
 void do_exit(PGconn *);
 PGconn* do_connect(char *, char *, char *, char *);
-Iot* iot_serialkey_get(PGconn *, char *);
+Thing* thing_serialkey_get(PGconn *, char *);
 int data_insert(PGconn *, Datum *);
 
 #endif

@@ -32,7 +32,7 @@ CREATE TABLE CategoriesUnits (
 	precision   SMALLINT
 );
 
-CREATE TABLE Iots (
+CREATE TABLE Things (
     id          SERIAL NOT NULL PRIMARY KEY,
     dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     id_account  INTEGER NOT NULL REFERENCES Accounts (id),
@@ -43,41 +43,41 @@ CREATE TABLE Iots (
     UNIQUE (id_account, name)
 );
 
-CREATE TABLE IotsSensors (
+CREATE TABLE ThingsSensors (
     id          SERIAL NOT NULL PRIMARY KEY,
     dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    id_iot      INTEGER NOT NULL REFERENCES Iots (id),
+    id_thing      INTEGER NOT NULL REFERENCES Things (id),
     id_unit     INTEGER NOT NULL REFERENCES CategoriesUnits (id),
 
-    UNIQUE (id_iot, id_unit)
+    UNIQUE (id_thing, id_unit)
 );
 
-CREATE TABLE IotsParams (
+CREATE TABLE ThingsParams (
     id          SERIAL NOT NULL PRIMARY KEY,
     dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     key         VARCHAR(20) NOT NULL,
     value       VARCHAR(10) NOT NULL,
-    id_iot      INTEGER NOT NULL REFERENCES Iots (id),
+    id_thing      INTEGER NOT NULL REFERENCES Things (id),
 
-    UNIQUE(id_iot, key)
+    UNIQUE(id_thing, key)
 );
 
-CREATE TABLE IotsFlags (
+CREATE TABLE ThingsFlags (
     id          SERIAL NOT NULL PRIMARY KEY,
     dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    id_iot      INTEGER NOT NULL REFERENCES Iots (id),
+    id_thing      INTEGER NOT NULL REFERENCES Things (id),
     name        VARCHAR(30) NOT NULL,
 
-    UNIQUE(id_iot, name)
+    UNIQUE(id_thing, name)
 );
 
-CREATE TABLE IotsData (
+CREATE TABLE ThingsData (
     id          SERIAL NOT NULL PRIMARY KEY,
     dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    id_iot      INTEGER NOT NULL REFERENCES Iots (id),
+    id_thing      INTEGER NOT NULL REFERENCES Things (id),
     payload	    JSONb NOT NULL,
 
-    UNIQUE (id_iot, payload)
+    UNIQUE (id_thing, payload)
 );
 
 
