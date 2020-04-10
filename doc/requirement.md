@@ -12,6 +12,14 @@ sudo apt-get upgrade
 ### Database
 ```console
 sudo apt-get postgresql
+sudo vi /etc/postgres/10/main/pg_hda.conf
+```
+
+after: local	all	postgres	peer
+before: local	all	postgres	trust
+
+```console
+sudo systemctl restart postgresql
 ```
 
 ### Framework

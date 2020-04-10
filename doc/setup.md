@@ -32,3 +32,8 @@ sudo system_ctl start mosquitto
 mosquitto_sub -h localhost -t test -u $USER -P $PWD
 mosquitto_pub -h localhost -t test -m 'hello broker' -u $USER -P $PWD
 ```
+
+## Django
+```console
+
+```
