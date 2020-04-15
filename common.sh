@@ -8,7 +8,7 @@ export VERBOSE=1
 # Local directory
 #
 if [ -z $HOST ]; then
-    export HOST=/home/ubuntu/Sensoriando
+    export HOST=$(pwd)
 fi
 
 # 
