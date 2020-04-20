@@ -37,7 +37,7 @@ char mqtt_password[LEN_BUFFER];
  * Prototypes
  */
 int on_message(void *, char *, int, MQTTClient_message *);
-void msg_storage(char *, char *);
+void msg_storage(char *, char *, int, int);
 void print_help();
 void setconfig();
 
@@ -135,13 +135,17 @@ int
 on_message(void *context, char *topicName, int topicLen, MQTTClient_message *message) 
 {
     char* payload = message->payload;
+    int qos = message->qos;
+    int retained = message->retained;
 
     if ( verbose ) {
         printf("Topic: %s\n", topicName);
         printf("Message: %s\n", payload);
+        printf("QoS: %d\n", qos);
+	    printf("Retained: %d\n", retained);
     }
 
-    msg_storage(topicName, payload);
+    msg_storage(topicName, payload, qos, retained);
 
     MQTTClient_freeMessage(&message);
     MQTTClient_free(topicName);
@@ -150,35 +154,31 @@ on_message(void *context, char *topicName, int topicLen, MQTTClient_message *mes
 }
 
 void 
-msg_storage(char *topic, char *payload)
+msg_storage(char *topic, char *payload, int qos, int retained)
 {
     PGconn *conn = do_connect(db_name, db_username, db_password, db_host);
     Thing *thing;
     Datum datum;
-    char dt_stream[14];
-    float value;
-    int id_sensor;
 
     if ( conn ) {
         if ( verbose ) {
             printf("\tPosgresSQL Connected!\n");
         }
 
-        thing = thing_serialkey_get(conn, topic);
+        thing = get_thing_uuid(conn, topic);
 
         if ( thing != NULL ) {
             strcpy(datum.payload, payload);
             datum.id_thing = thing->id; 
+	        datum.qos = qos;
+	        datum.retained = retained;
 
-            if ( verbose ) {
-                sscanf(payload, "{\"dt\":\"%14s\", \"sensor\":%d, \"value\":%f}", dt_stream, id_sensor, value);
-
+           if ( verbose ) {
                 printf("\tThing ID#%d Name: %s\n", thing->id, thing->name);
-                printf("\tTopic: %s\n\n", thing->token);
-                printf("\tSensor ID#%d\n", id_sensor);
+                printf("\tTopic/UUID: %s\n\n", thing->uuid);
                 printf("\tPayload: %s\n", payload);
-                printf("\tDt Stream: %s\n", dt_stream);
-                printf("\tValue: %f\n", value);
+		        printf("\tQos: %d\n", qos);
+		        printf("\tRetained: %d\n", retained);
                 printf("\n");
             }
 

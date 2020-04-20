@@ -7,6 +7,7 @@ SQL=$HOST/db
 # Functions
 #
 setdatabase() {
+    CREATE=$SQL/create.sql
     TABLES=$SQL/tables.sql
     FUNCTIONS=$SQL/functions.sql
     TRIGGERS=$SQL/triggers.sql
@@ -15,7 +16,8 @@ setdatabase() {
 
     MSG="Create database... "
 #    createdb -U $DB_USER $DB_NAME
-    createdb
+    createdb $DB_NAME
+    psql -f $CREATE
     log "$MSG"
 
     MSG="Creating tables from $TABLES"

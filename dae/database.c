@@ -36,9 +36,9 @@ data_insert(PGconn *conn, Datum *datum)
     PGresult *res;
     char sql[256];
 
-    sprintf(sql, "INSERT INTO ThingsData (id_thing, payload) \
-                  VALUES (%d, '%s')", \
-                  datum->id_thing, datum->payload);
+    sprintf(sql, "INSERT INTO ThingsData (id_thing, payload, qos, retained) \
+                  VALUES (%d, '%s', %d, '%d')", \
+                  datum->id_thing, datum->payload, datum->qos, datum->retained);
 
 #ifdef DEBUG
     printf("%s\n", sql);
@@ -52,16 +52,20 @@ data_insert(PGconn *conn, Datum *datum)
 
 
 Thing *
-thing_serialkey_get(PGconn *conn, char *serialkey)
+get_thing_uuid(PGconn *conn, char *topic)
 {
     PGresult *res;
     Thing *thing = NULL;
     char sql[256];
     int rows;
 
-    sprintf(sql, "SELECT id, dt, id_local, id_account, name, token \
+    sprintf(sql, "SELECT id, dt, name, uuid \
                   FROM Things \
-                  WHERE token = '%s'", serialkey);
+                  WHERE uuid = '%s'", topic);
+
+#ifdef DEBUG
+    printf("%s\n", sql);
+#endif
 
     res = PQexec(conn, sql);    
     rows = PQntuples(res);
@@ -72,10 +76,8 @@ thing_serialkey_get(PGconn *conn, char *serialkey)
         if ( thing != NULL ) {
             thing->id = atoi(PQgetvalue(res, 0, 0));
             sprintf(thing->dt, "%s", PQgetvalue(res, 0, 1));
-            thing->id_local = atoi(PQgetvalue(res, 0, 2));
-            thing->id_account = atoi(PQgetvalue(res, 0, 3));
-            sprintf(thing->name, "%s", PQgetvalue(res, 0, 4));
-            sprintf(thing->token, "%s", PQgetvalue(res, 0, 5));
+            sprintf(thing->name, "%s", PQgetvalue(res, 0, 2));
+            sprintf(thing->uuid, "%s", PQgetvalue(res, 0, 3));
         } else {
             printf("Error malloc\n");
         }

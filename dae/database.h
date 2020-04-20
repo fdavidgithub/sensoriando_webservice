@@ -21,7 +21,7 @@ typedef struct {
     int id_local;
     int id_account;
     char name[30];
-    char token[64];
+    char uuid[36];
 } Thing;
 
 typedef struct {
@@ -29,6 +29,8 @@ typedef struct {
     char dt[20];
     int id_thing;
     char payload[256];
+    int qos;
+    int retained;
 } Datum;
 
 /* 
@@ -36,7 +38,7 @@ typedef struct {
  */
 void do_exit(PGconn *);
 PGconn* do_connect(char *, char *, char *, char *);
-Thing* thing_serialkey_get(PGconn *, char *);
+Thing* get_thing_uuid(PGconn *, char *);
 int data_insert(PGconn *, Datum *);
 
 #endif

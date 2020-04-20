@@ -4,52 +4,18 @@ CREATE TABLE Accounts (
 	city        VARCHAR(50) NOT NULL,
     uf          VARCHAR(02) NOT NULL,
     ispublic    BOOLEAN NOT NULL DEFAULT TRUE,
-    status      BOOLEAN NOT NULL DEFAULT TRUE
-);
-
-CREATE TABLE AccountsLocals (
-	id          SERIAL NOT NULL PRIMARY KEY,
-	dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	name	    VARCHAR(50) NOT NULL,
-	id_account	INTEGER NOT NULL,
-    id_local    INTEGER NOT NULL DEFAULT 0,
-
-	UNIQUE (id_account, name, id_local)
-);
-
-CREATE TABLE Categories (
-	id          SERIAL NOT NULL PRIMARY KEY,
-	dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	name	    VARCHAR(50) NOT NULL UNIQUE
-);
-
-CREATE TABLE CategoriesUnits (
-	id          SERIAL NOT NULL PRIMARY KEY,
-	dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	id_category INTEGER NOT NULL REFERENCES Categories (id),
-	name	    VARCHAR(50) NOT NULL UNIQUE,
-	initial     VARCHAR(5),
-	precision   SMALLINT
+    status      BOOLEAN NOT NULL DEFAULT TRUE,
+    usetrigger  BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE Things (
     id          SERIAL NOT NULL PRIMARY KEY,
     dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    id_account  INTEGER NOT NULL REFERENCES Accounts (id),
-    id_local    INTEGER NOT NULL REFERENCES AccountsLocals (id),
-   	name        VARCHAR(30) NOT NULL,
-    token       VARCHAR(32) NOT NULL UNIQUE DEFAULT MD5(random()::text),
+    name        VARCHAR(30) NOT NULL,
+    uuid        UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4(), --MD5(random()::text),
+    isrelay     BOOLEAN NOT NULL DEFAULT FALSE,
 
-    UNIQUE (id_account, name)
-);
-
-CREATE TABLE ThingsSensors (
-    id          SERIAL NOT NULL PRIMARY KEY,
-    dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    id_thing      INTEGER NOT NULL REFERENCES Things (id),
-    id_unit     INTEGER NOT NULL REFERENCES CategoriesUnits (id),
-
-    UNIQUE (id_thing, id_unit)
+    UNIQUE (uuid)
 );
 
 CREATE TABLE ThingsParams (
@@ -57,7 +23,7 @@ CREATE TABLE ThingsParams (
     dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     key         VARCHAR(20) NOT NULL,
     value       VARCHAR(10) NOT NULL,
-    id_thing      INTEGER NOT NULL REFERENCES Things (id),
+    id_thing    INTEGER NOT NULL REFERENCES Things (id),
 
     UNIQUE(id_thing, key)
 );
@@ -65,16 +31,49 @@ CREATE TABLE ThingsParams (
 CREATE TABLE ThingsFlags (
     id          SERIAL NOT NULL PRIMARY KEY,
     dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    id_thing      INTEGER NOT NULL REFERENCES Things (id),
+    id_thing    INTEGER NOT NULL REFERENCES Things (id),
     name        VARCHAR(30) NOT NULL,
 
     UNIQUE(id_thing, name)
 );
 
+CREATE TABLE Sensors (
+	id          SERIAL NOT NULL PRIMARY KEY,
+	dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	name	    VARCHAR(50) NOT NULL UNIQUE,
+
+    UNIQUE (name)
+);
+
+CREATE TABLE SensorsUnits (
+	id          SERIAL NOT NULL PRIMARY KEY,
+	dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	id_sensor   INTEGER NOT NULL REFERENCES Sensors (id),
+	name	    VARCHAR(50) NOT NULL UNIQUE,
+	initial     VARCHAR(5),
+	precision   SMALLINT,
+    isdefault     BOOLEAN NOT NULL DEFAULT FALSE,
+    expression  VARCHAR(255),
+
+    UNIQUE (id_sensor, name)
+);
+
+CREATE TABLE SensorsParams (
+    id          SERIAL NOT NULL PRIMARY KEY,
+    dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    key         VARCHAR(20) NOT NULL,
+    value       VARCHAR(10) NOT NULL,
+    id_sensor   INTEGER NOT NULL REFERENCES Sensors (id),
+
+    UNIQUE(id_sensor, key)
+);
+
 CREATE TABLE ThingsData (
     id          SERIAL NOT NULL PRIMARY KEY,
     dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    id_thing      INTEGER NOT NULL REFERENCES Things (id),
+    id_thing    INTEGER NOT NULL REFERENCES Things (id),
+    qos         INTEGER NOT NULL,
+    retained    BOOLEAN NOT NULL,
     payload	    JSONb NOT NULL,
 
     UNIQUE (id_thing, payload)
