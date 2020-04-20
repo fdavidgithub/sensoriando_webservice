@@ -4,8 +4,8 @@ CREATE OR REPLACE VIEW vwThingsData AS
             ID.id_thing,
             ID.qos,
             ID.retained,
-            TO_TIMESTAMP(REPLACE(CAST(ID.payload->'dt' AS TEXT), '"', ''), 'YYYYMMDDHH24MISS') payload_dt, 
-            CAST(ID.payload->'value' AS REAL) payload_value,
-            CAST(ID.payload->'sensor' AS INTEGER) payload_sensor             
+            TO_TIMESTAMP(REPLACE(CAST(ID.payload->>'dt' AS TEXT), '"', ''), 'YYYYMMDDHH24MISS') payload_dt, 
+            CAST(ID.payload->>'value' AS REAL) payload_value,
+            CAST(ID.payload->>'sensor' AS INTEGER) payload_sensor             
     FROM ThingsData ID;
 
