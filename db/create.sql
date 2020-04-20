@@ -1,0 +1,3 @@
+--CREATE DATABASE sensoriando;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
