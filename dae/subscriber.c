@@ -9,7 +9,8 @@
 #define MQTT_ID     "Broker"
 #define MQTT_QOS    2   /* Once and one only - the message will be delivered exactly once. */
 
-#define LEN_BUFFER 256
+#define LEN_BUFFER  256
+#define LEN_UUID    36
 
 /*
  * Constants
@@ -186,19 +187,30 @@ msg_storage(char *topic, char *payload, int qos, int retained)
 {
     Thing *thing;
     Datum datum;
+    int id_sensor;
+    char uuid[LEN_UUID];
 
     if ( conn ) {
-        thing = get_thing_uuid(conn, topic);
+        sscanf(topic, "%36s/%d", uuid, &id_sensor);
 
+#ifdef DEBUG
+    printf("[sscanf] %s\n", uuid);
+    printf("[sscanf] %d\n", id_sensor);
+#endif
+
+        thing = get_thing_uuid(conn, uuid);
+ 
         if ( thing != NULL ) {
             strcpy(datum.payload, payload);
             datum.id_thing = thing->id; 
-	        datum.qos = qos;
+	        datum.id_sensor = id_sensor;
+            datum.qos = qos;
 	        datum.retained = retained;
 
            if ( verbose ) {
                 printf("\tThing ID#%d Name: %s\n", thing->id, thing->name);
-                printf("\tTopic/UUID: %s\n\n", thing->uuid);
+                printf("\tUUID: %s\n", thing->uuid);
+                printf("\tSensor: %d\n", id_sensor);
                 printf("\tPayload: %s\n", payload);
 		        printf("\tQos: %d\n", qos);
 		        printf("\tRetained: %d\n", retained);

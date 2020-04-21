@@ -38,9 +38,9 @@ data_insert(PGconn *conn, Datum *datum)
     PGresult *res;
     char sql[256];
 
-    sprintf(sql, "INSERT INTO ThingsData (id_thing, payload, qos, retained) \
-                  VALUES (%d, '%s', %d, '%d')", \
-                  datum->id_thing, datum->payload, datum->qos, datum->retained);
+    sprintf(sql, "INSERT INTO ThingsData (id_thing, id_sensor, payload, qos, retained) \
+                  VALUES (%d, %d, '%s', %d, '%d')", \
+                  datum->id_thing, datum->id_sensor, datum->payload, datum->qos, datum->retained);
 
 #ifdef DEBUG
     printf("%s\n", sql);

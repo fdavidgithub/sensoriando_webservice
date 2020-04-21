@@ -59,7 +59,7 @@ BEGIN
             ('Watt',                'W',    2, (SELECT id FROM Sensors WHERE name = Power)),
 	        ('Miliwatt',            'mW',   3, (SELECT id FROM Sensors WHERE name = Power)),
 		    ('Ligado/Desligado',    NULL,   0, (SELECT id FROM Sensors WHERE name = State)),
-		    ('Aberto/Fechado',      NULL,   0, (SELECT id FROM Sensors WHERE name = State));
+		    ('Aberto/Fechado',      NULL,   0, (SELECT id FROM Sensors WHERE name = State)),
 		    ('Decibeis',            'dB',   0, (SELECT id FROM Sensors WHERE name = Sound));
 
 

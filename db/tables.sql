@@ -52,7 +52,7 @@ CREATE TABLE SensorsUnits (
 	name	    VARCHAR(50) NOT NULL UNIQUE,
 	initial     VARCHAR(5),
 	precision   SMALLINT,
-    isdefault     BOOLEAN NOT NULL DEFAULT FALSE,
+    isdefault   BOOLEAN NOT NULL DEFAULT FALSE,
     expression  VARCHAR(255),
 
     UNIQUE (id_sensor, name)
@@ -72,11 +72,12 @@ CREATE TABLE ThingsData (
     id          SERIAL NOT NULL PRIMARY KEY,
     dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     id_thing    INTEGER NOT NULL REFERENCES Things (id),
+    id_sensor   INTEGER NOT NULL REFERENCES Sensors (id),
     qos         INTEGER NOT NULL,
     retained    BOOLEAN NOT NULL,
     payload	    JSONb NOT NULL,
 
-    UNIQUE (id_thing, payload)
+    UNIQUE (id_thing, id_sensor, payload)
 );
 
 

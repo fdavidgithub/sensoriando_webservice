@@ -18,8 +18,6 @@
 typedef struct {
     int id;
     char dt[20];
-    int id_local;
-    int id_account;
     char name[30];
     char uuid[36];
 } Thing;
@@ -28,6 +26,7 @@ typedef struct {
     int id;
     char dt[20];
     int id_thing;
+    int id_sensor;
     char payload[256];
     int qos;
     int retained;
