@@ -5,9 +5,9 @@
 
 #include "database.h"
 
-#define MQTT_TOPIC  "#"
+#define MQTT_TOPIC  "#" /* Topic wildcard */
 #define MQTT_ID     "Broker"
-#define MQTT_QOS    2 /* Once and one only - the message will be delivered exactly once. */
+#define MQTT_QOS    2   /* Once and one only - the message will be delivered exactly once. */
 
 #define LEN_BUFFER 256
 
@@ -23,7 +23,10 @@ const char verbose_param[]  = "-v";
  */
 int verbose = 0;
 char config_file[LEN_BUFFER]   = "sensoriando.conf";
-
+ 
+PGconn *conn;           /* Server Postgres */
+MQTTClient client;      /* Server MQTT */
+ 
 char db_host[LEN_BUFFER];
 char db_name[LEN_BUFFER];
 char db_username[LEN_BUFFER];
@@ -47,12 +50,11 @@ void setconfig();
 int 
 main(int argc, char *argv[])
 {
-    MQTTClient client;
-    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
     int rc;
     int ch;
     int i;
-
+    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
+ 
     /*
      * Check params
      */
@@ -119,17 +121,39 @@ main(int argc, char *argv[])
     if (rc != MQTTCLIENT_SUCCESS) {
        printf("Fail while connect subscriber, return code: %d\n", rc);
        return rc;
+    } else if ( verbose ) {
+       printf("MQTT server connected!\n");
     }
 
     MQTTClient_subscribe(client, MQTT_TOPIC, MQTT_QOS);
 
+    /*
+     * Init Postgres (connect)
+     */
+    conn = do_connect(db_name, db_username, db_password, db_host);
+ 
+    if ( conn ) {
+        if ( verbose ) {
+            printf("\tPosgreSQL server Connected!\n");
+        }
+    } else {
+        printf("Fail while connect database\n");
+        return 0;
+    }
+
+    /*
+     * Loop waiting
+     */
     if ( verbose ) {
         printf("\nWaiting payload... \n");
     }
    
     while (1) {       
-
+        //if key press Q or ESC, break
     }
+
+    do_exit(conn);
+    return 0;
 }
 
 /*
@@ -160,15 +184,10 @@ on_message(void *context, char *topicName, int topicLen, MQTTClient_message *mes
 void 
 msg_storage(char *topic, char *payload, int qos, int retained)
 {
-    PGconn *conn = do_connect(db_name, db_username, db_password, db_host);
     Thing *thing;
     Datum datum;
 
     if ( conn ) {
-        if ( verbose ) {
-            printf("\tPosgresSQL Connected!\n");
-        }
-
         thing = get_thing_uuid(conn, topic);
 
         if ( thing != NULL ) {
@@ -190,8 +209,6 @@ msg_storage(char *topic, char *payload, int qos, int retained)
                 printf("Error while insert datum of sensor\n");    
             }
         }
-
-        do_exit(conn);
     }
 }
 
