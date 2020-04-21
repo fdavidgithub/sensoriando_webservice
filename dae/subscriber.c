@@ -215,10 +215,6 @@ setconfig()
      */
     fd = fopen(config_file, "r");
 
-//    if ( fd == NULL ) {
-//        savelog(LOG_ERROR_CONFIG);
-//    }
-
     while ( ! feof(fd) ) {
         fgets( buffer, LEN_BUFFER, fd );
 

@@ -22,11 +22,13 @@ PGconn* do_connect(char *db, char *user, char *passwd, char *host)
         fprintf(stderr, "Connection to database failed: %s\n", PQerrorMessage(conn));
         do_exit(conn);
     }
-/*
+
+#ifdef DEBUG
     printf("User: %s\n", PQuser(conn));
     printf("Database name: %s\n", PQdb(conn));
     printf("Password: %s\n", PQpass(conn));
-*/
+#endif
+    
     return conn;
 }
 
