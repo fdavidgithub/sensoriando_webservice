@@ -11,7 +11,7 @@ sudo apt-get upgrade
 
 ### Database
 ```console
-sudo apt-get postgresql libpq-dev
+sudo apt-get install postgresql libpq-dev
 sudo vi /etc/postgres/10/main/pg_hda.conf
 ```
 

@@ -107,6 +107,11 @@ main(int argc, char *argv[])
     conn_opts.username = mqtt_username;
     conn_opts.password = mqtt_password; 
 
+#ifdef DEBUG
+    printf("MQTT user: %s\n", mqtt_username);
+    printf("MQTT pass: %s\n", mqtt_password);
+#endif
+
     MQTTClient_setCallbacks(client, NULL, NULL, on_message, NULL);
 
     rc = MQTTClient_connect(client, &conn_opts);
@@ -121,7 +126,6 @@ main(int argc, char *argv[])
     if ( verbose ) {
         printf("\nWaiting payload... \n");
     }
-
    
     while (1) {       
 

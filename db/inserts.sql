@@ -12,6 +12,7 @@ DECLARE
     Force           VARCHAR := 'Força';
     Power           VARCHAR := 'Potência';
     State           VARCHAR := 'Estado';
+    Sound           VARCHAR := 'Som';
 
 BEGIN
     INSERT INTO Sensors (name)
@@ -26,7 +27,8 @@ BEGIN
 	        (Pressure),
 	        (Force),
             (Power),
-		    (State);
+		    (State),
+            (Sound);
 
     INSERT INTO SensorsUnits (name, initial, precision, id_sensor)
     VALUES	('Litro',               'l',    3, (SELECT id FROM Sensors WHERE name = Volume)),
@@ -58,6 +60,8 @@ BEGIN
 	        ('Miliwatt',            'mW',   3, (SELECT id FROM Sensors WHERE name = Power)),
 		    ('Ligado/Desligado',    NULL,   0, (SELECT id FROM Sensors WHERE name = State)),
 		    ('Aberto/Fechado',      NULL,   0, (SELECT id FROM Sensors WHERE name = State));
+		    ('Decibeis',            'dB',   0, (SELECT id FROM Sensors WHERE name = Sound));
+
 
     INSERT INTO Accounts (city, uf) 
     VALUES ('Ribeirao Preto', 'SP');

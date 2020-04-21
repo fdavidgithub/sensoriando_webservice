@@ -2,7 +2,7 @@ all: compile
 debug: compile_debug
 
 compile: 
-	gcc -c database.c -o database.o 
+	gcc -c database.c -o database.o  
 	gcc subscriber.c database.o -lpq -lpaho-mqtt3c -o ../subscriber
 
 compile_debug: 
@@ -12,3 +12,5 @@ compile_debug:
 clear:
 	rm  *.o* *.~ ../subscriber
 
+deploy:
+	scp ../subscriber ubuntu@broker.sensoriando.com.br:/home/ubuntu/Sensoriando
