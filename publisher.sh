@@ -2,7 +2,7 @@
 #!/bin/bash
 source common.sh
 
-TOPIC_TEST=$(psql -c "select token from things where id = 1" -t)
+TOPIC_TEST=$(psql -c "select uuid from things where id = 1" -t)
 SENSOR_TEST=$(psql -c "select id from sensors where id = 1" -t)
 QOS_TEST=1		# 0, 1 or 2
 RETAINED_TEST=1 	# 1 true or 0 false
