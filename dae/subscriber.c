@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <MQTTClient.h>
+#include <unistd.h>
 
 #include "database.h"
 
@@ -151,6 +152,7 @@ main(int argc, char *argv[])
    
     while (1) {       
         //if key press Q or ESC, break
+        sleep(1);
     }
 
     do_exit(conn);
