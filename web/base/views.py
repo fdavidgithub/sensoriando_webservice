@@ -6,7 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 import unicodecsv
 
-from .models import Sensor, Account
+from .models import Sensors, Accounts
 
 # Create your views here.
 @csrf_exempt
@@ -15,11 +15,11 @@ def topics(request):
     response = HttpResponse(content_type='text/csv')
     writer = unicodecsv.writer(response, encoding='UTF-8')
 
-    valid = Account.objects.filter(username=request.POST.get("username"), 
+    valid = Accounts.objects.filter(username=request.POST.get("username"), 
                                    password=request.POST.get("password"),
                                   )
     
-    regs = Sensor.objects.filter(user_ptr_id=valid[0].user_ptr_id)
+    regs = Sensors.objects.filter(user_ptr_id=valid[0].user_ptr_id)
 
     for r in regs:
         name="{}/{}".format(r.id_local, r.name)
@@ -35,11 +35,11 @@ def export_csv(request):
     response = HttpResponse(content_type='text/csv')
     writer = unicodecsv.writer(response, encoding='UTF-8')
 
-    valid = Account.objects.filter(username=request.POST.get("username"), 
+    valid = Accounts.objects.filter(username=request.POST.get("username"), 
                                    password=request.POST.get("password"),
                                   )
     
-    regs = Sensor.objects.filter(user_ptr_id=valid[0].user_ptr_id)
+    regs = Sensors.objects.filter(user_ptr_id=valid[0].user_ptr_id)
 
     for r in regs:
         name="{}/{}".format(r.id_local, r.name)

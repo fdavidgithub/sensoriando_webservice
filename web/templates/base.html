@@ -1,21 +1,46 @@
 <!-- templates/base.html -->
 <!DOCTYPE html>
-{% load static %}
 
-<html>
-<head>
+<html lang="pt-br">
+    <head>
+
   <meta charset="utf-8">
-  <title>{% block title %}Django Auth Tutorial{% endblock %}</title>
-</head>
-<body>
-  
-  <img src="{% static "header.jpg" %}" alt="Header Sensoriando">
- 
-  <main>
-    {% block content %}
-    {% endblock %}
-  </main>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+        
+        <title>Sensoriando: Web Service</title>
+    </head>
 
-</body>
+    <body>
+
+ <nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="www.sensoriando.com.br">Sensoriando</a>
+    </div>
+
+    {% block menu %}
+    {% endblock %}
+    
+    <ul class="nav navbar-nav navbar-right">
+
+{% if user.is_authenticated %}
+  <li><a href="#"><span class="glyphicon glyphicon-user"></span> {{ user.username }}</a></li>
+  <li><a href="{% url 'logout' %}"><span class="glyphicon glyphicon-log-out"></span> Sair</a></li>
+{% else %}
+  <li><a href="#"><span class="glyphicon glyphicon-user"></span> Cadastrar</a></li>
+  <li><a href="{% url 'login' %}"><span class="glyphicon glyphicon-log-in"></span> Entrar</a></li>
+{% endif %}
+
+    </ul>
+  </div>
+</nav> 
+
+        {% block content %}
+        {% endblock %}
+        
+    </body>
 </html>
 

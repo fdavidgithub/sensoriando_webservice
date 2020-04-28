@@ -1,17 +1,57 @@
 <!-- templates/home.html-->
 {% extends 'base.html' %}
 
-{% block title %}Home{% endblock %}
+
+{% block menu %}
+    <ul class="nav navbar-nav">
+      <li class="active"><a href="#">Canais</a></li>
+      <li><a href="search.html">Pesquisar</a></li>
+    </ul>
+{% endblock %}
+
 
 {% block content %}
-{% if user.is_authenticated %}
-  Hi {{ user.username }}!
-  <p><a href="{% url 'logout' %}">logout</a></p>
+<h1>Consulta Pública</h1>
 
-  <a href="">Exportar dados</a>
+<div class="col-md-4 col-sm-6 col-xs-12" data-no-turbolink>
+    <div class="panel panel-primary">
+        <div class="panel-heading ellipsis">
+            <a class="link-no-hover" href="/channels/935349"><i class="fa fa-bar-chart-o"></i></a>
+            <a href="/channels/935349">ESP 8266</a>
+        </div>
 
-{% else %}
-  <p>You are not logged in</p>
-  <a href="{% url 'login' %}">login</a>
-{% endif %}
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-sm-6 col-xs-6">ID:</div>
+                <div class="col-sm-6 col-xs-6"><b>935349</b></div>
+            </div>
+            
+            <div class="row">
+                <div class="col-sm-6 col-xs-6">Cidade:</div>
+                <div class="col-sm-6 col-xs-6"><b>Ribeirão Preto/SP</b></div>
+            </div>
+        
+            <div class="row">
+                <div class="col-sm-6 col-xs-6">Pais:</div>
+                <div class="col-sm-6 col-xs-6"><b>Brasil</b></div>
+            </div> 
+        
+            <div class="row">
+                <div class="col-sm-6 col-xs-6">Medição:</div>
+                <div class="col-sm-6 col-xs-6">
+                    <b>Temperatura (Cº)</b>
+                    <b>Humidade (m^3) </b>
+                </div>       
+            </div>
+
+            <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+       
+            <div class="public_channel_tags">
+                <i class="fa fa-tags"></i>
+                <a href="/channels/public?tag=sensor">sensor</a>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
