@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.template import loader
 from django.views.decorators.csrf import csrf_exempt
@@ -63,6 +63,8 @@ def ListPublicSensors(request):
             except:
                 last_update = 'nenhuma'
 
+            sensors = Sensors.objects.filter(thingsdata__id_thing = thing.id).distinct()
+
             contexts.append({
                 'name': thing.name,
                 'city': account.city,
@@ -70,7 +72,23 @@ def ListPublicSensors(request):
                 'country': account.country,
                 'last_update': last_update,
                 'flags': Thingsflags.objects.filter(id_thing = thing.id),
+                'sensors': sensors,
             })
 
     return render(request, 'home.html', {'contexts': contexts})
+
+def SearchPublicSensors(request):
+    accounts = Accounts.objects.filter(ispublic = True)
+    contexts = []
+
+    return render(request, 'search.html', {'contexts': contexts})
+
+def RedirectSensoriando(request):
+    return redirect('http://www.sensoriando.com.br')
+
+def SensorDetails(request):
+    contexts = []
+
+    return render(request, 'sensor.html', {'contexts': contexts})
+
 

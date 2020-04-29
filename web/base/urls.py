@@ -3,6 +3,10 @@ from . import views
 
 urlpatterns = [
     path('', views.ListPublicSensors, name='home'),
+    path('home', views.ListPublicSensors, name='home'),
+    path('search', views.SearchPublicSensors, name='search'),
+    path('www', views.RedirectSensoriando, name='www'),
+    path('sensor', views.SensorDetails, name='sensor'),
 ]
 
 

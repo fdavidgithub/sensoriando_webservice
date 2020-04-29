@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import redirect
 #from django.views.generic.base import TemplateView
 
 urlpatterns = [
@@ -23,6 +24,8 @@ urlpatterns = [
 
     #https://wsvincent.com/django-user-authentication-tutorial-login-and-logout/
     path('accounts/', include('django.contrib.auth.urls')),
+#    path('www/', redirect('http://www.sensoriando.com.br')),
+
 
 #    path('', TemplateView.as_view(template_name='home.html'), name='home'),
     path('', include('base.urls')), 

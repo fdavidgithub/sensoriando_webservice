@@ -1,11 +1,14 @@
 <!-- templates/home.html-->
 {% extends 'common.html' %}
 
+{% block title %}
+<title> Web Service: Lista</title>
+{% endblock %}
 
 {% block menu %}
     <ul class="nav navbar-nav">
-      <li class="active"><a href="#">Canais</a></li>
-      <li><a href="search.html">Pesquisar</a></li>
+      <li class="active"><a href="#">Sensor</a></li>
+      <li><a href="search">Pesquisar</a></li>
     </ul>
 {% endblock %}
 
@@ -23,7 +26,7 @@
     <div class="panel panel-primary">
         <div class="panel-heading ellipsis">
           <i class="fa fa-bar-chart-o"></i>
-          <a class="link-no-hover" href="#"><b>{{ context.name }}</b></a>
+          <a class="link-no-hover" href="sensor"><b>{{ context.name }}</b></a>
         </div>
         
         <div class="panel-body">
@@ -44,8 +47,10 @@
         
             <div class="public_channel_tags">
                 <i class="fa fa-tags"></i>
-                <a href="#">Temperatura (ºC)</a>
-                <a href="#">Umidade (m^3)</a>
+
+                {% for sensor in context.sensors %}
+                    <a href="#">{{ sensor.name }}</a>
+                {% endfor %}
             </div>
 
             <div class="row">
@@ -65,6 +70,7 @@
         </div>
     </div>
 </div>
+
 {% endfor %}
 <!-- Sensors list: END -->
 
