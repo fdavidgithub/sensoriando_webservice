@@ -62,16 +62,6 @@ BEGIN
 		    ('Aberto/Fechado',      NULL,   0, (SELECT id FROM Sensors WHERE name = State)),
 		    ('Decibeis',            'dB',   0, (SELECT id FROM Sensors WHERE name = Sound));
 
-
-    INSERT INTO Accounts (city, state, country) 
-    VALUES ('Ribeirao Preto', 'SP', 'Brasil');
-
-    INSERT INTO Things (name)
-    VALUES ('THING_TEST');
-
-    INSERT INTO AccountsThings (id_account, id_thing)
-    VALUES (1, 1/* THING_TEST*/);
-
 END;
 $$ LANGUAGE plpgsql;
 
