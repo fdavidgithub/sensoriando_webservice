@@ -11,7 +11,8 @@ from django.db import models
 class Accounts(models.Model):
     dt = models.DateTimeField()
     city = models.CharField(max_length=50)
-    uf = models.CharField(max_length=2)
+    state = models.CharField(max_length=2)
+    country = models.CharField(max_length=20)
     ispublic = models.BooleanField()
     status = models.BooleanField()
     usetrigger = models.BooleanField()
@@ -19,6 +20,16 @@ class Accounts(models.Model):
     class Meta:
         managed = False
         db_table = 'accounts'
+
+
+class Accountsthings(models.Model):
+    dt = models.DateTimeField()
+    id_account = models.ForeignKey(Accounts, models.DO_NOTHING, db_column='id_account')
+    id_thing = models.ForeignKey('Things', models.DO_NOTHING, db_column='id_thing')
+
+    class Meta:
+        managed = False
+        db_table = 'accountsthings'
 
 
 class Sensors(models.Model):
@@ -66,6 +77,7 @@ class Things(models.Model):
     class Meta:
         managed = False
         db_table = 'things'
+
 
 class Thingsdata(models.Model):
     dt = models.DateTimeField()

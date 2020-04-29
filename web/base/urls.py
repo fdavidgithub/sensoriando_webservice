@@ -1,8 +1,8 @@
-from django.conf.urls import url
-from base import views
+from django.urls import path, include
+from . import views
 
 urlpatterns = [
-    url(r'^$', views.topics),
+    path('', views.ListPublicSensors, name='home'),
 ]
 
 

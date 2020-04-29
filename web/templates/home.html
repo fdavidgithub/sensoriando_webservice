@@ -1,5 +1,5 @@
 <!-- templates/home.html-->
-{% extends 'base.html' %}
+{% extends 'common.html' %}
 
 
 {% block menu %}
@@ -11,47 +11,66 @@
 
 
 {% block content %}
-<h1>Consulta Pública</h1>
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12 col-sm-9">
+            <h1>Sensores Públicos</h1>
 
-<div class="col-md-4 col-sm-6 col-xs-12" data-no-turbolink>
+<!-- Sensors list: BEGIN -->
+{% for context in contexts %}
+
+<div class="col-md-5 col-sm-6 col-xs-12" data-no-turbolink>
     <div class="panel panel-primary">
         <div class="panel-heading ellipsis">
-            <a class="link-no-hover" href="/channels/935349"><i class="fa fa-bar-chart-o"></i></a>
-            <a href="/channels/935349">ESP 8266</a>
+          <i class="fa fa-bar-chart-o"></i>
+          <a class="link-no-hover" href="#"><b>{{ context.name }}</b></a>
         </div>
-
+        
         <div class="panel-body">
             <div class="row">
-                <div class="col-sm-6 col-xs-6">ID:</div>
-                <div class="col-sm-6 col-xs-6"><b>935349</b></div>
-            </div>
-            
-            <div class="row">
-                <div class="col-sm-6 col-xs-6">Cidade:</div>
-                <div class="col-sm-6 col-xs-6"><b>Ribeirão Preto/SP</b></div>
-            </div>
-        
-            <div class="row">
-                <div class="col-sm-6 col-xs-6">Pais:</div>
-                <div class="col-sm-6 col-xs-6"><b>Brasil</b></div>
-            </div> 
-        
-            <div class="row">
-                <div class="col-sm-6 col-xs-6">Medição:</div>
+                <div class="col-sm-6 col-xs-6"><b>Cidade</b></div>
                 <div class="col-sm-6 col-xs-6">
-                    <b>Temperatura (Cº)</b>
-                    <b>Humidade (m^3) </b>
-                </div>       
+                    <a href="#">{{ context.city }}</a>
+                    <a href="#">{{ context.state }}</a>
+                </div>
+            </div>
+        
+            <div class="row">
+                <div class="col-sm-6 col-xs-6"><b>País</b></div>
+                <div class="col-sm-6 col-xs-6"><a href="#">{{ context.country }}</a></div>
+            </div> 
+ 
+            <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+        
+            <div class="public_channel_tags">
+                <i class="fa fa-tags"></i>
+                <a href="#">Temperatura (ºC)</a>
+                <a href="#">Umidade (m^3)</a>
             </div>
 
+            <div class="row">
+                <div class="col-sm-6 col-xs-6"><b>Última leitura</b></div>
+                <div class="col-sm-6 col-xs-6">{{ context.last_update }}</div>
+            </div> 
+ 
             <hr style="height:2px;border-width:0;color:gray;background-color:gray">
        
             <div class="public_channel_tags">
                 <i class="fa fa-tags"></i>
-                <a href="/channels/public?tag=sensor">sensor</a>
+                
+                {% for flag in context.flags %}
+                    <a href="#">{{ flag.name }}</a>     
+                {% endfor %}
             </div>
         </div>
     </div>
 </div>
+{% endfor %}
+<!-- Sensors list: END -->
 
+        </div>
+    </div>
+</div>
 {% endblock %}
+
+

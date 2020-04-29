@@ -1,8 +1,9 @@
 CREATE TABLE Accounts (
     id          SERIAL NOT NULL PRIMARY KEY,
 	dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	city        VARCHAR(50) NOT NULL,
-    uf          VARCHAR(02) NOT NULL,
+    city        VARCHAR(50) NOT NULL,
+    state       VARCHAR(02) NOT NULL,
+    country     VARCHAR(20) NOT NULL,
     ispublic    BOOLEAN NOT NULL DEFAULT TRUE,
     status      BOOLEAN NOT NULL DEFAULT TRUE,
     usetrigger  BOOLEAN NOT NULL DEFAULT FALSE
@@ -78,6 +79,13 @@ CREATE TABLE ThingsData (
     payload	    JSONb NOT NULL,
 
     UNIQUE (id_thing, id_sensor, payload)
+);
+
+CREATE TABLE AccountsThings (
+    id          SERIAL NOT NULL PRIMARY KEY,
+    dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id_account  INTEGER NOT NULL REFERENCES Accounts (id),
+    id_thing    INTEGER NOT NULL REFERENCES Things (id)
 );
 
 
