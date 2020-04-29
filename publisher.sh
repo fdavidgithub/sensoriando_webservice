@@ -2,8 +2,19 @@
 #!/bin/bash
 source common.sh
 
-UUID=$(psql -c "select uuid from things where id = 1" -t)
-SENSOR=$(psql -c "select id from sensors where id = 1" -t)
+THING=$1
+SENSOR=$2
+
+if [ -z $THING ]; then
+    export THING=1
+fi
+
+if [ -z $SENSOR ]; then
+    export SENSOR=1
+fi
+
+UUID=$(psql -c "select uuid from things where id = $THING" -t)
+SENSOR=$(psql -c "select id from sensors where id = $SENSOR" -t)
 QOS=1		# 0, 1 or 2
 RETAINED=1 	# 1 true or 0 false
 
