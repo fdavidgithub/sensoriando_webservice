@@ -1,6 +1,8 @@
 <!-- templates/home.html-->
 {% extends 'common.html' %}
 
+
+ 	
 {% block title %}
 <title> Web Service: Visualizar</title>
 {% endblock %}
@@ -13,6 +15,10 @@
 {% endblock %}
 
 {% block content %}
+<script>
+    {% include 'chart-line.js' %}
+</script>
+
 <div class="container">
     <h1 class="margin-left" id="channel-name-header">THING_TEST #x</h1>
     
@@ -56,9 +62,8 @@
         
         <div class="panel-body">
             <div class="row">
-                <!--Grafico-->
-            </div>
-        
+                <canvas id="canvas"></canvas>
+            </div>        
         </div>
     </div>
 </div>
@@ -72,9 +77,8 @@
         
         <div class="panel-body">
             <div class="row">
-                <!--Grafico-->
-            </div>
-        
+                <canvas id="canvas2"></canvas>
+            </div>        
         </div>
     </div>
 </div>
