@@ -1,8 +1,24 @@
-		var config = {
+window.onload = function() {
+{% for context in contexts %}        
+    var ctx{{ forloop.counter }} = document.getElementById("chart-line{{ forloop.counter }}").getContext('2d');
+	window.myLine = new Chart(ctx{{ forloop.counter }}, config{{ forloop.counter }});
+{% endfor %}
+};
+
+{% for context in contexts %}
+        var config{{ forloop.counter }} = {
 			type: 'line',
 			
             data: {
-                labels: ['11:53', 'February', 'March', 'April', 'May', 'June', 'July'],
+                labels: [
+                    'Jan', 
+                    'February', 
+                    'March', 
+                    'April', 
+                    'May', 
+                    'June', 
+                    'July'
+                ],
 				datasets: [{
 					backgroundColor: window.chartColors.red,
 					borderColor: window.chartColors.red,
@@ -47,9 +63,5 @@
 				}
 			}
 		};
-
-        window.onload = function() {
-			var ctx = document.getElementById('canvas').getContext('2d');
-			window.myLine = new Chart(ctx, config);
-		};
+{% endfor %}
 

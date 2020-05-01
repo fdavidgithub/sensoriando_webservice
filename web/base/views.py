@@ -86,8 +86,32 @@ def SearchPublicSensors(request):
 def RedirectSensoriando(request):
     return redirect('http://www.sensoriando.com.br')
 
-def SensorDetails(request):
+def SensorDetails(request, id_thing):
+    things = Things.objects.filter(id = id_thing)
+    accounts = Accounts.objects.filter(accountsthings__id_thing = id_thing)
     contexts = []
+
+    for account in accounts:
+        if account.ispublic:
+            access = 'Publico'
+        else:
+            access = 'Privado'
+
+        city = account.city
+        country = account.country
+        state = account.state
+
+    for thing in things:
+        contexts.append({
+            'thing_name': thing.name,
+            'canvas': 'chart-line',
+            'city': city,
+            'state': state,
+            'country': country,
+            'access': access,
+            'title': Sensors.objects.filter(thingsdata__id_thing = id_thing).distinct(),
+            'flags': Thingsflags.objects.filter(id_thing = thing.id),
+        })
 
     return render(request, 'sensor.html', {'contexts': contexts})
 

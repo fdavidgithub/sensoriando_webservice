@@ -1,7 +1,6 @@
 <!-- templates/home.html-->
 {% extends 'common.html' %}
 
-
  	
 {% block title %}
 <title> Web Service: Visualizar</title>
@@ -20,29 +19,29 @@
 </script>
 
 <div class="container">
-    <h1 class="margin-left" id="channel-name-header">THING_TEST #x</h1>
-    
+{% for context in contexts %}
+    <h1 class="margin-left" id="channel-name-header">{{ context.thing_name }}</h1>
+
     <div class="row col-xs-12 col-sm-12" style="margin-bottom: 25px;">
         <div class="col-xs-6 col-sm-4">
             <ul class="no_bullets" id="table-channel-metadata">
-                <li><b>Cidade: </b>Ribeirão Preto/SP</li>
-                <li><b>País:   </b>Brasil</li>
-                <li><b>Acesso: </b>Público</li>
+                <li><b>Cidade: </b>{{ context.city }}/{{ context.state }}</li>
+                <li><b>País:   </b>{{ context.country }}</li>
+                <li><b>Acesso: </b>{{ context.access }}</li>
             </ul>
         </div>
 
         <div class="col-xs-6 col-sm-4" style="border-left: 1px solid #ccc;">
-            Temperatura
-            Massa
-    
+            {% for sensor in context.title %}
+                {{ sensor.name }}
+            {% endfor %}
             <br>
 
             <p id="channel-tags">
                 <i class="fa fa-tags"></i>&nbsp;
-                esp8266,
-                temp,
-                sensor,
-                dht11
+{% for flag in context.flags %}
+                {{ flag.name }}
+{% endfor %}
             </p>
 
             <button type="button" data-toggle="modal" data-target="#devinfo_modal" class="btn btn-default btn-margin-bottom" id="channel-data-export-button">
@@ -51,39 +50,27 @@
              </button> 
         </div>
     </div>
-
+    
 <!--List Charts: BEGIN-->
-<div class="col-md-5 col-sm-6 col-xs-12" data-no-turbolink>
-    <div class="panel panel-primary">
-        <div class="panel-heading ellipsis">
-          <i class="fa fa-bar-chart-o"></i>
-          <b>Temperatura</b>
-        </div>
+{% for sensor in context.title %}
+    <div class="col-md-5 col-sm-6 col-xs-12" data-no-turbolink>
+        <div class="panel panel-primary">
+            <div class="panel-heading ellipsis">
+                <i class="fa fa-bar-chart-o"></i>
+                <b>{{ sensor.name }}</b>
+            </div>
         
-        <div class="panel-body">
-            <div class="row">
-                <canvas id="canvas"></canvas>
-            </div>        
+            <div class="panel-body">
+                <div class="row">
+                    <canvas id="{{ context.canvas }}{{ forloop.counter }}"></canvas>
+                </div>        
+            </div>
         </div>
     </div>
-</div>
-
-<div class="col-md-5 col-sm-6 col-xs-12" data-no-turbolink>
-    <div class="panel panel-primary">
-        <div class="panel-heading ellipsis">
-          <i class="fa fa-bar-chart-o"></i>
-          <b>Humidade</b>
-        </div>
-        
-        <div class="panel-body">
-            <div class="row">
-                <canvas id="canvas2"></canvas>
-            </div>        
-        </div>
-    </div>
-</div>
+{% endfor %}
 <!--List Charts: END-->
 
+{% endfor %}
 </div>
 
 {% endblock %}
