@@ -1,11 +1,13 @@
 window.onload = function() {
-{% for context in contexts %}        
-    var ctx{{ forloop.counter }} = document.getElementById("chart-line{{ forloop.counter }}").getContext('2d');
+
+{% for title in context.titles %}        
+    var ctx{{ forloop.counter }} = document.getElementById("{{ context.canva }}{{ forloop.counter }}").getContext('2d');
 	window.myLine = new Chart(ctx{{ forloop.counter }}, config{{ forloop.counter }});
 {% endfor %}
+
 };
 
-{% for context in contexts %}
+{% for title in context.titles %}
         var config{{ forloop.counter }} = {
 			type: 'line',
 			

@@ -19,9 +19,8 @@
 </script>
 
 <div class="container">
-{% for context in contexts %}
-    <h1 class="margin-left" id="channel-name-header">{{ context.thing_name }}</h1>
-
+    <h1 class="margin-left" id="channel-name-header">{{ context.thing }}</h1>
+    
     <div class="row col-xs-12 col-sm-12" style="margin-bottom: 25px;">
         <div class="col-xs-6 col-sm-4">
             <ul class="no_bullets" id="table-channel-metadata">
@@ -32,9 +31,9 @@
         </div>
 
         <div class="col-xs-6 col-sm-4" style="border-left: 1px solid #ccc;">
-            {% for sensor in context.title %}
+{% for sensor in context.titles %}
                 {{ sensor.name }}
-            {% endfor %}
+{% endfor %}
             <br>
 
             <p id="channel-tags">
@@ -52,7 +51,7 @@
     </div>
     
 <!--List Charts: BEGIN-->
-{% for sensor in context.title %}
+{% for sensor in context.titles %}
     <div class="col-md-5 col-sm-6 col-xs-12" data-no-turbolink>
         <div class="panel panel-primary">
             <div class="panel-heading ellipsis">
@@ -62,7 +61,7 @@
         
             <div class="panel-body">
                 <div class="row">
-                    <canvas id="{{ context.canvas }}{{ forloop.counter }}"></canvas>
+                    <canvas id="{{ context.canva }}{{ forloop.counter }}"></canvas>
                 </div>        
             </div>
         </div>
@@ -70,7 +69,6 @@
 {% endfor %}
 <!--List Charts: END-->
 
-{% endfor %}
 </div>
 
 {% endblock %}
