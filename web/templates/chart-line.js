@@ -1,38 +1,37 @@
 window.onload = function() {
 
-{% for title in context.titles %}        
+{% for sensor in context.sensors %}        
     var ctx{{ forloop.counter }} = document.getElementById("{{ context.canva }}{{ forloop.counter }}").getContext('2d');
 	window.myLine = new Chart(ctx{{ forloop.counter }}, config{{ forloop.counter }});
 {% endfor %}
 
 };
 
-{% for title in context.titles %}
+{% for sensor in context.sensors %}
         var config{{ forloop.counter }} = {
 			type: 'line',
 			
             data: {
                 labels: [
-                    'Jan', 
-                    'February', 
-                    'March', 
-                    'April', 
-                    'May', 
-                    'June', 
-                    'July'
+
+{% for datum in context.data %}                
+    {% if datum.id_sensor == sensor.id %}
+        '{{ datum.dt }}',
+    {% endif %}
+{% endfor %}
                 ],
-				datasets: [{
+                datasets: [{
 					backgroundColor: window.chartColors.red,
 					borderColor: window.chartColors.red,
 					data: [
-						randomScalingFactor(),
-						randomScalingFactor(),
-						randomScalingFactor(),
-						randomScalingFactor(),
-						randomScalingFactor(),
-						randomScalingFactor(),
-						randomScalingFactor()
-					],
+
+{% for datum in context.data %}
+    {% if datum.id_sensor == sensor.id %}
+        {{ datum.payload_value }},
+    {% endif %}
+{% endfor %}
+
+                    ],
 					fill: false,
 				}, ]
 			},

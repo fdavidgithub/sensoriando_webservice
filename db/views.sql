@@ -2,9 +2,15 @@ CREATE OR REPLACE VIEW vwThingsData AS
     SELECT  ID.id, 
             ID.dt, 
             ID.id_thing,
+            ID.id_sensor,
             ID.qos,
             ID.retained,
-            TO_TIMESTAMP(REPLACE(CAST(ID.payload->>'dt' AS TEXT), '"', ''), 'YYYYMMDDHH24MISS') payload_dt, 
+
+            CASE WHEN ID.payload->>'dt' IS NOT NULL 
+                THEN TO_TIMESTAMP(REPLACE(CAST(ID.payload->>'dt' AS TEXT), '"', ''), 'YYYYMMDDHH24MISS')
+                ELSE ID.dt
+            END payload_dt,
+
             CAST(ID.payload->>'value' AS REAL) payload_value
     FROM ThingsData ID;
 

@@ -6,7 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 import unicodecsv
 
-from .models import Things, Thingsdata, Thingsflags, Sensors, Accounts, Accountsthings
+from .models import Things, Thingsdata, Thingsflags, Sensors, Accounts, Accountsthings, Vwthingsdata
 
 # Create your views here.
 @csrf_exempt
@@ -98,12 +98,14 @@ def SensorDetails(request, id_thing):
     context = {
         'thing': thing[0].name,
         'canva': 'chart-line',
+        'chart_file': 'chart-line.js',
         'city': account[0].city,
         'state': account[0].state,
         'country': account[0].country,
         'access': access,
-        'titles': Sensors.objects.filter(thingsdata__id_thing = thing[0].id).distinct(),
+        'sensors': Sensors.objects.filter(thingsdata__id_thing = thing[0].id).distinct(),
         'flags': Thingsflags.objects.filter(id_thing = thing[0].id),
+        'data': Vwthingsdata.objects.filter(id_thing = thing[0].id),
     }
 
     return render(request, 'sensor.html', {'context': context})
