@@ -5,6 +5,10 @@ window.onload = function() {
 	window.myLine = new Chart(ctx{{ forloop.counter }}, config{{ forloop.counter }});
 {% endfor %}
 
+    setInterval(function(){
+        //config.datasets.data[2] := randomScalingFactor();
+	    windows.myLine.update();
+    },1000);
 };
 
 {% for sensor in context.sensors %}
@@ -16,7 +20,7 @@ window.onload = function() {
 
 {% for datum in context.data %}                
     {% if datum.id_sensor == sensor.id %}
-        '{{ datum.dt }}',
+        '{{ datum.group_dt }}',
     {% endif %}
 {% endfor %}
                 ],
@@ -27,7 +31,7 @@ window.onload = function() {
 
 {% for datum in context.data %}
     {% if datum.id_sensor == sensor.id %}
-        {{ datum.payload_value }},
+        {{ datum.group_value }},
     {% endif %}
 {% endfor %}
 
@@ -51,14 +55,15 @@ window.onload = function() {
 					xAxes: [{
 						display: true,
 						scaleLabel: {
-							display: false,
+							display: true,
+                            labelString: '{{ context.interval }}'
 						}
 					}],
 					yAxes: [{
 						display: true,
 						scaleLabel: {
 							display: true,
-							labelString: 'ºC'
+							labelString: '**unidade**'
 						}
 					}]
 				}

@@ -7,8 +7,8 @@
 
 {% block menu %}
     <ul class="nav navbar-nav">
-      <li class="active"><a href="#">Sensor</a></li>
-      <li><a href="search">Pesquisar</a></li>
+      <li class="active"><a href="#">Sensores</a></li>
+      <li><a href="/map">Mapa</a></li>
     </ul>
 {% endblock %}
 
@@ -26,7 +26,7 @@
     <div class="panel panel-primary">
         <div class="panel-heading ellipsis">
           <i class="fa fa-bar-chart-o"></i>
-          <a class="link-no-hover" href="sensor/1"><b>{{ context.name }}</b></a>
+          <a class="link-no-hover" href="sensor/{{ context.id }}"><b>{{ context.name }}</b></a>
         </div>
         
         <div class="panel-body">

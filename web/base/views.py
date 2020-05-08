@@ -4,9 +4,12 @@ from django.template import loader
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
 
+from django.db.models import Count,Avg
+from django.db.models.functions import TruncMonth, TruncYear
+
 import unicodecsv
 
-from .models import Things, Thingsdata, Thingsflags, Sensors, Accounts, Accountsthings, Vwthingsdata
+from .models import Things, Thingsdata, Thingsflags, Sensors, Accounts, Accountsthings, Vwthingsdata, Sensorsunits
 
 # Create your views here.
 @csrf_exempt
@@ -66,6 +69,7 @@ def ListPublicSensors(request):
             sensors = Sensors.objects.filter(thingsdata__id_thing = thing.id).distinct()
 
             contexts.append({
+                'id': thing.id,
                 'name': thing.name,
                 'city': account.city,
                 'state': account.state,
@@ -77,23 +81,55 @@ def ListPublicSensors(request):
 
     return render(request, 'home.html', {'contexts': contexts})
 
-def SearchPublicSensors(request):
-    accounts = Accounts.objects.filter(ispublic = True)
-    contexts = []
+def MapSensors(request):
+    accounts = Accounts.objects.values('country').order_by('country').annotate(total=Count('country'))
+    contexts = {
+        'countries': accounts, 
+    }
 
-    return render(request, 'search.html', {'contexts': contexts})
+    return render(request, 'map.html', {'contexts': contexts})
 
 def RedirectSensoriando(request):
     return redirect('http://www.sensoriando.com.br')
 
 def SensorDetails(request, id_thing):
+    chartview = request.COOKIES.get('chartview')
+    if chartview is None:
+        chartview = 's' #default: seconds
+
     thing = Things.objects.filter(id = id_thing)
     account = Accounts.objects.filter(accountsthings__id_thing = id_thing)
-
+    sensors = Sensors.objects.filter(thingsdata__id_thing = id_thing).distinct()
+    units = Sensorsunits.objects.filter(id_sensor__thingsdata__id_thing = id_thing, isdefault=True).distinct()
+    data = Vwthingsdata.objects.filter(id_thing = id_thing)
+   
     if account[0].ispublic:
         access = 'Publico'
     else:
         access = 'Privado'
+
+    if chartview == 's':
+        chartview_title = data.last().payload_dt.strftime("%d/%m/%Y %h:m")
+    elif chartview == 'm':
+        chartview_title = data.last().payload_dt.strftime("%d/%m/%Y %h")
+    elif chartview == 'h':
+        chartview_title = data.last().payload_dt.strftime("%d/%m/%Y")
+    elif chartview == 'd':
+        chartview_title = data.last().payload_dt.strftime("%m/%Y")
+    elif chartview == 'M':
+        data = data.annotate(group_dt=TruncMonth('payload_dt'))
+        data = data.order_by('group_dt')
+        data = data.annotate(group_value=Avg('payload_value'))
+
+        chartview_title = data.last().payload_dt.strftime("%Y")
+    elif chartview == 'y':
+        data = data.annotate(group_dt=TruncYear('payload_dt'))
+        data = data.order_by('group_dt')
+        data = data.annotate(group_value=Avg('payload_value'))
+
+        chartview_title = 'Anos'
+    else:
+        chartview_title = 'ops!!'
 
     context = {
         'thing': thing[0].name,
@@ -101,11 +137,13 @@ def SensorDetails(request, id_thing):
         'chart_file': 'chart-line.js',
         'city': account[0].city,
         'state': account[0].state,
+        'interval': chartview_title,
         'country': account[0].country,
         'access': access,
-        'sensors': Sensors.objects.filter(thingsdata__id_thing = thing[0].id).distinct(),
-        'flags': Thingsflags.objects.filter(id_thing = thing[0].id),
-        'data': Vwthingsdata.objects.filter(id_thing = thing[0].id),
+        'sensors': sensors,
+        'units': units,
+        'flags': Thingsflags.objects.filter(id_thing = id_thing),
+        'data': data,
     }
 
     return render(request, 'sensor.html', {'context': context})

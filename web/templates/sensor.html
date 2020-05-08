@@ -8,14 +8,24 @@
 
 {% block menu %}
     <ul class="nav navbar-nav">
-      <li><a href="home">Sensor</a></li>
-      <li><a href="search">Pesquisar</a></li>
+      <li><a href="/home">Sensores</a></li>
+      <li><a href="/map">Mapa</a></li>
     </ul>
 {% endblock %}
 
 {% block content %}
 <script>
     {% include context.chart_file %}
+</script>
+
+<script>
+    function setCookie(cname, cvalue, exdays) {
+        var d = new Date();
+        d.setTime(d.getTime() + (exdays*24*60*60*1000));
+        var expires = "expires=" + d.toGMTString();
+        var cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+        document.cookie = cookie;
+    }
 </script>
 
 <div class="container">
@@ -42,14 +52,66 @@
                 {{ flag.name }}
 {% endfor %}
             </p>
+        
+            <div class="dropdown">        
+                <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Visualizar dados
+                <span class="caret"></span></button>
+                <ul class="dropdown-menu">
+                    <li><a href="javascript:setCookie('chartview','s',365);location.reload();">Segundos</a></li>
+                    <li><a href="javascript:setCookie('chartview','m',365);location.reload();">Minutos</a></li>
+                    <li><a href="javascript:setCookie('chartview','h',365);location.reload();">Horas</a></li>
+                    <li><a href="javascript:setCookie('chartview','d',365);location.reload();">Dias</a></li>
+                    <li><a href="javascript:setCookie('chartview','M',365);location.reload();">Meses</a></li>
+                    <li><a href="javascript:setCookie('chartview','y',365);location.reload();">Anos</a></li>
+                </ul>
 
-            <button type="button" data-toggle="modal" data-target="#devinfo_modal" class="btn btn-default btn-margin-bottom" id="channel-data-export-button">
-                    <i class='fa fa-external-link-square timecontrol_index'></i>&nbsp;
-                    Exportar dados recentes
-             </button> 
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">
+                    <i class='fa fa-external-link-square'></i>&nbsp;
+                    Exportar dados
+                </button>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Exportar dados</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <div aria-hidden="true">&times;</div>
+        </button>
+      </div>
+      <div class="modal-body">
+
+          <table class="table table-striped" >
+            <tr> 
+             <th> {{ context.thing }} (todos sensores)</th>
+             <th> <a target="_blank" href="#">CSV</a></th>
+            </tr>
+
+{% for sensor in context.sensors %}
+            <tr>
+                <th> {{ sensor.name }} </th>
+                <th> <a target="_blank" href="#">CSV</a></th>
+            </tr>
+{% endfor %}
+            
+          </table>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+            </div>
+
         </div>
     </div>
-    
+
+  
 <!--List Charts: BEGIN-->
 {% for sensor in context.sensors %}
     <div class="col-md-5 col-sm-6 col-xs-12" data-no-turbolink>
