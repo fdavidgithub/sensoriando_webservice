@@ -5,10 +5,10 @@ window.onload = function() {
 	window.myLine = new Chart(ctx{{ forloop.counter }}, config{{ forloop.counter }});
 {% endfor %}
 
-    setInterval(function(){
+//    setInterval(function(){
         //config.datasets.data[2] := randomScalingFactor();
-	    windows.myLine.update();
-    },1000);
+//	    windows.myLine.update();
+//    },1000);
 };
 
 {% for sensor in context.sensors %}
@@ -42,6 +42,10 @@ window.onload = function() {
 			
             options: {
 				responsive: true,
+                title: {
+					display: true,
+					text: '{{ context.title }}'
+				},
                 legend: false,
 			    tooltips: {
 					mode: 'index',
@@ -56,7 +60,7 @@ window.onload = function() {
 						display: true,
 						scaleLabel: {
 							display: true,
-                            labelString: '{{ context.interval }}'
+                            labelString: '{{ context.label }}'
 						}
 					}],
 					yAxes: [{

@@ -4,8 +4,8 @@ from django.template import loader
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
 
-from django.db.models import Count,Avg
-from django.db.models.functions import TruncMonth, TruncYear
+from django.db.models import Count,Avg,Value,CharField
+from django.db.models.functions import Extract, Concat 
 
 import unicodecsv
 
@@ -102,34 +102,64 @@ def SensorDetails(request, id_thing):
     sensors = Sensors.objects.filter(thingsdata__id_thing = id_thing).distinct()
     units = Sensorsunits.objects.filter(id_sensor__thingsdata__id_thing = id_thing, isdefault=True).distinct()
     data = Vwthingsdata.objects.filter(id_thing = id_thing)
-   
+  
     if account[0].ispublic:
         access = 'Publico'
     else:
         access = 'Privado'
 
     if chartview == 's':
-        chartview_title = data.last().payload_dt.strftime("%d/%m/%Y %h:m")
+        chartview_label = data.last().payload_dt.strftime("%d/%m/%Y %H:%M")
+        chartview_title = 'Segundos'
+
+        data = data.annotate(group_dt=Concat(Extract('payload_dt', 'second'), Value('s'), output_field=CharField()))
+        data = data.values('group_dt', 'id_sensor')
+        data = data.annotate(group_value=Avg('payload_value'))
+        data = data.order_by('group_dt', 'id_sensor') 
     elif chartview == 'm':
-        chartview_title = data.last().payload_dt.strftime("%d/%m/%Y %h")
+        chartview_label = data.last().payload_dt.strftime("%d/%m/%Y")
+        chartview_title = 'Minutos'
+
+        data = data.annotate(group_dt=Concat(Extract('payload_dt', 'hour'), Value(':'), Extract('payload_dt', 'minute'), output_field=CharField()))
+        data = data.values('group_dt', 'id_sensor')
+        data = data.annotate(group_value=Avg('payload_value'))
+        data = data.order_by('group_dt', 'id_sensor') 
     elif chartview == 'h':
-        chartview_title = data.last().payload_dt.strftime("%d/%m/%Y")
+        chartview_label = data.last().payload_dt.strftime("%d/%m/%Y")
+        chartview_title = 'Horas'
+
+        data = data.annotate(group_dt=Concat(Extract('payload_dt', 'hour'), Value('h'), output_field=CharField()))
+        data = data.values('group_dt', 'id_sensor')
+        data = data.annotate(group_value=Avg('payload_value'))
+        data = data.order_by('group_dt', 'id_sensor') 
     elif chartview == 'd':
-        chartview_title = data.last().payload_dt.strftime("%m/%Y")
+        chartview_label = data.last().payload_dt.strftime("%m/%Y")
+        chartview_title = 'Dias'
+
+        data = data.annotate(group_dt=Extract('payload_dt', 'day'))
+        data = data.values('group_dt', 'id_sensor')
+        data = data.annotate(group_value=Avg('payload_value'))
+        data = data.order_by('group_dt', 'id_sensor')
     elif chartview == 'M':
-        data = data.annotate(group_dt=TruncMonth('payload_dt'))
-        data = data.order_by('group_dt')
-        data = data.annotate(group_value=Avg('payload_value'))
+        chartview_label = data.last().payload_dt.strftime("%Y")
+        chartview_title = 'Meses'
 
-        chartview_title = data.last().payload_dt.strftime("%Y")
+        data = data.annotate(group_dt=Extract('payload_dt', 'month'))
+        data = data.values('group_dt', 'id_sensor')
+        data = data.annotate(group_value=Avg('payload_value'))
+        data = data.order_by('group_dt', 'id_sensor')
     elif chartview == 'y':
-        data = data.annotate(group_dt=TruncYear('payload_dt'))
-        data = data.order_by('group_dt')
-        data = data.annotate(group_value=Avg('payload_value'))
-
+        chartview_label = ''
         chartview_title = 'Anos'
+ 
+        data = data.annotate(group_dt=Extract('payload_dt', 'year'))
+        data = data.values('group_dt', 'id_sensor')
+        data = data.annotate(group_value=Avg('payload_value'))
+        data = data.order_by('group_dt', 'id_sensor')
     else:
-        chartview_title = 'ops!!'
+        chartview_label = 'ops!!'
+
+    print(data)
 
     context = {
         'thing': thing[0].name,
@@ -137,7 +167,8 @@ def SensorDetails(request, id_thing):
         'chart_file': 'chart-line.js',
         'city': account[0].city,
         'state': account[0].state,
-        'interval': chartview_title,
+        'label': chartview_label,
+        'title': chartview_title,
         'country': account[0].country,
         'access': access,
         'sensors': sensors,
