@@ -1,0 +1,31 @@
+<!-- templates/home.html-->
+{% extends 'common.html' %}
+
+{% block title %}
+<title> Web Service: Pesquisa</title>
+{% endblock %}
+
+{% block menu %}
+    <ul class="nav navbar-nav">
+      <li><a href="/home">Sensores</a></li>
+      <li class="active"><a href="#">Mapa</a></li>
+    </ul>
+{% endblock %}
+
+
+{% block content %}
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+ 
+<script>
+    {% include "map_world.js" %}
+</script>
+
+<div class="container">
+    <div class="row">
+            <div id="regions_div" style="height: 500px;"></div>
+   </div>
+</div>
+
+</div>
+
+{% endblock %}
