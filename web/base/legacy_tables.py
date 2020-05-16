@@ -10,6 +10,7 @@ from django.db import models
 
 class Accounts(models.Model):
     dt = models.DateTimeField()
+    username = models.CharField(max_length=20, unique=True)
     city = models.CharField(max_length=50)
     state = models.CharField(max_length=2)
     country = models.CharField(max_length=20)
@@ -30,6 +31,7 @@ class Accountsthings(models.Model):
     class Meta:
         managed = False
         db_table = 'accountsthings'
+
 
 class Sensors(models.Model):
     dt = models.DateTimeField()

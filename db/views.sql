@@ -52,8 +52,8 @@ CREATE OR REPLACE VIEW vwAccountsThingsSensorsUnits AS
         INNER JOIN Things T ON T.id = AT.id_thing
         INNER JOIN ThingsData TD ON TD.id_thing = T.id
         INNER JOIN Sensors S ON S.id = TD.id_sensor
-        INNER JOIN SensorsUnits SU ON SU.id_sensor = S.id
-                                  AND SU.isdefault = 'TRUE'
+        LEFT JOIN SensorsUnits SU ON SU.id_sensor = S.id
+                                 AND SU.isdefault = 'TRUE'
     WHERE A.status = 'TRUE'
     ORDER BY A.id, T.id, S.id
     

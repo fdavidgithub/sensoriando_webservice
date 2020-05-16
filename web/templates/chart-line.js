@@ -31,7 +31,7 @@ window.onload = function() {
 
 {% for datum in context.data %}
     {% if datum.id_sensor == sensor.id %}
-        {{ datum.group_value }},
+        parseFloat('{{ datum.group_value }}'.replace(",", ".")),
     {% endif %}
 {% endfor %}
 

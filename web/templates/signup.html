@@ -2,7 +2,7 @@
 {% extends 'common.html' %}
 
 {% block title %}
-<title> Web Service: Entrar</title>
+<title> Web Service: Cadastro</title>
 {% endblock %}
 
 {% block menu %}
@@ -14,11 +14,11 @@
 
 {% block content %}
 
-<h2>Login</h2>
+<h2>SignUp</h2>
 <form method="post">
   {% csrf_token %}
   {{ form.as_p }}
-  <button type="submit">Entrar</button>
+  <button type="submit">Cadastrar</button>
 </form>
 
 {% endblock %}

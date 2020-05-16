@@ -15,14 +15,12 @@ setdatabase() {
     VIEWS=$SQL/views.sql
 
     MSG="Create database... "
-#    createdb -U $DB_USER $DB_NAME
     createdb $DB_NAME
     psql -f $CREATE
     log "$MSG"
 
     MSG="Creating tables from $TABLES"
     if [ -e $TABLES ]; then
-#        psql -U $DB_USER -d $DB_NAME -f $TABLES
         psql -f $TABLES
  
 	MSG="${MSG} OK"
@@ -33,7 +31,6 @@ setdatabase() {
 
     MSG="Creating views from $VIEWS"
     if [ -e $VIEWS ]; then
-#        psql -U $DB_USER -d $DB_NAME -f $VIEWS
         psql -f $VIEWS
 
 	MSG="${MSG} OK"
@@ -44,7 +41,6 @@ setdatabase() {
 
     MSG="Insert records from $INSERTS:"
     if [ -e $INSERTS ]; then
-#        psql -U $DB_USER -d $DB_NAME -f $INSERTS
         psql -f $INSERTS
  
 	MSG="${MSG} OK"
@@ -55,7 +51,6 @@ setdatabase() {
 
     MSG="Creating functions from $FUNCTIONS"
     if [ -e $FUNCTIONS ]; then
-#        psql -U $DB_USER -d $DB_NAME -f $FUNCTIONS
         psql -f $FUNCTIONS
  
 	MSG="${MSG} OK"
@@ -66,7 +61,6 @@ setdatabase() {
 
     MSG="Creating triggers from $TRIGGERS"
     if [ -e $TRIGGERS ]; then
-#        psql -U $DB_USER -d $DB_NAME -f $TRIGGERS
         psql -f $TRIGGERS
  
 	MSG="${MSG} OK"

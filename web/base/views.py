@@ -3,15 +3,51 @@ from django.http import HttpResponse
 from django.template import loader
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.forms import UserCreationForm
+from django.db.models import Count, Avg, Value, CharField
+from django.db.models.functions import Extract, Concat
+from django.contrib.auth import login, authenticate
 
-from django.db.models import Count,Avg,Value,CharField
-from django.db.models.functions import Extract, Concat 
+from .models import Things, Thingsdata, Thingsflags, Sensors, Accounts, Accountsthings, Sensorsunits
+from .models import Vwthingsdata
 
-import unicodecsv
+from .forms import SignUpForm
 
-from .models import Things, Thingsdata, Thingsflags, Sensors, Accounts, Accountsthings, Vwthingsdata, Sensorsunits
+import unicodecsv, datetime
 
-# Create your views here.
+#https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
+def SignUp(request):
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+
+        if form.is_valid():
+            user = form.save()
+
+            city    = form.cleaned_data.get('city')
+            state   = form.cleaned_data.get('state')
+            country = form.cleaned_data.get('country')
+       
+            account = Accounts(
+                        dt=datetime.datetime.today(),
+                        username=user.username,
+                        city=city, 
+                        state=state, 
+                        country=country, 
+                        ispublic=True, 
+                        status=True, 
+                        usetrigger=False
+                      )
+            account.save()
+
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=user.username, password=raw_password)
+            login(request, user)
+            return redirect('home')
+    else:
+        form = SignUpForm()
+    return render(request, 'signup.html', {'form': form})
+
+
 @csrf_exempt
 def topics(request):
     # Monta resposta em CSV
@@ -95,14 +131,14 @@ def RedirectSensoriando(request):
 def SensorDetails(request, id_thing):
     chartview = request.COOKIES.get('chartview')
     if chartview is None:
-        chartview = 's' #default: seconds
+        chartview = 's'     #default
 
     thing = Things.objects.filter(id = id_thing)
     account = Accounts.objects.filter(accountsthings__id_thing = id_thing)
     sensors = Sensors.objects.filter(thingsdata__id_thing = id_thing).distinct()
     units = Sensorsunits.objects.filter(id_sensor__thingsdata__id_thing = id_thing, isdefault=True).distinct()
     data = Vwthingsdata.objects.filter(id_thing = id_thing)
-  
+ 
     if account[0].ispublic:
         access = 'Publico'
     else:
@@ -158,8 +194,6 @@ def SensorDetails(request, id_thing):
         data = data.order_by('group_dt', 'id_sensor')
     else:
         chartview_label = 'ops!!'
-
-    print(data)
 
     context = {
         'thing': thing[0].name,

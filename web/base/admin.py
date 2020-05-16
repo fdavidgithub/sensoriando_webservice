@@ -5,4 +5,6 @@ from .models import Accounts, Things, Sensors
 admin.site.register(Accounts)
 admin.site.register(Things)
 admin.site.register(Sensors)
+#admin.site.register(Profile)
+
 

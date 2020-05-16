@@ -1,12 +1,15 @@
 CREATE TABLE Accounts (
     id          SERIAL NOT NULL PRIMARY KEY,
 	dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    username    VARCHAR(20) NOT NULL,
     city        VARCHAR(50) NOT NULL,
     state       VARCHAR(02) NOT NULL,
-    country     VARCHAR(20) NOT NULL,
+    country     VARCHAR(02) NOT NULL,
     ispublic    BOOLEAN NOT NULL DEFAULT TRUE,
     status      BOOLEAN NOT NULL DEFAULT TRUE,
-    usetrigger  BOOLEAN NOT NULL DEFAULT FALSE
+    usetrigger  BOOLEAN NOT NULL DEFAULT FALSE,
+
+    UNIQUE(username)
 );
 
 CREATE TABLE Things (
