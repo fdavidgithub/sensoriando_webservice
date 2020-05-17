@@ -34,7 +34,12 @@
 <div class="container">
     <div class="row">
         <div class="col-xs-12 col-sm-9">
+
+{% if request.path == '/home/private' %} 
+            <h1>Meus Sensores</h1>
+{% else %}
             <h1>Sensores Públicos</h1>
+{% endif %}
 
 <!-- Sensors list: BEGIN -->
 {% for context in contexts %}

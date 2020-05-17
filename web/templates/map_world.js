@@ -12,7 +12,7 @@
           ['País', 'Sensores'],
 
 {% for context in contexts.countries %}
-        ['{{ context.country }}', {{ context.total }}]
+        ['{{ context.country }}', {{ context.total }}],
 {% endfor %}
 
         ]);

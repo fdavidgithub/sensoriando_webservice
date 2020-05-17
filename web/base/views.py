@@ -8,8 +8,9 @@ from django.db.models import Count, Avg, Value, CharField
 from django.db.models.functions import Extract, Concat
 from django.contrib.auth import login, authenticate
 
-from .models import Things, Thingsdata, Thingsflags, Sensors, Accounts, Accountsthings, Sensorsunits
-from .models import Vwthingsdata
+from .legacy_tables import Things, Thingsdata, Thingsflags, Sensors, Accounts, Accountsthings, Sensorsunits
+from .legacy_views import Vwthingsdata
+from .models import Account
 
 from .forms import SignUpForm
 
@@ -27,7 +28,7 @@ def SignUp(request):
             state   = form.cleaned_data.get('state')
             country = form.cleaned_data.get('country')
        
-            account = Accounts(
+            account = Account(
                         dt=datetime.datetime.today(),
                         username=user.username,
                         city=city, 
@@ -88,6 +89,38 @@ def export_csv(request):
 
     return response
 
+def ListPrivateSensors(request):
+    if request.user.is_authenticated:
+        print("chamar /home")
+
+    accounts = Accounts.objects.filter(username = request.user.username)
+    contexts = []
+
+    for account in accounts:
+        things = Things.objects.filter(accountsthings__id_account = account.id)
+       
+        for thing in things:
+            try:
+                thingdatum = Thingsdata.objects.filter(id_thing = thing.id).latest('id')
+                last_update = thingdatum.dt
+            except:
+                last_update = 'nenhuma'
+
+            sensors = Sensors.objects.filter(thingsdata__id_thing = thing.id).distinct()
+
+            contexts.append({
+                'id': thing.id,
+                'name': thing.name,
+                'city': account.city,
+                'state': account.state,
+                'country': account.country,
+                'last_update': last_update,
+                'flags': Thingsflags.objects.filter(id_thing = thing.id),
+                'sensors': sensors,
+            })
+
+    return render(request, 'home.html', {'contexts': contexts})
+
 def ListPublicSensors(request):
     accounts = Accounts.objects.filter(ispublic = True)
     contexts = []
@@ -125,13 +158,17 @@ def MapSensors(request):
 
     return render(request, 'map.html', {'contexts': contexts})
 
+def MyAccount(request):
+    contexts = []
+
+    return render(request, 'account.html', {'contexts': contexts})
+
 def RedirectSensoriando(request):
     return redirect('http://www.sensoriando.com.br')
 
 def SensorDetails(request, id_thing):
+    CHARTVIEW_DEFAULT = 's'
     chartview = request.COOKIES.get('chartview')
-    if chartview is None:
-        chartview = 's'     #default
 
     thing = Things.objects.filter(id = id_thing)
     account = Accounts.objects.filter(accountsthings__id_thing = id_thing)
@@ -144,6 +181,12 @@ def SensorDetails(request, id_thing):
     else:
         access = 'Privado'
 
+    if data: 
+        if chartview is None:
+            chartview = CHARTVIEW_DEFAULT
+    else:
+        chartview = None
+       
     if chartview == 's':
         chartview_label = data.last().payload_dt.strftime("%d/%m/%Y %H:%M")
         chartview_title = 'Segundos'
@@ -193,8 +236,9 @@ def SensorDetails(request, id_thing):
         data = data.annotate(group_value=Avg('payload_value'))
         data = data.order_by('group_dt', 'id_sensor')
     else:
-        chartview_label = 'ops!!'
-
+        chartview_label = 'ops!!!'
+        chartview_title = 'ops!!!'
+        
     context = {
         'thing': thing[0].name,
         'canva': 'chart-line',
