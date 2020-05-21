@@ -10,7 +10,7 @@ urlpatterns = [
     path('www', views.RedirectSensoriando, name='www'),
     path('sensor/<int:id_thing>', views.SensorDetails, name='sensor'),
     path('signup/', views.SignUp, name='signup'),
-    path('account', views.MyAccount, name='account'),
+    path('account/<str:username>', views.MyAccount, name='account'),
 ]
 
 

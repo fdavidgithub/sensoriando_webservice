@@ -31,6 +31,48 @@
 
 
 {% block content %}
+<script type="text/javascript">
+function setCookie(cname, cvalue, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+
+    var expires = "expires=" + d.toGMTString();
+    var cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+
+    document.cookie = cookie;
+}
+
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+
+    for(var i = 0; i <ca.length; i++) {
+        var c = ca[i];
+    
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+    
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+
+    return "";
+}
+</script>
+
+<script type="text/javascript">
+function getValue(combobox){
+ var cb_name = combobox;
+
+ var selectCtrl = document.getElementById(cb_name);
+ var selectedItem =  selectCtrl.options[selectCtrl.selectedIndex];
+    setCookie(cb_name, selectedItem.value, 365);
+}    
+</script>
+
 <div class="container">
     <div class="row">
         <h1>Minha Conta</h1>
@@ -43,15 +85,73 @@
 
 <div class="tab-content">
     <div class="tab-pane fade active" id="profile">
-        <p>Home tab content ...</p>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.user.as_p }}
+  <button type="submit">Alterar usuário</button>
+</form>
+      
+<hr style="height:2px;border-width:0;color:gray;background-color:gray">
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.profile.as_p }}
+  <button type="submit">Alterar conta</button>
+</form>
+
     </div>
 
     <div class="tab-pane fade" id="things">
-        <p>Profile tab content ...</p>
+ 
+<form method="post">
+  {% csrf_token %}
+  {{ form.uuid.as_p }}
+  <button type="submit">Adicionar</button>
+</form>       
+
+        <table class="table table-striped" >
+            <tr>
+                <th> Nome </th>
+                <th> UUID </th>
+            </tr>
+
+{% for thing in form.things %}
+            <tr>
+                <th> {{ thing.name }} </th>
+                <th> {{ thing.uuid }} </th>
+            </tr>
+{% endfor %}
+            
+          </table>    
     </div>
     
     <div class="tab-pane fade" id="sensors">
-        <p>Messages tab content ...</p>
+        <table class="table table-striped" >
+            <tr>
+                <th> Sensores </th>
+                <th> Unidade </th>
+            </tr>
+
+{% for sensor in form.sensors %}
+            <tr>
+                <th> {{ sensor.name }} </th>
+                <th>
+                    <select name="unit{{ sensor.id }}" id="unit{{ sensor.id }}">
+{% for unit in sensor.units %}
+    {% if sensor.selected == None and unit.isdefault == True or sensor.selected == unit.id %}
+    <option value={{ unit.id }} onclick="javascript:getValue('unit{{ sensor.id }}')" selected>{{ unit.name }} ({{ unit.initial }})</option>
+    {% else %}
+    <option value={{ unit.id }} onclick="javascript:getValue('unit{{ sensor.id }}')">{{ unit.name }} ({{ unit.initial }})</option>
+    {% endif %} 
+{% endfor %}
+                    </select>
+
+                </th>
+            </tr>
+{% endfor %}
+            
+          </table>  
     </div>
 </div>
 

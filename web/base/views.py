@@ -7,12 +7,13 @@ from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Count, Avg, Value, CharField
 from django.db.models.functions import Extract, Concat
 from django.contrib.auth import login, authenticate
+from django.contrib.auth.models import User
 
 from .legacy_tables import Things, Thingsdata, Thingsflags, Sensors, Accounts, Accountsthings, Sensorsunits
 from .legacy_views import Vwthingsdata
 from .models import Account
 
-from .forms import SignUpForm
+from .forms import SignUpForm, AccountForm, UserForm, ThingForm
 
 import unicodecsv, datetime
 
@@ -90,8 +91,8 @@ def export_csv(request):
     return response
 
 def ListPrivateSensors(request):
-    if request.user.is_authenticated:
-        print("chamar /home")
+    if not request.user.is_authenticated:
+        return redirect('/home')
 
     accounts = Accounts.objects.filter(username = request.user.username)
     contexts = []
@@ -158,10 +159,86 @@ def MapSensors(request):
 
     return render(request, 'map.html', {'contexts': contexts})
 
-def MyAccount(request):
-    contexts = []
+def MyAccount(request, username):
+    account = Accounts.objects.get(username = username)
+    things = Things.objects.filter(accountsthings__id_account = account.id)
 
-    return render(request, 'account.html', {'contexts': contexts})
+    things_ids = things.values_list('id', flat=True)
+    sensors = Sensors.objects.filter(thingsdata__id_thing__in = things_ids).distinct()
+
+    sensorlist = []
+    for sensor in sensors:
+        selected = request.COOKIES.get('unit' + str(sensor.id))
+        if selected is not None:
+            selected = int(selected)
+
+        sensorlist.append({
+            'name': sensor.name,
+            'id': sensor.id,
+            'selected': selected,
+            'units': Sensorsunits.objects.filter(id_sensor = sensor.id)
+        })
+
+    form = {
+        'user': AccountUser(request, username),
+        'profile': AccountProfile(request, username),
+        'uuid': AccountThing(request, username),
+        'things': things,
+        'sensors': sensorlist
+    }
+
+    return render(request, 'account.html', {'form': form})
+
+def AccountThing(request, username):
+    if request.method == 'POST':
+        thing = ThingForm(request.POST)
+
+        if thing.is_valid():
+            uuid = thing.cleaned_data.get('uuid')
+
+            thing = Things.objects.get(uuid = uuid)
+            account = Accounts.objects.get(username = username)
+       
+            accountthing = Accountsthings(
+                            dt=datetime.datetime.today(),
+                            id_sensor=thing.id,
+                            id_account=account.id
+                           )
+            accountthing.save()
+
+            return redirect('/account/' + username)
+    else:
+        thing = ThingForm()
+
+    return thing
+
+def AccountUser(request, username):
+    try:
+        instance = User.objects.get(username=username)
+    except:
+        return redirect('/404')
+    
+    user = UserForm(request.POST or None, instance=instance)
+    
+    if user.is_valid():
+        user.save()
+        return redirect('/account/' + username)
+
+    return user
+
+def AccountProfile(request, username):
+    try:
+        instance = Accounts.objects.get(username=username)
+    except:
+        return redirect('/404')
+
+    profile = AccountForm(request.POST or None, instance=instance)
+    
+    if profile.is_valid():
+        profile.save()
+        return redirect('/account/' + username)
+
+    return profile
 
 def RedirectSensoriando(request):
     return redirect('http://www.sensoriando.com.br')

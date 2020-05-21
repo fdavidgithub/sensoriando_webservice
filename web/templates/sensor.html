@@ -1,7 +1,7 @@
 <!-- templates/home.html-->
 {% extends 'common.html' %}
+{% load static %}
 
- 	
 {% block title %}
 <title> Web Service: Visualizar</title>
 {% endblock %}
@@ -29,18 +29,18 @@
 {% endblock %}
 
 {% block content %}
-<script>
+<script type="text/javascript">
     {% include context.chart_file %}
 </script>
 
-<script>
-    function setCookie(cname, cvalue, exdays) {
-        var d = new Date();
-        d.setTime(d.getTime() + (exdays*24*60*60*1000));
-        var expires = "expires=" + d.toGMTString();
-        var cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-        document.cookie = cookie;
-    }
+<script type="text/javascript">
+function setCookie(cname, cvalue, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    var expires = "expires=" + d.toGMTString();
+    var cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    document.cookie = cookie;
+}
 </script>
 
 <div class="container">
