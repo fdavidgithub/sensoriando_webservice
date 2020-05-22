@@ -271,9 +271,10 @@ def SensorDetails(request, id_thing):
         else:
             sensorunit = Sensorsunits.objects.get(id = sensorunit)
  
-        # Get and grouping data of sensor
+        # Get data o sensor
         data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id)
-    
+
+        # Grouping data of sensor
         if data: 
             if chartview is None:
                 chartview = CHARTVIEW_DEFAULT
@@ -332,6 +333,10 @@ def SensorDetails(request, id_thing):
             chartview_label = 'ops!!!'
             chartview_title = 'ops!!!'
  
+        # Recalc to convert
+        for datum in data:
+            datum['group_value'] = round(datum['group_value'] * float(sensorunit.expression), sensorunit.precision)
+
         # Build dict sensor + unit
         sensorslist.append({
             'sensor': sensor,

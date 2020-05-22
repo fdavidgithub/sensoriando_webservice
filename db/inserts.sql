@@ -30,8 +30,8 @@ BEGIN
 		    (State),
             (Sound);
 
-    INSERT INTO SensorsUnits (name, initial, precision, id_sensor, isdefault)
-    VALUES	('Litro',               'l',    3, (SELECT id FROM Sensors WHERE name = Volume), 'TRUE'),
+    INSERT INTO SensorsUnits (name, initial, precision, id_sensor, isdefault, expression)
+    VALUES	('Litro',               'l',    3, (SELECT id FROM Sensors WHERE name = Volume), 'TRUE', 'value * 1'),
             ('Centimetro Cubico',   'cm^3', 3, (SELECT id FROM Sensors WHERE name = Volume), 'FALSE'),
     	    ('Metro Cubico',        'm^3',  3, (SELECT id FROM Sensors WHERE name = Volume), 'FALSE'),
 	        ('Milimitro',           'mm',   2, (SELECT id FROM Sensors WHERE name = Distance), 'FALSE'),
