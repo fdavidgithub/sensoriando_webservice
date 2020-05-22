@@ -272,7 +272,7 @@ def SensorDetails(request, id_thing):
             sensorunit = Sensorsunits.objects.get(id = sensorunit)
  
         # Get and grouping data of sensor
-        data = Vwthingsdata.objects.filter(id_thing = thing.id)
+        data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id)
     
         if data: 
             if chartview is None:
