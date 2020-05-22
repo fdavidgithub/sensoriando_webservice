@@ -18,21 +18,18 @@ window.onload = function() {
             data: {
                 labels: [
 
-{% for datum in context.data %}                
-    {% if datum.id_sensor == sensor.id %}
-        '{{ datum.group_dt }}',
-    {% endif %}
+{% for datum in sensor.data %}                
+                    '{{ datum.group_dt }}',
 {% endfor %}
+
                 ],
                 datasets: [{
 					backgroundColor: window.chartColors.red,
 					borderColor: window.chartColors.red,
 					data: [
 
-{% for datum in context.data %}
-    {% if datum.id_sensor == sensor.id %}
-        parseFloat('{{ datum.group_value }}'.replace(",", ".")),
-    {% endif %}
+{% for datum in sensor.data %}
+                    parseFloat('{{ datum.group_value }}'.replace(",", ".")),
 {% endfor %}
 
                     ],
@@ -67,7 +64,7 @@ window.onload = function() {
 						display: true,
 						scaleLabel: {
 							display: true,
-							labelString: '**unidade**'
+							labelString: '{{ sensor.unit.name }}'
 						}
 					}]
 				}

@@ -136,8 +136,9 @@ def ListPublicSensors(request):
             except:
                 last_update = 'nenhuma'
 
+            sensorlist = []
             sensors = Sensors.objects.filter(thingsdata__id_thing = thing.id).distinct()
-
+            
             contexts.append({
                 'id': thing.id,
                 'name': thing.name,
@@ -244,92 +245,112 @@ def RedirectSensoriando(request):
     return redirect('http://www.sensoriando.com.br')
 
 def SensorDetails(request, id_thing):
+    # Constants
     CHARTVIEW_DEFAULT = 's'
-    chartview = request.COOKIES.get('chartview')
 
-    thing = Things.objects.filter(id = id_thing)
-    account = Accounts.objects.filter(accountsthings__id_thing = id_thing)
+    # Get from cookies
+    chartview = request.COOKIES.get('chartview')
+   
+    # Get data
+    thing = Things.objects.get(id = id_thing)
+    account = Accounts.objects.get(accountsthings__id_thing = id_thing)
     sensors = Sensors.objects.filter(thingsdata__id_thing = id_thing).distinct()
-    units = Sensorsunits.objects.filter(id_sensor__thingsdata__id_thing = id_thing, isdefault=True).distinct()
-    data = Vwthingsdata.objects.filter(id_thing = id_thing)
- 
-    if account[0].ispublic:
+    
+    if account.ispublic:
         access = 'Publico'
     else:
         access = 'Privado'
 
-    if data: 
-        if chartview is None:
-            chartview = CHARTVIEW_DEFAULT
-    else:
-        chartview = None
-       
-    if chartview == 's':
-        chartview_label = data.last().payload_dt.strftime("%d/%m/%Y %H:%M")
-        chartview_title = 'Segundos'
+    sensorslist = []
+    for sensor in sensors:
+        # Get unit select by user
+        sensorunit = request.COOKIES.get('unit' + str(sensor.id))
 
-        data = data.annotate(group_dt=Concat(Extract('payload_dt', 'second'), Value('s'), output_field=CharField()))
-        data = data.values('group_dt', 'id_sensor')
-        data = data.annotate(group_value=Avg('payload_value'))
-        data = data.order_by('group_dt', 'id_sensor') 
-    elif chartview == 'm':
-        chartview_label = data.last().payload_dt.strftime("%d/%m/%Y")
-        chartview_title = 'Minutos'
-
-        data = data.annotate(group_dt=Concat(Extract('payload_dt', 'hour'), Value(':'), Extract('payload_dt', 'minute'), output_field=CharField()))
-        data = data.values('group_dt', 'id_sensor')
-        data = data.annotate(group_value=Avg('payload_value'))
-        data = data.order_by('group_dt', 'id_sensor') 
-    elif chartview == 'h':
-        chartview_label = data.last().payload_dt.strftime("%d/%m/%Y")
-        chartview_title = 'Horas'
-
-        data = data.annotate(group_dt=Concat(Extract('payload_dt', 'hour'), Value('h'), output_field=CharField()))
-        data = data.values('group_dt', 'id_sensor')
-        data = data.annotate(group_value=Avg('payload_value'))
-        data = data.order_by('group_dt', 'id_sensor') 
-    elif chartview == 'd':
-        chartview_label = data.last().payload_dt.strftime("%m/%Y")
-        chartview_title = 'Dias'
-
-        data = data.annotate(group_dt=Extract('payload_dt', 'day'))
-        data = data.values('group_dt', 'id_sensor')
-        data = data.annotate(group_value=Avg('payload_value'))
-        data = data.order_by('group_dt', 'id_sensor')
-    elif chartview == 'M':
-        chartview_label = data.last().payload_dt.strftime("%Y")
-        chartview_title = 'Meses'
-
-        data = data.annotate(group_dt=Extract('payload_dt', 'month'))
-        data = data.values('group_dt', 'id_sensor')
-        data = data.annotate(group_value=Avg('payload_value'))
-        data = data.order_by('group_dt', 'id_sensor')
-    elif chartview == 'y':
-        chartview_label = ''
-        chartview_title = 'Anos'
+        if sensorunit is None:
+            sensorunit = Sensorsunits.objects.get(id_sensor = sensor.id, isdefault = True)
+        else:
+            sensorunit = Sensorsunits.objects.get(id = sensorunit)
  
-        data = data.annotate(group_dt=Extract('payload_dt', 'year'))
-        data = data.values('group_dt', 'id_sensor')
-        data = data.annotate(group_value=Avg('payload_value'))
-        data = data.order_by('group_dt', 'id_sensor')
-    else:
-        chartview_label = 'ops!!!'
-        chartview_title = 'ops!!!'
-        
+        # Get and grouping data of sensor
+        data = Vwthingsdata.objects.filter(id_thing = thing.id)
+    
+        if data: 
+            if chartview is None:
+                chartview = CHARTVIEW_DEFAULT
+        else:
+            chartview = None
+ 
+        if chartview == 's':
+            chartview_label = data.last().payload_dt.strftime("%d/%m/%Y %H:%M")
+            chartview_title = 'Segundos'
+
+            data = data.annotate(group_dt=Concat(Extract('payload_dt', 'second'), Value('s'), output_field=CharField()))
+            data = data.values('group_dt', 'id_sensor')
+            data = data.annotate(group_value=Avg('payload_value'))
+            data = data.order_by('group_dt', 'id_sensor') 
+        elif chartview == 'm':
+            chartview_label = data.last().payload_dt.strftime("%d/%m/%Y")
+            chartview_title = 'Minutos'
+
+            data = data.annotate(group_dt=Concat(Extract('payload_dt', 'hour'), Value(':'), Extract('payload_dt', 'minute'), output_field=CharField()))
+            data = data.values('group_dt', 'id_sensor')
+            data = data.annotate(group_value=Avg('payload_value'))
+            data = data.order_by('group_dt', 'id_sensor') 
+        elif chartview == 'h':
+            chartview_label = data.last().payload_dt.strftime("%d/%m/%Y")
+            chartview_title = 'Horas'
+
+            data = data.annotate(group_dt=Concat(Extract('payload_dt', 'hour'), Value('h'), output_field=CharField()))
+            data = data.values('group_dt', 'id_sensor')
+            data = data.annotate(group_value=Avg('payload_value'))
+            data = data.order_by('group_dt', 'id_sensor') 
+        elif chartview == 'd':
+            chartview_label = data.last().payload_dt.strftime("%m/%Y")
+            chartview_title = 'Dias'
+
+            data = data.annotate(group_dt=Extract('payload_dt', 'day'))
+            data = data.values('group_dt', 'id_sensor')
+            data = data.annotate(group_value=Avg('payload_value'))
+            data = data.order_by('group_dt', 'id_sensor')
+        elif chartview == 'M':
+            chartview_label = data.last().payload_dt.strftime("%Y")
+            chartview_title = 'Meses'
+
+            data = data.annotate(group_dt=Extract('payload_dt', 'month'))
+            data = data.values('group_dt', 'id_sensor')
+            data = data.annotate(group_value=Avg('payload_value'))
+            data = data.order_by('group_dt', 'id_sensor')
+        elif chartview == 'y':
+            chartview_label = ''
+            chartview_title = 'Anos'
+ 
+            data = data.annotate(group_dt=Extract('payload_dt', 'year'))
+            data = data.values('group_dt', 'id_sensor')
+            data = data.annotate(group_value=Avg('payload_value'))
+            data = data.order_by('group_dt', 'id_sensor')
+        else:
+            chartview_label = 'ops!!!'
+            chartview_title = 'ops!!!'
+ 
+        # Build dict sensor + unit
+        sensorslist.append({
+            'sensor': sensor,
+            'unit': sensorunit,
+            'data': data
+        })
+
     context = {
-        'thing': thing[0].name,
+        'thing': thing.name,
         'canva': 'chart-line',
         'chart_file': 'chart-line.js',
-        'city': account[0].city,
-        'state': account[0].state,
+        'city': account.city,
+        'state': account.state,
         'label': chartview_label,
         'title': chartview_title,
-        'country': account[0].country,
+        'country': account.country,
         'access': access,
-        'sensors': sensors,
-        'units': units,
-        'flags': Thingsflags.objects.filter(id_thing = id_thing),
-        'data': data,
+        'sensors': sensorslist,
+        'flags': Thingsflags.objects.filter(id_thing = id_thing)
     }
 
     return render(request, 'sensor.html', {'context': context})

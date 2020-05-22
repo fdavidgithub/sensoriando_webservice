@@ -56,8 +56,8 @@ function setCookie(cname, cvalue, exdays) {
         </div>
 
         <div class="col-xs-6 col-sm-4" style="border-left: 1px solid #ccc;">
-{% for sensor in context.sensors %}
-                {{ sensor.name }}
+{% for detail in context.sensors %}
+                {{ detail.sensor.name }}
 {% endfor %}
             <br>
 
@@ -103,9 +103,9 @@ function setCookie(cname, cvalue, exdays) {
              <th> <a target="_blank" href="#">CSV</a></th>
             </tr>
 
-{% for sensor in context.sensors %}
+{% for detail in context.sensors %}
             <tr>
-                <th> {{ sensor.name }} </th>
+                <th> {{ detail.sensor.name }} </th>
                 <th> <a target="_blank" href="#">CSV</a></th>
             </tr>
 {% endfor %}
@@ -128,12 +128,12 @@ function setCookie(cname, cvalue, exdays) {
 
   
 <!--List Charts: BEGIN-->
-{% for sensor in context.sensors %}
+{% for detail in context.sensors %}
     <div class="col-md-5 col-sm-6 col-xs-12" data-no-turbolink>
         <div class="panel panel-primary">
             <div class="panel-heading ellipsis">
                 <i class="fa fa-bar-chart-o"></i>
-                <b>{{ sensor.name }}</b>
+                <b>{{ detail.sensor.name }}</b>
             </div>
         
             <div class="panel-body">
