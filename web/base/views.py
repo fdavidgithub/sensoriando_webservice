@@ -171,6 +171,8 @@ def MapSensors(request):
     return render(request, 'map.html', {'contexts': contexts})
 
 def MyAccount(request, username):
+    CHARTDEFAULT = 'line'
+
     account = Accounts.objects.get(username = username)
     things = Things.objects.filter(accountsthings__id_account = account.id)
 
@@ -179,14 +181,19 @@ def MyAccount(request, username):
 
     sensorlist = []
     for sensor in sensors:
-        selected = request.COOKIES.get('unit' + str(sensor.id))
-        if selected is not None:
-            selected = int(selected)
+        unitselect = request.COOKIES.get('unit' + str(sensor.id))
+        if unitselect is not None:
+            unitselect = int(unitselect)
+ 
+        chartselect = request.COOKIES.get('chart' + str(sensor.id))
+        if chartselect is None:
+            chartselect = CHARTDEFAULT
 
         sensorlist.append({
             'name': sensor.name,
             'id': sensor.id,
-            'selected': selected,
+            'unitselect': unitselect,
+            'chartselect': chartselect,
             'units': Sensorsunits.objects.filter(id_sensor = sensor.id)
         })
 
@@ -257,6 +264,7 @@ def RedirectSensoriando(request):
 def SensorDetails(request, id_thing):
     # Constants
     CHARTVIEW_DEFAULT = 's'
+    SENSORCHART = 'line'
 
     # Get from cookies
     chartview = request.COOKIES.get('chartview')
@@ -278,12 +286,16 @@ def SensorDetails(request, id_thing):
     for sensor in sensors:
         # Get unit select by user
         sensorunit = request.COOKIES.get('unit' + str(sensor.id))
-
+        sensorchart = request.COOKIES.get('chart' + str(sensor.id))
+ 
         if sensorunit is None:
             sensorunit = Sensorsunits.objects.get(id_sensor = sensor.id, isdefault = True)
         else:
             sensorunit = Sensorsunits.objects.get(id = sensorunit)
- 
+
+        if sensorchart is None:
+            sensorchart = SENSORCHART
+
         # Get data o sensor
         data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id)
 
@@ -354,6 +366,7 @@ def SensorDetails(request, id_thing):
         # Build dict sensor + unit
         sensorslist.append({
             'sensor': sensor,
+            'type': sensorchart,
             'unit': sensorunit,
             'data': data
         })

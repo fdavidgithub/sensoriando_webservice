@@ -65,10 +65,10 @@ function getCookie(cname) {
 
 <script type="text/javascript">
 function getValue(combobox){
- var cb_name = combobox;
-
- var selectCtrl = document.getElementById(cb_name);
- var selectedItem =  selectCtrl.options[selectCtrl.selectedIndex];
+    var cb_name = combobox;
+    var selectCtrl = document.getElementById(cb_name);
+    var selectedItem =  selectCtrl.options[selectCtrl.selectedIndex];
+ 
     setCookie(cb_name, selectedItem.value, 365);
 }    
 </script>
@@ -131,15 +131,17 @@ function getValue(combobox){
             <tr>
                 <th> Sensores </th>
                 <th> Unidade </th>
+                <th> Gráfico </th>
             </tr>
 
 {% for sensor in form.sensors %}
             <tr>
                 <th> {{ sensor.name }} </th>
+
                 <th>
                     <select name="unit{{ sensor.id }}" id="unit{{ sensor.id }}">
 {% for unit in sensor.units %}
-    {% if sensor.selected == None and unit.isdefault == True or sensor.selected == unit.id %}
+    {% if sensor.unitselect == None and unit.isdefault == True or sensor.unitselect == unit.id %}
     <option value={{ unit.id }} onclick="javascript:getValue('unit{{ sensor.id }}')" selected>{{ unit.name }} ({{ unit.initial }})</option>
     {% else %}
     <option value={{ unit.id }} onclick="javascript:getValue('unit{{ sensor.id }}')">{{ unit.name }} ({{ unit.initial }})</option>
@@ -147,6 +149,15 @@ function getValue(combobox){
 {% endfor %}
                     </select>
 
+                </th>
+
+                <th>
+                    <select name="chart{{ sensor.id }}" id="chart{{ sensor.id }}">
+                        <option value="line" onclick="javascript:getValue('chart{{ sensor.id }}')" {% if sensor.chartselect == 'line' %} selected {% endif %}>Linha</option>
+                        <option value="bar" onclick="javascript:getValue('chart{{ sensor.id }}')" {% if sensor.chartselect == 'bar' %} selected {% endif %}>Barra Vertical</option>
+                        <option value="horizontalBar" onclick="javascript:getValue('chart{{ sensor.id }}')" {% if sensor.chartselect == 'horizontalBar' %} selected {% endif %}>Barra Horizontal</option>
+                        <option value="pie" onclick="javascript:getValue('chart{{ sensor.id }}')" {% if sensor.chartselect == 'pie' %} selected {% endif %}>Pizza</option>
+                    </select>
                 </th>
             </tr>
 {% endfor %}

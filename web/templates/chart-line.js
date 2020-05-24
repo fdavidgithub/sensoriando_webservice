@@ -13,7 +13,7 @@ window.onload = function() {
 
 {% for sensor in context.sensors %}
         var config{{ forloop.counter }} = {
-			type: 'line',
+            type: '{{ sensor.type }}',
 			
             data: {
                 labels: [
