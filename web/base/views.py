@@ -95,8 +95,8 @@ def ListPrivateSensors(request):
         return redirect('/home')
 
     accounts = Accounts.objects.filter(username = request.user.username)
-    contexts = []
-
+    
+    datalist = []
     for account in accounts:
         things = Things.objects.filter(accountsthings__id_account = account.id)
        
@@ -109,7 +109,7 @@ def ListPrivateSensors(request):
 
             sensors = Sensors.objects.filter(thingsdata__id_thing = thing.id).distinct()
 
-            contexts.append({
+            datalist.append({
                 'id': thing.id,
                 'name': thing.name,
                 'city': account.city,
@@ -120,12 +120,16 @@ def ListPrivateSensors(request):
                 'sensors': sensors,
             })
 
+    contexts = {
+        'data': datalist
+    }
+           
     return render(request, 'home.html', {'contexts': contexts})
 
 def ListPublicSensors(request):
     accounts = Accounts.objects.filter(ispublic = True)
-    contexts = []
 
+    datalist = []
     for account in accounts:
         things = Things.objects.filter(accountsthings__id_account = account.id)
        
@@ -138,8 +142,8 @@ def ListPublicSensors(request):
 
             sensorlist = []
             sensors = Sensors.objects.filter(thingsdata__id_thing = thing.id).distinct()
-            
-            contexts.append({
+           
+            datalist.append({
                 'id': thing.id,
                 'name': thing.name,
                 'city': account.city,
@@ -149,6 +153,12 @@ def ListPublicSensors(request):
                 'flags': Thingsflags.objects.filter(id_thing = thing.id),
                 'sensors': sensors,
             })
+
+    contexts = {
+        'searchflags': Thingsflags.objects.all().distinct(),
+        'searchsensors': Sensors.objects.all(),
+        'data': datalist
+    }
 
     return render(request, 'home.html', {'contexts': contexts})
 
@@ -262,6 +272,9 @@ def SensorDetails(request, id_thing):
         access = 'Privado'
 
     sensorslist = []
+    chartview_label = None
+    chartview_title = None
+
     for sensor in sensors:
         # Get unit select by user
         sensorunit = request.COOKIES.get('unit' + str(sensor.id))
@@ -335,7 +348,8 @@ def SensorDetails(request, id_thing):
  
         # Recalc to convert
         for datum in data:
-            datum['group_value'] = round(datum['group_value'] * float(sensorunit.expression), sensorunit.precision)
+            pv = datum['group_value'] # Payload value
+            datum['group_value'] = round(eval(sensorunit.expression), sensorunit.precision)
 
         # Build dict sensor + unit
         sensorslist.append({

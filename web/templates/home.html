@@ -42,13 +42,13 @@
 {% endif %}
 
 <!-- Sensors list: BEGIN -->
-{% for context in contexts %}
+{% for context in contexts.data %}
 
 <div class="col-md-5 col-sm-6 col-xs-12" data-no-turbolink>
     <div class="panel panel-primary">
         <div class="panel-heading ellipsis">
           <i class="fa fa-bar-chart-o"></i>
-          <a class="link-no-hover" href="sensor/{{ context.id }}"><b>{{ context.name }}</b></a>
+          <a class="link-no-hover" href="/sensor/{{ context.id }}"><b>{{ context.name }}</b></a>
         </div>
         
         <div class="panel-body">
@@ -68,7 +68,7 @@
             <hr style="height:2px;border-width:0;color:gray;background-color:gray">
         
             <div class="public_channel_tags">
-                <i class="fa fa-tags"></i>
+                <i class="fa fa-dashboard"></i>
 
                 {% for sensor in context.sensors %}
                     <a href="#">{{ sensor.name }}</a>
@@ -91,13 +91,72 @@
             </div>
         </div>
     </div>
+
 </div>
 
 {% endfor %}
 <!-- Sensors list: END -->
 
+
         </div>
+
+{% if request.path == '/home' %} 
+  <div class="col-xs-12 col-sm-3">
+
+      <h1>Filtros</h1>
+
+      <div class="col-pad">
+
+          <div class="form-group">
+            <label for="tag_input"><i class="fa fa-dashboard"></i>&nbsp;</label>
+ 
+            <select name="SearchSensor" id="SearchSensor">
+                <option value=0 selected>Todos sensores</option>
+                {% for searchsensor in contexts.searchsensors %}
+                <option value={{ searchsensor.id }}>{{ searchsensor.name }}</option>
+                {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="tag_input"><i class="fa fa-tags"></i>&nbsp;</label>
+ 
+            <select name="SearchTag" id="SearchTag">
+                <option value=0 selected>Todas tags</option>
+                {% for searchflag in contexts.searchflags %}
+                <option value={{ searchflag.id }}>{{ searchflag.name }}</option>
+                {% endfor %}
+            </select>
+          </div>
+
+          <button type="submit" id="search" class="btn btn-primary btn-sm">OK</button>
+          <button type="submit" id="clear" class="btn btn-primary btn-sm">Limpar</button>
+
+      </div>
+  </div>
+{% else %}
+  <div class="col-xs-12 col-sm-3">
+
+      <h1>Indicadores</h1>
+
+      <div class="col-pad">
+
+          <div class="form-group">
+            <label></label>
+          </div>
+
+          <div class="form-group">
+            <label></label>
+          </div>
+
+
+      </div>
+  </div>
+
+{% endif %}
+
     </div>
+
 </div>
 {% endblock %}
 
