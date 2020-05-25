@@ -1,0 +1,3 @@
+CHART_DEFAULT = 'line'
+CHARTVIEW_DEFAULT = 's'
+
