@@ -4,6 +4,7 @@ from . import views
 #https://learndjango.com/tutorials/django-login-and-logout-tutorial
 urlpatterns = [
     path('', views.ListPublicSensors, name='home'),
+    path('home/search/<str:filterparam>', views.ListPublicSensors, name='home'),
     path('home', views.ListPublicSensors, name='home'),
     path('home/private', views.ListPrivateSensors, name='home'),
     path('map', views.MapSensors, name='map'),

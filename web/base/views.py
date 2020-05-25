@@ -10,11 +10,12 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
 
 from .legacy_tables import Things, Thingsdata, Thingsflags, Sensors, Accounts, Accountsthings, Sensorsunits
-from .legacy_views import Vwthingsdata
+from .legacy_views import Vwthingsdata, Vwaccountsthingssensorsunits
 from .models import Account
 
 from .forms import SignUpForm, AccountForm, UserForm, ThingForm
 
+from .constants import CHART_DEFAULT, CHARTVIEW_DEFAULT
 import unicodecsv, datetime
 
 #https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
@@ -113,6 +114,7 @@ def ListPrivateSensors(request):
                 'id': thing.id,
                 'name': thing.name,
                 'city': account.city,
+                'cityslug': account.city.replace(" ", "-"),
                 'state': account.state,
                 'country': account.country,
                 'last_update': last_update,
@@ -126,9 +128,26 @@ def ListPrivateSensors(request):
            
     return render(request, 'home.html', {'contexts': contexts})
 
-def ListPublicSensors(request):
+def ListPublicSensors(request, filterparam=None):
     accounts = Accounts.objects.filter(ispublic = True)
 
+    filterapply = ''
+    if filterparam is not None:
+        filterparam = filterparam.replace('-', ' ')
+        query=dict(e.split('=') for e in filterparam.split('&'))
+        
+        if "city" in query:
+            filterapply = query['city']
+            accounts = accounts.filter(city = filterapply)
+
+        if "state" in query:
+            filterapply = query['state']
+            accounts = accounts.filter(state = filterapply)
+        
+        if "country" in query:
+            filterapply = query['country']
+            accounts = accounts.filter(country = filterapply)
+ 
     datalist = []
     for account in accounts:
         things = Things.objects.filter(accountsthings__id_account = account.id)
@@ -142,21 +161,39 @@ def ListPublicSensors(request):
 
             sensorlist = []
             sensors = Sensors.objects.filter(thingsdata__id_thing = thing.id).distinct()
-           
-            datalist.append({
-                'id': thing.id,
-                'name': thing.name,
-                'city': account.city,
-                'state': account.state,
-                'country': account.country,
-                'last_update': last_update,
-                'flags': Thingsflags.objects.filter(id_thing = thing.id),
-                'sensors': sensors,
-            })
+            
+            if filterparam is not None:
+                if "sensor" in query:
+                    filterapply = query['sensor']
+                    sensors = sensors.filter(name = filterapply)
+                
+                if "flag" in query:
+                    if "sensor" in query:
+                        filterapply = query['sensor'] + ' e ' + query['flag']
+                    else:
+                        filterapply = query['flag']
+ 
+                    thingsflags = Thingsflags.objects.filter(id_thing = thing.id, name = query['flag'])
+                    thing_ids = thingsflags.values_list('id_thing', flat=True)
+                    sensors = sensors.filter(thingsdata__id_thing__in = thing_ids)
+ 
+            if sensors:
+                datalist.append({
+                    'id': thing.id,
+                    'name': thing.name,
+                    'city': account.city,
+                    'cityslug': account.city.replace(" ", "-"), 
+                    'state': account.state,
+                    'country': account.country,
+                    'last_update': last_update,
+                    'flags': Thingsflags.objects.filter(id_thing = thing.id),
+                    'sensors': sensors,
+                })
 
     contexts = {
         'searchflags': Thingsflags.objects.all().distinct(),
         'searchsensors': Sensors.objects.all(),
+        'filterapply': filterapply, 
         'data': datalist
     }
 
@@ -171,8 +208,6 @@ def MapSensors(request):
     return render(request, 'map.html', {'contexts': contexts})
 
 def MyAccount(request, username):
-    CHARTDEFAULT = 'line'
-
     account = Accounts.objects.get(username = username)
     things = Things.objects.filter(accountsthings__id_account = account.id)
 
@@ -187,7 +222,7 @@ def MyAccount(request, username):
  
         chartselect = request.COOKIES.get('chart' + str(sensor.id))
         if chartselect is None:
-            chartselect = CHARTDEFAULT
+            chartselect = CHART_DEFAULT
 
         sensorlist.append({
             'name': sensor.name,
@@ -262,10 +297,6 @@ def RedirectSensoriando(request):
     return redirect('http://www.sensoriando.com.br')
 
 def SensorDetails(request, id_thing):
-    # Constants
-    CHARTVIEW_DEFAULT = 's'
-    SENSORCHART = 'line'
-
     # Get from cookies
     chartview = request.COOKIES.get('chartview')
    
@@ -294,7 +325,7 @@ def SensorDetails(request, id_thing):
             sensorunit = Sensorsunits.objects.get(id = sensorunit)
 
         if sensorchart is None:
-            sensorchart = SENSORCHART
+            sensorchart = CHART_DEFAULT
 
         # Get data o sensor
         data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id)

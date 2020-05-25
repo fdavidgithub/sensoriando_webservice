@@ -31,6 +31,32 @@
 
 
 {% block content %}
+<script type="text/javascript">
+function setFilter(sensor, tag){
+    var selectSensor = document.getElementById(sensor);
+    var selectTag = document.getElementById(tag);
+    var href="/home/search/";
+
+    var SensorItem = selectSensor.options[selectSensor.selectedIndex];
+    if (SensorItem.value !== "") {
+        var href=href + 'sensor=' + SensorItem.value;
+    }
+
+    var TagItem =  selectTag.options[selectTag.selectedIndex];
+    if (TagItem.value !== "") {
+        if (SensorItem.value == "") {
+            var href=href + 'flag=' + TagItem.value;
+        } else {
+            var href=href + '&flag=' + TagItem.value;
+        }
+    }
+
+    if (href !== "/home/search/") {
+        window.location = href;
+    }
+}    
+</script>
+
 <div class="container">
     <div class="row">
         <div class="col-xs-12 col-sm-9">
@@ -38,7 +64,7 @@
 {% if request.path == '/home/private' %} 
             <h1>Meus Sensores</h1>
 {% else %}
-            <h1>Sensores Públicos</h1>
+            <h1>Sensores Públicos {{ contexts.filterapply }}</h1>
 {% endif %}
 
 <!-- Sensors list: BEGIN -->
@@ -55,14 +81,14 @@
             <div class="row">
                 <div class="col-sm-6 col-xs-6"><b>Cidade</b></div>
                 <div class="col-sm-6 col-xs-6">
-                    <a href="#">{{ context.city }}</a>
-                    <a href="#">{{ context.state }}</a>
+                    <a href="/home/search/city={{ context.cityslug }}">{{ context.city }}</a>
+                    <a href="/home/search/state={{ context.state }}">{{ context.state }}</a>
                 </div>
             </div>
         
             <div class="row">
                 <div class="col-sm-6 col-xs-6"><b>País</b></div>
-                <div class="col-sm-6 col-xs-6"><a href="#">{{ context.country }}</a></div>
+                <div class="col-sm-6 col-xs-6"><a href="/home/search/country={{ context.country }}">{{ context.country }}</a></div>
             </div> 
  
             <hr style="height:2px;border-width:0;color:gray;background-color:gray">
@@ -71,7 +97,7 @@
                 <i class="fa fa-dashboard"></i>
 
                 {% for sensor in context.sensors %}
-                    <a href="#">{{ sensor.name }}</a>
+                    <a href="/home/search/sensor={{ sensor.name }}">{{ sensor.name }}</a>
                 {% endfor %}
             </div>
 
@@ -86,7 +112,7 @@
                 <i class="fa fa-tags"></i>
                 
                 {% for flag in context.flags %}
-                    <a href="#">{{ flag.name }}</a>     
+                    <a href="/home/search/flag={{ flag.name }}">{{ flag.name }}</a>     
                 {% endfor %}
             </div>
         </div>
@@ -100,41 +126,7 @@
 
         </div>
 
-{% if request.path == '/home' %} 
-  <div class="col-xs-12 col-sm-3">
-
-      <h1>Filtros</h1>
-
-      <div class="col-pad">
-
-          <div class="form-group">
-            <label for="tag_input"><i class="fa fa-dashboard"></i>&nbsp;</label>
- 
-            <select name="SearchSensor" id="SearchSensor">
-                <option value=0 selected>Todos sensores</option>
-                {% for searchsensor in contexts.searchsensors %}
-                <option value={{ searchsensor.id }}>{{ searchsensor.name }}</option>
-                {% endfor %}
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="tag_input"><i class="fa fa-tags"></i>&nbsp;</label>
- 
-            <select name="SearchTag" id="SearchTag">
-                <option value=0 selected>Todas tags</option>
-                {% for searchflag in contexts.searchflags %}
-                <option value={{ searchflag.id }}>{{ searchflag.name }}</option>
-                {% endfor %}
-            </select>
-          </div>
-
-          <button type="submit" id="search" class="btn btn-primary btn-sm">OK</button>
-          <button type="submit" id="clear" class="btn btn-primary btn-sm">Limpar</button>
-
-      </div>
-  </div>
-{% else %}
+{% if request.path == '/home/private' %} 
   <div class="col-xs-12 col-sm-3">
 
       <h1>Indicadores</h1>
@@ -152,7 +144,41 @@
 
       </div>
   </div>
+{% else %}
 
+    <div class="col-xs-12 col-sm-3">
+
+      <h1>Filtros</h1>
+
+      <div class="col-pad">
+
+          <div class="form-group">
+            <label for="tag_input"><i class="fa fa-dashboard"></i>&nbsp;</label>
+ 
+            <select name="SearchSensor" id="SearchSensor">
+                <option value="" selected>Todos sensores</option>
+                {% for searchsensor in contexts.searchsensors %}
+                <option value={{ searchsensor.name }}>{{ searchsensor.name }}</option>
+                {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="tag_input"><i class="fa fa-tags"></i>&nbsp;</label>
+ 
+            <select name="SearchTag" id="SearchTag">
+                <option value="" selected>Todas tags</option>
+                {% for searchflag in contexts.searchflags %}
+                <option value={{ searchflag.name }}>{{ searchflag.name }}</option>
+                {% endfor %}
+            </select>
+          </div>
+
+          <button type="button" id="search" onclick="javascript:setFilter('SearchSensor', 'SearchTag');" class="btn btn-primary btn-sm">Aplicar</button>
+          <button type="reset" id="clear" onclick="window.location.href='/home'" class="btn btn-primary btn-sm">Limpar</button>
+
+      </div>
+  </div>
 {% endif %}
 
     </div>
