@@ -22,16 +22,15 @@ class Accounts(models.Model):
         managed = False
         db_table = 'accounts'
 
-
-class Accountsthings(models.Model):
+class Things(models.Model):
     dt = models.DateTimeField()
-    id_account = models.ForeignKey(Accounts, models.DO_NOTHING, db_column='id_account')
-    id_thing = models.ForeignKey('Things', models.DO_NOTHING, db_column='id_thing')
+    name = models.CharField(max_length=30)
+    uuid = models.UUIDField(unique=True)
+    isrelay = models.BooleanField()
 
     class Meta:
         managed = False
-        db_table = 'accountsthings'
-
+        db_table = 'things'
 
 class Sensors(models.Model):
     dt = models.DateTimeField()
@@ -40,6 +39,16 @@ class Sensors(models.Model):
     class Meta:
         managed = False
         db_table = 'sensors'
+
+
+class Accountsthings(models.Model):
+    dt = models.DateTimeField()
+    id_account = models.ForeignKey(Accounts, models.DO_NOTHING, db_column='id_account')
+    id_thing = models.ForeignKey(Things, models.DO_NOTHING, db_column='id_thing')
+
+    class Meta:
+        managed = False
+        db_table = 'accountsthings'
 
 
 class Sensorsparams(models.Model):
@@ -68,16 +77,6 @@ class Sensorsunits(models.Model):
         db_table = 'sensorsunits'
         unique_together = (('id_sensor', 'name'),)
 
-
-class Things(models.Model):
-    dt = models.DateTimeField()
-    name = models.CharField(max_length=30)
-    uuid = models.UUIDField(unique=True)
-    isrelay = models.BooleanField()
-
-    class Meta:
-        managed = False
-        db_table = 'things'
 
 
 class Thingsdata(models.Model):

@@ -88,7 +88,9 @@ CREATE TABLE AccountsThings (
     id          SERIAL NOT NULL PRIMARY KEY,
     dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     id_account  INTEGER NOT NULL REFERENCES Accounts (id),
-    id_thing    INTEGER NOT NULL REFERENCES Things (id)
+    id_thing    INTEGER NOT NULL REFERENCES Things (id),
+
+    UNIQUE (id_account, id_thing)
 );
 
 

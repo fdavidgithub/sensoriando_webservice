@@ -207,6 +207,10 @@ def MapSensors(request):
 
     return render(request, 'map.html', {'contexts': contexts})
 
+def NotFound(request):
+    contexts = []
+    return render(request, '404.html', {'contexts': contexts})
+
 def MyAccount(request, username):
     account = Accounts.objects.get(username = username)
     things = Things.objects.filter(accountsthings__id_account = account.id)
@@ -249,17 +253,21 @@ def AccountThing(request, username):
         if thing.is_valid():
             uuid = thing.cleaned_data.get('uuid')
 
-            thing = Things.objects.get(uuid = uuid)
             account = Accounts.objects.get(username = username)
-       
+            thing = Things.objects.get(uuid = uuid)
+
             accountthing = Accountsthings(
                             dt=datetime.datetime.today(),
-                            id_sensor=thing.id,
-                            id_account=account.id
+                            id_thing=thing,
+                            id_account=account
                            )
             accountthing.save()
+#            thing.dt=datetime.datetime.today()
+#            thing.id_thing=thing
+#            thing.id_account=account
+#            thing.save()
 
-            return redirect('/account/' + username)
+#            return redirect('/account/' + username + '#things')
     else:
         thing = ThingForm()
 
@@ -267,29 +275,29 @@ def AccountThing(request, username):
 
 def AccountUser(request, username):
     try:
-        instance = User.objects.get(username=username)
+        user = User.objects.get(username=username)
     except:
         return redirect('/404')
     
-    user = UserForm(request.POST or None, instance=instance)
+    userform = UserForm(request.POST or None, instance=user)
     
-    if user.is_valid():
-        user.save()
-        return redirect('/account/' + username)
+    if userform.is_valid():
+        userform.save()
+#        return redirect('/account/' + username)
 
-    return user
+    return userform
 
 def AccountProfile(request, username):
     try:
-        instance = Accounts.objects.get(username=username)
+        account = Accounts.objects.get(username=username)
     except:
         return redirect('/404')
 
-    profile = AccountForm(request.POST or None, instance=instance)
+    profile = AccountForm(request.POST or None, instance=account)
     
     if profile.is_valid():
         profile.save()
-        return redirect('/account/' + username)
+#        return redirect('/account/' + username)
 
     return profile
 
