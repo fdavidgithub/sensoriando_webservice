@@ -114,12 +114,17 @@ function getValue(combobox){
             <tr>
                 <th> Nome </th>
                 <th> UUID </th>
+                <th> Configurações </tr>
             </tr>
 
 {% for thing in form.things %}
             <tr>
                 <th> {{ thing.name }} </th>
                 <th> {{ thing.uuid }} </th>
+                <th>
+                    <button type="button" disabled>Parametros</button> 
+                </th>
+                </th>
             </tr>
 {% endfor %}
             
@@ -131,7 +136,9 @@ function getValue(combobox){
             <tr>
                 <th> Sensores </th>
                 <th> Unidade </th>
-                <th> Gráfico </th>
+                <th> Precisão </th>
+                <th> Exibição (Gráfico/Widget) </th>
+                <th> Configuração </th>
             </tr>
 
 {% for sensor in form.sensors %}
@@ -152,12 +159,29 @@ function getValue(combobox){
                 </th>
 
                 <th>
+                    <select name="precision{{ sensor.id }}" id="precision{{ sensor.id }}">
+{% for i in form.precision %}
+{{ sensor.precisionselect }}
+    {% if sensor.precisionselect == i %}
+                        <option value={{ i }} onclick="javascript:getValue('precision{{ sensor.id }}')" selected>{{ i }}</option>
+    {% else %}
+                        <option value={{ i }} onclick="javascript:getValue('precision{{ sensor.id }}')">{{ i }}</option>
+    {% endif %}
+{% endfor %}
+                    </select>
+                </th>
+
+                <th>
                     <select name="chart{{ sensor.id }}" id="chart{{ sensor.id }}">
                         <option value="line" onclick="javascript:getValue('chart{{ sensor.id }}')" {% if sensor.chartselect == 'line' %} selected {% endif %}>Linha</option>
                         <option value="bar" onclick="javascript:getValue('chart{{ sensor.id }}')" {% if sensor.chartselect == 'bar' %} selected {% endif %}>Barra Vertical</option>
                         <option value="horizontalBar" onclick="javascript:getValue('chart{{ sensor.id }}')" {% if sensor.chartselect == 'horizontalBar' %} selected {% endif %}>Barra Horizontal</option>
                         <option value="pie" onclick="javascript:getValue('chart{{ sensor.id }}')" {% if sensor.chartselect == 'pie' %} selected {% endif %}>Pizza</option>
                     </select>
+                </th>
+
+                <th>
+                    <button type="button" disabled>Parametros</button> 
                 </th>
             </tr>
 {% endfor %}

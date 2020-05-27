@@ -228,11 +228,16 @@ def MyAccount(request, username):
         if chartselect is None:
             chartselect = CHART_DEFAULT
 
+        precisionselect = request.COOKIES.get('precision' + str(sensor.id))
+        if precisionselect is None:
+            precisionselect = Sensorsunits.objects.get(isdefault = True, id_sensor = sensor.id).precision
+
         sensorlist.append({
             'name': sensor.name,
             'id': sensor.id,
             'unitselect': unitselect,
             'chartselect': chartselect,
+            'precisionselect': int(precisionselect),
             'units': Sensorsunits.objects.filter(id_sensor = sensor.id)
         })
 
@@ -240,6 +245,7 @@ def MyAccount(request, username):
         'user': AccountUser(request, username),
         'profile': AccountProfile(request, username),
         'uuid': AccountThing(request, username),
+        'precision': range(5),
         'things': things,
         'sensors': sensorlist
     }
@@ -326,6 +332,7 @@ def SensorDetails(request, id_thing):
         # Get unit select by user
         sensorunit = request.COOKIES.get('unit' + str(sensor.id))
         sensorchart = request.COOKIES.get('chart' + str(sensor.id))
+        sensorprecision = int(request.COOKIES.get('precision' + str(sensor.id)))
  
         if sensorunit is None:
             sensorunit = Sensorsunits.objects.get(id_sensor = sensor.id, isdefault = True)
@@ -334,6 +341,9 @@ def SensorDetails(request, id_thing):
 
         if sensorchart is None:
             sensorchart = CHART_DEFAULT
+
+        if sensorprecision is None:
+            sensorprecision = Sensorsunits.objects.get(id_sensor = sensor.id, isdefault = True).precision
 
         # Get data o sensor
         data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id)
@@ -400,7 +410,7 @@ def SensorDetails(request, id_thing):
         # Recalc to convert
         for datum in data:
             pv = datum['group_value'] # Payload value
-            datum['group_value'] = round(eval(sensorunit.expression), sensorunit.precision)
+            datum['group_value'] = round(eval(sensorunit.expression), sensorprecision)
 
         # Build dict sensor + unit
         sensorslist.append({
