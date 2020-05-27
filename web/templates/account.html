@@ -89,17 +89,10 @@ function getValue(combobox){
 <form method="post">
   {% csrf_token %}
   {{ form.user.as_p }}
-  <button type="submit">Alterar usuário</button>
+  {{ form.profile.as_p }}
+  <button name="profileform" type="submit">Alterar</button>
 </form>
       
-<hr style="height:2px;border-width:0;color:gray;background-color:gray">
-
-<form method="post">
-  {% csrf_token %}
-  {{ form.profile.as_p }}
-  <button type="submit">Alterar conta</button>
-</form>
-
     </div>
 
     <div class="tab-pane fade" id="things">
@@ -107,7 +100,7 @@ function getValue(combobox){
 <form method="post">
   {% csrf_token %}
   {{ form.uuid.as_p }}
-  <button type="submit">Adicionar</button>
+  <button name="thingform" type="submit">Adicionar</button>
 </form>       
 
         <table class="table table-striped" >
@@ -122,7 +115,7 @@ function getValue(combobox){
                 <th> {{ thing.name }} </th>
                 <th> {{ thing.uuid }} </th>
                 <th>
-                    <button type="button" disabled>Parametros</button> 
+                    <button name="thingparam{{ thing.id }}" type="button" disabled>Parâmetros</button> 
                 </th>
                 </th>
             </tr>
@@ -161,7 +154,6 @@ function getValue(combobox){
                 <th>
                     <select name="precision{{ sensor.id }}" id="precision{{ sensor.id }}">
 {% for i in form.precision %}
-{{ sensor.precisionselect }}
     {% if sensor.precisionselect == i %}
                         <option value={{ i }} onclick="javascript:getValue('precision{{ sensor.id }}')" selected>{{ i }}</option>
     {% else %}
@@ -181,7 +173,7 @@ function getValue(combobox){
                 </th>
 
                 <th>
-                    <button type="button" disabled>Parametros</button> 
+                    <button name="sensorparam{{ sensor.id }}" type="button" disabled>Parâmetros</button> 
                 </th>
             </tr>
 {% endfor %}

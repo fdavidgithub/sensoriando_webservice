@@ -15,7 +15,7 @@ from .models import Account
 
 from .forms import SignUpForm, AccountForm, UserForm, ThingForm
 
-from .constants import CHART_DEFAULT, CHARTVIEW_DEFAULT
+from .constants import CHART_DEFAULT, CHARTVIEW_DEFAULT, MAX_PRECISION
 import unicodecsv, datetime
 
 #https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
@@ -231,13 +231,15 @@ def MyAccount(request, username):
         precisionselect = request.COOKIES.get('precision' + str(sensor.id))
         if precisionselect is None:
             precisionselect = Sensorsunits.objects.get(isdefault = True, id_sensor = sensor.id).precision
-
+        else:
+            precisionselect = int(precisionselect)
+        
         sensorlist.append({
             'name': sensor.name,
             'id': sensor.id,
             'unitselect': unitselect,
             'chartselect': chartselect,
-            'precisionselect': int(precisionselect),
+            'precisionselect': precisionselect,
             'units': Sensorsunits.objects.filter(id_sensor = sensor.id)
         })
 
@@ -245,7 +247,7 @@ def MyAccount(request, username):
         'user': AccountUser(request, username),
         'profile': AccountProfile(request, username),
         'uuid': AccountThing(request, username),
-        'precision': range(5),
+        'precision': range(MAX_PRECISION),
         'things': things,
         'sensors': sensorlist
     }
@@ -253,9 +255,8 @@ def MyAccount(request, username):
     return render(request, 'account.html', {'form': form})
 
 def AccountThing(request, username):
-    if request.method == 'POST':
-        thing = ThingForm(request.POST)
-
+    thing = ThingForm(request.POST)
+    if request.method == 'POST' and 'thingform' in request.POST:
         if thing.is_valid():
             uuid = thing.cleaned_data.get('uuid')
 
@@ -274,8 +275,6 @@ def AccountThing(request, username):
 #            thing.save()
 
 #            return redirect('/account/' + username + '#things')
-    else:
-        thing = ThingForm()
 
     return thing
 
@@ -284,13 +283,13 @@ def AccountUser(request, username):
         user = User.objects.get(username=username)
     except:
         return redirect('/404')
-    
-    userform = UserForm(request.POST or None, instance=user)
-    
-    if userform.is_valid():
-        userform.save()
-#        return redirect('/account/' + username)
 
+    userform = UserForm(request.POST or None, instance=user)
+    if request.method == 'POST' and 'profileform' in request.POST:
+        if userform.is_valid():
+            userform.save()
+#        return redirect('/account/' + username)
+    
     return userform
 
 def AccountProfile(request, username):
@@ -300,9 +299,9 @@ def AccountProfile(request, username):
         return redirect('/404')
 
     profile = AccountForm(request.POST or None, instance=account)
-    
-    if profile.is_valid():
-        profile.save()
+    if request.method == 'POST' and 'profileform' in request.POST:
+        if profile.is_valid():
+            profile.save()
 #        return redirect('/account/' + username)
 
     return profile
@@ -332,7 +331,7 @@ def SensorDetails(request, id_thing):
         # Get unit select by user
         sensorunit = request.COOKIES.get('unit' + str(sensor.id))
         sensorchart = request.COOKIES.get('chart' + str(sensor.id))
-        sensorprecision = int(request.COOKIES.get('precision' + str(sensor.id)))
+        sensorprecision = request.COOKIES.get('precision' + str(sensor.id))
  
         if sensorunit is None:
             sensorunit = Sensorsunits.objects.get(id_sensor = sensor.id, isdefault = True)
@@ -344,7 +343,8 @@ def SensorDetails(request, id_thing):
 
         if sensorprecision is None:
             sensorprecision = Sensorsunits.objects.get(id_sensor = sensor.id, isdefault = True).precision
-
+        else:
+            sensorprecision = int(sensorprecision)
         # Get data o sensor
         data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id)
 

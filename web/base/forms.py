@@ -41,7 +41,7 @@ class UserForm(ModelForm):
         fields = ('first_name', 'last_name', 'email' )
 
 class ThingForm(ModelForm):
-    uuid = forms.UUIDField(required=True, help_text='Obrigatório.', label='Novo UUID')
+    uuid = forms.UUIDField(required=True, help_text='Digite o UUID, obrigatório.', label='Nova central')
 
     def clean_uuid(self):
         uuid = self.cleaned_data.get('uuid')

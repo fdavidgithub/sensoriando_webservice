@@ -1,11 +1,10 @@
 CHART_DEFAULT = 'line'
 CHARTVIEW_DEFAULT = 's'
 
+MAX_PRECISION = 5
+
 COUNTRY_CHOICES= [
     ('BR', 'Brasil'),
-    ('US', 'Estados Unidos'),
-    ('MX', 'Mexico'),
-    ('JP', 'Japão'),
 ]
 
 BRAZIL_STATES_CHOICES = [
