@@ -13,7 +13,7 @@ class Accounts(models.Model):
     username = models.CharField(max_length=20, unique=True)
     city = models.CharField(max_length=50)
     state = models.CharField(max_length=2)
-    country = models.CharField(max_length=20)
+    country = models.CharField(max_length=2)
     ispublic = models.BooleanField()
     status = models.BooleanField()
     usetrigger = models.BooleanField()

@@ -11,7 +11,6 @@ DECLARE
     Pressure        VARCHAR := 'Pressão';
     Force           VARCHAR := 'Força';
     Power           VARCHAR := 'Potência';
-    State           VARCHAR := 'Estado';
     Sound           VARCHAR := 'Som';
 
 BEGIN
@@ -27,40 +26,37 @@ BEGIN
 	        (Pressure),
 	        (Force),
             (Power),
-		    (State),
             (Sound);
 
     INSERT INTO SensorsUnits (name, initial, precision, id_sensor, isdefault, expression)
-    VALUES	('Litro',               'l',    3, (SELECT id FROM Sensors WHERE name = Volume), 'TRUE', 'value * 1'),
-            ('Centimetro Cubico',   'cm^3', 3, (SELECT id FROM Sensors WHERE name = Volume), 'FALSE'),
-    	    ('Metro Cubico',        'm^3',  3, (SELECT id FROM Sensors WHERE name = Volume), 'FALSE'),
-	        ('Milimitro',           'mm',   2, (SELECT id FROM Sensors WHERE name = Distance), 'FALSE'),
-	        ('Centimetro',          'cm',   2, (SELECT id FROM Sensors WHERE name = Distance), 'FALSE'),
-	        ('Metro',               'm',    2, (SELECT id FROM Sensors WHERE name = Distance), 'TRUE'),
-	        ('Kilometro',           'km',   2, (SELECT id FROM Sensors WHERE name = Distance), 'FALSE'),
-	        ('Celsio',              'ºC',   2, (SELECT id FROM Sensors WHERE name = Temperature), 'TRUE'),
-	        ('Farenhit',            'ºF',   2, (SELECT id FROM Sensors WHERE name = Temperature), 'FALSE'),
-	        ('Kelvin',              'K',    2, (SELECT id FROM Sensors WHERE name = Temperature), 'FALSE'),
-	        ('Grama',               'g',    3, (SELECT id FROM Sensors WHERE name = Mass), 'FALSE'),
-	        ('Kilo',                'kg',   3, (SELECT id FROM Sensors WHERE name = Mass), 'TRUE'),
-	        ('Tonelada',            't',    2, (SELECT id FROM Sensors WHERE name = Mass), 'FALSE'),
-	        ('Segundo',             's',    3, (SELECT id FROM Sensors WHERE name = Time), 'TRUE'),
-	        ('Minuto',              'min',  2, (SELECT id FROM Sensors WHERE name = Time), 'FALSE'),
-	        ('Hora',                'h',    2, (SELECT id FROM Sensors WHERE name = Time), 'FALSE'),
-	        ('Ampere',              'A',    2, (SELECT id FROM Sensors WHERE name = CurrentEletric), 'TRUE'),
-	        ('Volts',               'V',    2, (SELECT id FROM Sensors WHERE name = EletricTension), 'TRUE'),
-	        ('Lumens',              'lm',   2, (SELECT id FROM Sensors WHERE name = LightIntensity), 'TRUE'),
-	        ('Gigapascal',          'GPa',  3, (SELECT id FROM Sensors WHERE name = Pressure), 'FALSE'),
-	        ('Megapascal',          'MPa',  3, (SELECT id FROM Sensors WHERE name = Pressure), 'FALSE'),
-	        ('Kilopascal',          'kPa',  3, (SELECT id FROM Sensors WHERE name = Pressure), 'FALSE'),
-	        ('Pascal',              'Pa',   2, (SELECT id FROM Sensors WHERE name = Pressure), 'TRUE'),
-	        ('Newton',              'N',    2, (SELECT id FROM Sensors WHERE name = Force), 'TRUE'),
-	        ('Kilograma força',     'Kgf',  3, (SELECT id FROM Sensors WHERE name = Force), 'FALSE'),
-            ('Watt',                'W',    2, (SELECT id FROM Sensors WHERE name = Power), 'TRUE'),
-	        ('Miliwatt',            'mW',   3, (SELECT id FROM Sensors WHERE name = Power), 'FALSE'),
-		    ('Ligado/Desligado',    NULL,   0, (SELECT id FROM Sensors WHERE name = State), 'FALSE'),
-		    ('Aberto/Fechado',      NULL,   0, (SELECT id FROM Sensors WHERE name = State), 'FALSE'),
-		    ('Decibeis',            'dB',   0, (SELECT id FROM Sensors WHERE name = Sound), 'TRUE');
+    VALUES	('Litro',               'l',    3, (SELECT id FROM Sensors WHERE name = Volume), 'TRUE', 'pv'),
+            ('Centimetro Cubico',   'cm^3', 3, (SELECT id FROM Sensors WHERE name = Volume), 'FALSE', 'pv * 1000'),
+    	    ('Metro Cubico',        'm^3',  3, (SELECT id FROM Sensors WHERE name = Volume), 'FALSE', 'pv / 1000'),
+	        ('Milimitro',           'mm',   2, (SELECT id FROM Sensors WHERE name = Distance), 'FALSE', 'pv * 1000'),
+	        ('Centimetro',          'cm',   2, (SELECT id FROM Sensors WHERE name = Distance), 'FALSE', 'pv * 100'),
+	        ('Metro',               'm',    2, (SELECT id FROM Sensors WHERE name = Distance), 'TRUE', 'pv'),
+	        ('Kilometro',           'km',   2, (SELECT id FROM Sensors WHERE name = Distance), 'FALSE', 'pv / 1000'),
+	        ('Celsio',              'ºC',   2, (SELECT id FROM Sensors WHERE name = Temperature), 'TRUE', 'pv'),
+	        ('Farenhit',            'ºF',   2, (SELECT id FROM Sensors WHERE name = Temperature), 'FALSE', 'pv * 9 / 5 + 32'),
+	        ('Kelvin',              'K',    2, (SELECT id FROM Sensors WHERE name = Temperature), 'FALSE', 'pv + 273.15'),
+	        ('Grama',               'g',    3, (SELECT id FROM Sensors WHERE name = Mass), 'FALSE', 'pv * 1000'),
+	        ('Kilo',                'kg',   3, (SELECT id FROM Sensors WHERE name = Mass), 'TRUE', 'pv'),
+	        ('Tonelada',            't',    2, (SELECT id FROM Sensors WHERE name = Mass), 'FALSE', 'pv / 1000'),
+	        ('Segundo',             's',    3, (SELECT id FROM Sensors WHERE name = Time), 'TRUE', 'pv'),
+	        ('Minuto',              'min',  2, (SELECT id FROM Sensors WHERE name = Time), 'FALSE', 'pv / 60'),
+	        ('Hora',                'h',    2, (SELECT id FROM Sensors WHERE name = Time), 'FALSE', 'pv / 120'),
+	        ('Ampere',              'A',    2, (SELECT id FROM Sensors WHERE name = CurrentEletric), 'TRUE', 'pv'),
+	        ('Volts',               'V',    2, (SELECT id FROM Sensors WHERE name = EletricTension), 'TRUE', 'pv'),
+	        ('Lumens',              'lm',   2, (SELECT id FROM Sensors WHERE name = LightIntensity), 'TRUE', 'pv'),
+	        ('Gigapascal',          'GPa',  3, (SELECT id FROM Sensors WHERE name = Pressure), 'FALSE', 'pv / 1000000000'),
+	        ('Megapascal',          'MPa',  3, (SELECT id FROM Sensors WHERE name = Pressure), 'FALSE', 'pv / 1000000'),
+	        ('Kilopascal',          'kPa',  3, (SELECT id FROM Sensors WHERE name = Pressure), 'FALSE', 'pv / 1000'),
+	        ('Pascal',              'Pa',   2, (SELECT id FROM Sensors WHERE name = Pressure), 'TRUE', 'pv'),
+	        ('Newton',              'N',    2, (SELECT id FROM Sensors WHERE name = Force), 'TRUE', 'pv'),
+	        ('Kilograma força',     'Kgf',  3, (SELECT id FROM Sensors WHERE name = Force), 'FALSE', 'pv * 0.101972'),
+            ('Watt',                'W',    2, (SELECT id FROM Sensors WHERE name = Power), 'TRUE', 'pv'),
+	        ('Miliwatt',            'mW',   3, (SELECT id FROM Sensors WHERE name = Power), 'FALSE', 'pv * 1000'),
+		    ('Decibeis',            'dB',   0, (SELECT id FROM Sensors WHERE name = Sound), 'TRUE', 'pv');
 
 END;
 $$ LANGUAGE plpgsql;

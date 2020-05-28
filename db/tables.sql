@@ -16,7 +16,7 @@ CREATE TABLE Things (
     id          SERIAL NOT NULL PRIMARY KEY,
     dt          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     name        VARCHAR(30) NOT NULL,
-    uuid        UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4(), --MD5(random()::text),
+    uuid        UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4(), 
     isrelay     BOOLEAN NOT NULL DEFAULT FALSE,
 
     UNIQUE (uuid)
@@ -57,7 +57,7 @@ CREATE TABLE SensorsUnits (
 	initial     VARCHAR(5),
 	precision   SMALLINT,
     isdefault   BOOLEAN NOT NULL DEFAULT FALSE,
-    expression  VARCHAR(255),
+    expression  VARCHAR(255) NOT NULL DEFAULT 'pv', --pv: PayloadValue
 
     UNIQUE (id_sensor, name)
 );
