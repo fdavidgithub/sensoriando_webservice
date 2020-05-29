@@ -93,14 +93,14 @@ class Thingsdata(models.Model):
         unique_together = (('id_thing', 'id_sensor', 'payload'),)
 
 
-class Thingsflags(models.Model):
+class Thingstags(models.Model):
     dt = models.DateTimeField()
     id_thing = models.ForeignKey(Things, models.DO_NOTHING, db_column='id_thing')
     name = models.CharField(max_length=30)
 
     class Meta:
         managed = False
-        db_table = 'thingsflags'
+        db_table = 'thingstags'
         unique_together = (('id_thing', 'name'),)
 
 

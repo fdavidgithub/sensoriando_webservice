@@ -19,7 +19,7 @@ QOS=1		# 0, 1 or 2
 RETAINED=1 	# 1 true or 0 false
 
 VALUE=$(((RANDOM % 100) +1))
-DATE=$(date '+%Y%m%d%H%M%S')
+DATE=$(date -u '+%Y%m%d%H%M%S')
 
 PAYLOAD="{\"dt\": \"$DATE\", \"value\": $VALUE}"
 USER=fdavid

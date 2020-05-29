@@ -8,7 +8,7 @@ CREATE OR REPLACE VIEW vwThingsData AS
             TD.retained,
 
             CASE WHEN TD.payload->>'dt' IS NOT NULL 
-                THEN TO_TIMESTAMP(REPLACE(CAST(TD.payload->>'dt' AS TEXT), '"', ''), 'YYYYMMDDHH24MISS')
+                THEN TIMEZONE('UTC', CAST(TO_TIMESTAMP(TD.payload->>'dt', 'YYYYMMDDHH24MISS') AS VARCHAR)::TIMESTAMP)
                 ELSE TD.dt
             END AS payload_dt,
 

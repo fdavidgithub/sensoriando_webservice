@@ -9,7 +9,7 @@ from django.db.models.functions import Extract, Concat
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
 
-from .legacy_tables import Things, Thingsdata, Thingsflags, Sensors, Accounts, Accountsthings, Sensorsunits
+from .legacy_tables import Things, Thingsdata, Thingstags, Sensors, Accounts, Accountsthings, Sensorsunits
 from .legacy_views import Vwthingsdata, Vwaccountsthingssensorsunits
 from .models import Account
 
@@ -118,7 +118,7 @@ def ListPrivateSensors(request):
                 'state': account.state,
                 'country': account.country,
                 'last_update': last_update,
-                'flags': Thingsflags.objects.filter(id_thing = thing.id),
+                'tags': Thingstags.objects.filter(id_thing = thing.id),
                 'sensors': sensors,
             })
 
@@ -173,8 +173,8 @@ def ListPublicSensors(request, filterparam=None):
                     else:
                         filterapply = query['flag']
  
-                    thingsflags = Thingsflags.objects.filter(id_thing = thing.id, name = query['flag'])
-                    thing_ids = thingsflags.values_list('id_thing', flat=True)
+                    thingstags = Thingstags.objects.filter(id_thing = thing.id, name = query['flag'])
+                    thing_ids = thingstags.values_list('id_thing', flat=True)
                     sensors = sensors.filter(thingsdata__id_thing__in = thing_ids)
  
             if sensors:
@@ -186,12 +186,12 @@ def ListPublicSensors(request, filterparam=None):
                     'state': account.state,
                     'country': account.country,
                     'last_update': last_update,
-                    'flags': Thingsflags.objects.filter(id_thing = thing.id),
+                    'tags': Thingstags.objects.filter(id_thing = thing.id),
                     'sensors': sensors,
                 })
 
     contexts = {
-        'searchflags': Thingsflags.objects.all().distinct(),
+        'searchtags': Thingstags.objects.all().distinct(),
         'searchsensors': Sensors.objects.all(),
         'filterapply': filterapply, 
         'data': datalist
@@ -431,7 +431,7 @@ def SensorDetails(request, id_thing):
         'country': account.country,
         'access': access,
         'sensors': sensorslist,
-        'flags': Thingsflags.objects.filter(id_thing = id_thing)
+        'tags': Thingstags.objects.filter(id_thing = id_thing)
     }
 
     return render(request, 'sensor.html', {'context': context})
