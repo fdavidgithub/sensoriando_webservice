@@ -211,8 +211,13 @@ def NotFound(request):
     contexts = []
     return render(request, '404.html', {'contexts': contexts})
 
-def MyAccount(request, username):
-    account = Accounts.objects.get(username = username)
+def MyAccount(request, username, tab):
+    try:
+        account = Accounts.objects.get(username = username)
+        user = User.objects.get(username=username)
+    except ObjectDoesNotExist:
+        return redirect('/home')
+
     things = Things.objects.filter(accountsthings__id_account = account.id)
 
     things_ids = things.values_list('id', flat=True)
@@ -243,22 +248,27 @@ def MyAccount(request, username):
             'units': Sensorsunits.objects.filter(id_sensor = sensor.id)
         })
 
-    form = {
-        'user': AccountUser(request, username),
-        'profile': AccountProfile(request, username),
-        'uuid': AccountThing(request, username),
-        'precision': range(MAX_PRECISION),
-        'things': things,
-        'sensors': sensorlist
-    }
+    if request.method == 'POST' and 'profileform' in request.POST:
+        userform = UserForm(request.POST, instance=user)
+ 
+        if userform.is_valid():
+            userform.save()
+    else:
+        userform = UserForm(None, instance=user)
+ 
+    if request.method == 'POST' and 'profileform' in request.POST:
+        profileform = AccountForm(request.POST, instance=account)
+ 
+        if profileform.is_valid():
+            profileform.save()
+    else:
+        profileform = AccountForm(None, instance=account)
 
-    return render(request, 'account.html', {'form': form})
-
-def AccountThing(request, username):
-    thing = ThingForm(request.POST)
     if request.method == 'POST' and 'thingform' in request.POST:
-        if thing.is_valid():
-            uuid = thing.cleaned_data.get('uuid')
+        thingform = ThingForm(request.POST)
+
+        if thingform.is_valid():
+            uuid = thingform.cleaned_data.get('uuid')
 
             account = Accounts.objects.get(username = username)
             thing = Things.objects.get(uuid = uuid)
@@ -273,38 +283,23 @@ def AccountThing(request, username):
 #            thing.id_thing=thing
 #            thing.id_account=account
 #            thing.save()
+            return redirect('/account/' + username + '/things')
+        else:
+            tab = 'things'
+    else:
+        thingform = ThingForm()
+ 
+    form = {
+        'user': userform,
+        'profile': profileform,
+        'thing': thingform,
+        'precision': range(MAX_PRECISION),
+        'active': tab,
+        'things': things,
+        'sensors': sensorlist
+    }
 
-#            return redirect('/account/' + username + '#things')
-
-    return thing
-
-def AccountUser(request, username):
-    try:
-        user = User.objects.get(username=username)
-    except:
-        return redirect('/404')
-
-    userform = UserForm(request.POST or None, instance=user)
-    if request.method == 'POST' and 'profileform' in request.POST:
-        if userform.is_valid():
-            userform.save()
-#        return redirect('/account/' + username)
-    
-    return userform
-
-def AccountProfile(request, username):
-    try:
-        account = Accounts.objects.get(username=username)
-    except:
-        return redirect('/404')
-
-    profile = AccountForm(request.POST or None, instance=account)
-    if request.method == 'POST' and 'profileform' in request.POST:
-        if profile.is_valid():
-            profile.save()
-#        return redirect('/account/' + username)
-
-    return profile
+    return render(request, 'account.html', {'form': form})
 
 def RedirectSensoriando(request):
     return redirect('http://www.sensoriando.com.br')

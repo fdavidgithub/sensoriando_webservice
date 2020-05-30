@@ -39,7 +39,7 @@
                 <ul class="nav navbar-nav navbar-right">
 
 {% if user.is_authenticated %}
-    <li><a href="/account/{{ user.username }}"><span class="glyphicon glyphicon-user"></span> {{ user.username }}</a></li>
+    <li><a href="/account/{{ user.username }}/profile"><span class="glyphicon glyphicon-user"></span> {{ user.username }}</a></li>
     <li><a href="{% url 'logout' %}"><span class="glyphicon glyphicon-log-out"></span> Sair</a></li>
 {% else %}
     <li><a href="/signup"><span class="glyphicon glyphicon-user"></span> Cadastrar</a></li>

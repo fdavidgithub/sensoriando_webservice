@@ -77,14 +77,15 @@ function getValue(combobox){
     <div class="row">
         <h1>Minha Conta</h1>
 
-<ul class="nav nav-tabs">
-    <li class="active"><a href="#profile" class="nav-link active" data-toggle="tab">Perfil</a></li>
-    <li><a href="#things" class="nav-link" data-toggle="tab">Centrais</a></li>
-    <li><a href="#sensors" class="nav-link" data-toggle="tab">Sensores</a></li>
+<ul class="nav nav-tabs">    
+    <li {% if form.active == "profile" %}class="active"{% endif %}><a href="#profile" class="nav-link" data-toggle="tab">Perfil</a></li>
+    <li {% if form.active == "things" %}class="active"{% endif %}><a href="#things" class="nav-link" data-toggle="tab">Centrais</a></li>
+    <li {% if form.active == "sensors" %}class="active"{% endif %}><a href="#sensors" class="nav-link" data-toggle="tab">Sensores</a></li>
 </ul>
 
 <div class="tab-content">
-    <div class="tab-pane fade active" id="profile">
+    
+    <div class={% if form.active == "profile" %}"tab-pane fade in active"{% else %}"tab-pane fade"{% endif %} id="profile">
 
 <form method="post">
   {% csrf_token %}
@@ -95,11 +96,11 @@ function getValue(combobox){
       
     </div>
 
-    <div class="tab-pane fade" id="things">
+    <div class={% if form.active == "things" %}"tab-pane fade in active"{% else %}"tab-pane fade"{% endif %} id="things">
  
 <form method="post">
   {% csrf_token %}
-  {{ form.uuid.as_p }}
+  {{ form.thing.as_p }}
   <button name="thingform" type="submit">Adicionar</button>
 </form>       
 
@@ -124,7 +125,7 @@ function getValue(combobox){
           </table>    
     </div>
     
-    <div class="tab-pane fade" id="sensors">
+    <div class={% if form.active == "sensors" %}"tab-pane fade in active"{% else %}"tab-pane fade"{% endif %} id="sensors">
         <table class="table table-striped" >
             <tr>
                 <th> Sensores </th>
