@@ -12,6 +12,8 @@ DECLARE
     Force           VARCHAR := 'Força';
     Power           VARCHAR := 'Potência';
     Sound           VARCHAR := 'Som';
+    State           VARCHAR := 'Estado';
+    Message         VARCHAR := 'Mensagem';
 
 BEGIN
     INSERT INTO Sensors (name)
@@ -26,7 +28,9 @@ BEGIN
 	        (Pressure),
 	        (Force),
             (Power),
-            (Sound);
+            (Sound),
+            (State),
+            (Message);
 
     INSERT INTO SensorsUnits (name, initial, precision, id_sensor, isdefault, expression)
     VALUES	('Litro',               'l',    3, (SELECT id FROM Sensors WHERE name = Volume), 'TRUE', 'pv'),
@@ -56,8 +60,12 @@ BEGIN
 	        ('Kilograma força',     'Kgf',  3, (SELECT id FROM Sensors WHERE name = Force), 'FALSE', 'pv * 0.101972'),
             ('Watt',                'W',    2, (SELECT id FROM Sensors WHERE name = Power), 'TRUE', 'pv'),
 	        ('Miliwatt',            'mW',   3, (SELECT id FROM Sensors WHERE name = Power), 'FALSE', 'pv * 1000'),
-		    ('Decibeis',            'dB',   0, (SELECT id FROM Sensors WHERE name = Sound), 'TRUE', 'pv');
-
+		    ('Decibeis',            'dB',   0, (SELECT id FROM Sensors WHERE name = Sound), 'TRUE', 'pv'),
+            ('Aberto/Fechado',      NULL,   NULL, (SELECT id FROM Sensors WHERE name = State), 'TRUE', NULL),
+            ('Ligado/Desligado',    NULL,   NULL, (SELECT id FROM Sensors WHERE name = State), 'FALSE', NULL),
+            ('Texto',               NULL,   NULL, (SELECT id FROM Sensors WHERE name = Message), 'TRUE', NULL),
+            ('Imagem',              NULL,   NULL, (SELECT id FROM Sensors WHERE name = Message), 'FALSE', NULL);
+            
 END;
 $$ LANGUAGE plpgsql;
 

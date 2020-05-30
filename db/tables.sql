@@ -57,9 +57,9 @@ CREATE TABLE SensorsUnits (
 	initial     VARCHAR(5),
 	precision   SMALLINT,
     isdefault   BOOLEAN NOT NULL DEFAULT FALSE,
-    expression  VARCHAR(255) NOT NULL DEFAULT 'pv', --pv: PayloadValue
+    expression  VARCHAR(50), --pv: PayloadValue
 
-    UNIQUE (id_sensor, name)
+    UNIQUE (name)
 );
 
 CREATE TABLE SensorsParams (

@@ -143,9 +143,9 @@ function getValue(combobox){
                     <select name="unit{{ sensor.id }}" id="unit{{ sensor.id }}">
 {% for unit in sensor.units %}
     {% if sensor.unitselect == None and unit.isdefault == True or sensor.unitselect == unit.id %}
-    <option value={{ unit.id }} onclick="javascript:getValue('unit{{ sensor.id }}')" selected>{{ unit.name }} ({{ unit.initial }})</option>
+    <option value={{ unit.id }} onclick="javascript:getValue('unit{{ sensor.id }}')" selected>{{ unit.name }} {% if unit.initial != None %}({{ unit.initial }}){% endif %}</option>
     {% else %}
-    <option value={{ unit.id }} onclick="javascript:getValue('unit{{ sensor.id }}')">{{ unit.name }} ({{ unit.initial }})</option>
+    <option value={{ unit.id }} onclick="javascript:getValue('unit{{ sensor.id }}')">{{ unit.name }} {% if unit.initial != None %}({{ unit.initial }}){% endif %}</option>
     {% endif %} 
 {% endfor %}
                     </select>

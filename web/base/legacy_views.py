@@ -40,6 +40,7 @@ class Vwthingsdata(models.Model):
     retained = models.BooleanField(blank=True, null=True)
     payload_dt = models.DateTimeField(blank=True, null=True)
     payload_value = models.FloatField(blank=True, null=True)
+    payload_message = models.TextField(blank=True, null=True)
 
     class Meta:
         managed = False  # Created from a view. Don't remove.
