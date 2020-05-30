@@ -7,12 +7,27 @@ CREATE OR REPLACE VIEW vwThingsData AS
             TD.qos,
             TD.retained,
 
-            CASE WHEN TD.payload->>'dt' IS NOT NULL 
-                THEN TIMEZONE('UTC', CAST(TO_TIMESTAMP(TD.payload->>'dt', 'YYYYMMDDHH24MISS') AS VARCHAR)::TIMESTAMP)
+            CASE 
+                WHEN TD.payload->>'dt' IS NOT NULL 
+                    THEN TIMEZONE('UTC', CAST(TO_TIMESTAMP(TD.payload->>'dt', 'YYYYMMDDHH24MISS') AS VARCHAR)::TIMESTAMP)
                 ELSE TD.dt
             END AS payload_dt,
 
-            CAST(TD.payload->>'value' AS REAL) AS payload_value
+            CASE 
+                WHEN (TD.payload->>'value' IS NOT NULL) AND (TD.payload->>'value'::varchar ~ '^[0-9\.]+$' = True)
+                    THEN CAST(TD.payload->>'value' AS REAL)
+                WHEN (TD.payload->>'value' IS NULL) AND (TD.payload::varchar ~ '^[0-9\.]+$' = True)
+                    THEN CAST(TD.payload AS REAL)
+                ELSE NULL
+            END AS payload_value,
+
+            CASE 
+                WHEN (TD.payload->>'value' IS NOT NULL) AND (TD.payload->>'value'::varchar ~ '^[0-9\.]+$' = False)
+                    THEN CAST(TD.payload->>'value' AS TEXT)
+                WHEN (TD.payload->>'value' IS NULL) AND (TD.payload->>'dt' IS NULL) AND (TD.payload::varchar ~ '^[0-9\.]+$' = False)
+                    THEN CAST(TD.payload AS TEXT)
+                ELSE NULL
+            END AS payload_message
     FROM ThingsData TD;
 
 CREATE OR REPLACE VIEW vwAccountsThings AS
