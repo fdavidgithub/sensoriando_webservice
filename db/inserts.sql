@@ -17,7 +17,8 @@ DECLARE
 
 BEGIN
     INSERT INTO Sensors (name)
-    VALUES	(Volume),
+    VALUES	(Message),
+            (Volume),
 	        (Distance),
 	        (Temperature),
 	        (Mass),
@@ -29,8 +30,7 @@ BEGIN
 	        (Force),
             (Power),
             (Sound),
-            (State),
-            (Message);
+            (State);
 
     INSERT INTO SensorsUnits (name, initial, precision, id_sensor, isdefault, expression)
     VALUES	('Litro',               'l',    3, (SELECT id FROM Sensors WHERE name = Volume), 'TRUE', 'pv'),
