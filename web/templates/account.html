@@ -170,6 +170,8 @@ function getValue(combobox){
                         <option value="bar" onclick="javascript:getValue('chart{{ sensor.id }}')" {% if sensor.chartselect == 'bar' %} selected {% endif %}>Barra Vertical</option>
                         <option value="horizontalBar" onclick="javascript:getValue('chart{{ sensor.id }}')" {% if sensor.chartselect == 'horizontalBar' %} selected {% endif %}>Barra Horizontal</option>
                         <option value="pie" onclick="javascript:getValue('chart{{ sensor.id }}')" {% if sensor.chartselect == 'pie' %} selected {% endif %}>Pizza</option>
+                        <option value="table" onclick="javascript:getValue('chart{{ sensor.id }}')" {% if sensor.chartselect == 'table' %} selected {% endif %}>Tabela</option>
+                        <option value="display" onclick="javascript:getValue('chart{{ sensor.id }}')" {% if sensor.chartselect == 'display' %} selected {% endif %}>Display</option>
                     </select>
                 </th>
 

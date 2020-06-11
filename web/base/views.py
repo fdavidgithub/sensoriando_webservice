@@ -333,80 +333,88 @@ def SensorDetails(request, id_thing):
         else:
             sensorunit = Sensorsunits.objects.get(id = sensorunit)
 
-        if sensorchart is None:
-            sensorchart = CHART_DEFAULT
-
         if sensorprecision is None:
             sensorprecision = Sensorsunits.objects.get(id_sensor = sensor.id, isdefault = True).precision
         else:
             sensorprecision = int(sensorprecision)
-        # Get data o sensor
-        data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id)
 
-        # Grouping data of sensor
-        if data: 
-            if chartview is None:
-                chartview = CHARTVIEW_DEFAULT
+        if sensorchart is None:
+            sensorchart = CHART_DEFAULT
+ 
+        # Check if is value or message
+        if sensorunit.expression is None:
+            sensorchart = 'table'
+            data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, payload_value__isnull = True)[:5]
+        elif sensorchart is 'display':
+            data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id).last()
+            chartview_label = data.payload_dt.strftime("%d/%m/%Y %H:%M:S")
         else:
-            chartview = None
+            data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, payload_value__isnull = False)
+        
+            # Grouping data of sensor        
+            if data: 
+                if chartview is None:
+                    chartview = CHARTVIEW_DEFAULT
+            else:
+                chartview = None
  
-        if chartview == 's':
-            chartview_label = data.last().payload_dt.strftime("%d/%m/%Y %H:%M")
-            chartview_title = 'Segundos'
+            if chartview == 's':
+                chartview_label = data.last().payload_dt.strftime("%d/%m/%Y %H:%M")
+                chartview_title = 'Segundos'
 
-            data = data.annotate(group_dt=Concat(Extract('payload_dt', 'second'), Value('s'), output_field=CharField()))
-            data = data.values('group_dt', 'id_sensor')
-            data = data.annotate(group_value=Avg('payload_value'))
-            data = data.order_by('group_dt', 'id_sensor') 
-        elif chartview == 'm':
-            chartview_label = data.last().payload_dt.strftime("%d/%m/%Y")
-            chartview_title = 'Minutos'
+                data = data.annotate(group_dt=Concat(Extract('payload_dt', 'second'), Value('s'), output_field=CharField()))
+                data = data.values('group_dt', 'id_sensor')
+                data = data.annotate(group_value=Avg('payload_value'))
+                data = data.order_by('group_dt', 'id_sensor') 
+            elif chartview == 'm':
+                chartview_label = data.last().payload_dt.strftime("%d/%m/%Y")
+                chartview_title = 'Minutos'
 
-            data = data.annotate(group_dt=Concat(Extract('payload_dt', 'hour'), Value(':'), Extract('payload_dt', 'minute'), output_field=CharField()))
-            data = data.values('group_dt', 'id_sensor')
-            data = data.annotate(group_value=Avg('payload_value'))
-            data = data.order_by('group_dt', 'id_sensor') 
-        elif chartview == 'h':
-            chartview_label = data.last().payload_dt.strftime("%d/%m/%Y")
-            chartview_title = 'Horas'
+                data = data.annotate(group_dt=Concat(Extract('payload_dt', 'hour'), Value(':'), Extract('payload_dt', 'minute'), output_field=CharField()))
+                data = data.values('group_dt', 'id_sensor')
+                data = data.annotate(group_value=Avg('payload_value'))
+                data = data.order_by('group_dt', 'id_sensor') 
+            elif chartview == 'h':
+                chartview_label = data.last().payload_dt.strftime("%d/%m/%Y")
+                chartview_title = 'Horas'
 
-            data = data.annotate(group_dt=Concat(Extract('payload_dt', 'hour'), Value('h'), output_field=CharField()))
-            data = data.values('group_dt', 'id_sensor')
-            data = data.annotate(group_value=Avg('payload_value'))
-            data = data.order_by('group_dt', 'id_sensor') 
-        elif chartview == 'd':
-            chartview_label = data.last().payload_dt.strftime("%m/%Y")
-            chartview_title = 'Dias'
+                data = data.annotate(group_dt=Concat(Extract('payload_dt', 'hour'), Value('h'), output_field=CharField()))
+                data = data.values('group_dt', 'id_sensor')
+                data = data.annotate(group_value=Avg('payload_value'))
+                data = data.order_by('group_dt', 'id_sensor') 
+            elif chartview == 'd':
+                chartview_label = data.last().payload_dt.strftime("%m/%Y")
+                chartview_title = 'Dias'
 
-            data = data.annotate(group_dt=Extract('payload_dt', 'day'))
-            data = data.values('group_dt', 'id_sensor')
-            data = data.annotate(group_value=Avg('payload_value'))
-            data = data.order_by('group_dt', 'id_sensor')
-        elif chartview == 'M':
-            chartview_label = data.last().payload_dt.strftime("%Y")
-            chartview_title = 'Meses'
+                data = data.annotate(group_dt=Extract('payload_dt', 'day'))
+                data = data.values('group_dt', 'id_sensor')
+                data = data.annotate(group_value=Avg('payload_value'))
+                data = data.order_by('group_dt', 'id_sensor')
+            elif chartview == 'M':
+                chartview_label = data.last().payload_dt.strftime("%Y")
+                chartview_title = 'Meses'
 
-            data = data.annotate(group_dt=Extract('payload_dt', 'month'))
-            data = data.values('group_dt', 'id_sensor')
-            data = data.annotate(group_value=Avg('payload_value'))
-            data = data.order_by('group_dt', 'id_sensor')
-        elif chartview == 'y':
-            chartview_label = ''
-            chartview_title = 'Anos'
+                data = data.annotate(group_dt=Extract('payload_dt', 'month'))
+                data = data.values('group_dt', 'id_sensor')
+                data = data.annotate(group_value=Avg('payload_value'))
+                data = data.order_by('group_dt', 'id_sensor')
+            elif chartview == 'y':
+                chartview_label = ''
+                chartview_title = 'Anos'
  
-            data = data.annotate(group_dt=Extract('payload_dt', 'year'))
-            data = data.values('group_dt', 'id_sensor')
-            data = data.annotate(group_value=Avg('payload_value'))
-            data = data.order_by('group_dt', 'id_sensor')
-        else:
-            chartview_label = 'ops!!!'
-            chartview_title = 'ops!!!'
+                data = data.annotate(group_dt=Extract('payload_dt', 'year'))
+                data = data.values('group_dt', 'id_sensor')
+                data = data.annotate(group_value=Avg('payload_value'))
+                data = data.order_by('group_dt', 'id_sensor')
+            else:
+                chartview_label = 'ops!!!'
+                chartview_title = 'ops!!!'
  
-        # Recalc to convert
-        for datum in data:
-            pv = datum['group_value'] # Payload value
-            datum['group_value'] = round(eval(sensorunit.expression), sensorprecision)
-
+            # Recalc to convert
+            for datum in data:
+                pv = datum['group_value'] # Payload value
+                datum['group_value'] = round(eval(sensorunit.expression), sensorprecision)
+                
         # Build dict sensor + unit
         sensorslist.append({
             'sensor': sensor,

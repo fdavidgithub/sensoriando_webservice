@@ -15,9 +15,9 @@ CREATE OR REPLACE VIEW vwThingsData AS
 
             CASE 
                 WHEN (TD.payload->>'value' IS NOT NULL) AND (TD.payload->>'value'::varchar ~ '^[0-9\.]+$' = True)
-                    THEN CAST(TD.payload->>'value' AS REAL)
+                    THEN CAST(TD.payload->>'value' AS FLOAT)
                 WHEN (TD.payload->>'value' IS NULL) AND (TD.payload::varchar ~ '^[0-9\.]+$' = True)
-                    THEN CAST(CAST(TD.payload AS TEXT) AS REAL)
+                    THEN CAST(CAST(TD.payload AS TEXT) AS FLOAT)
                 ELSE NULL
             END AS payload_value,
 

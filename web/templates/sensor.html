@@ -136,13 +136,29 @@ function setCookie(cname, cvalue, exdays) {
                 <i class="fa fa-bar-chart-o"></i>
                 <b>{{ detail.sensor.name }}</b>
             </div>
-        
+
             <div class="panel-body">
                 <div class="row">
+{% if detail.type == 'table' %}         
+                    <table class="table table-striped">
+                        <tr>
+                        <th> Data </th>
+                        <th> Mensagem </th>
+                        </tr>
+
+{% for tablelist in detail.data %}
+                            <tr>
+                                <th>{{ tablelist.payload_dt }}</th>
+                                <th>{{ tablelist.payload_message }}</th>
+                            </tr>
+{% endfor %}
+                    </table>
+{% else %}
                     <canvas id="{{ context.canva }}{{ forloop.counter }}"></canvas>
-                </div>        
+{% endif %}
+               </div>        
             </div>
-        </div>
+       </div>
     </div>
 {% endfor %}
 <!--List Charts: END-->

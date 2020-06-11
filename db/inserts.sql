@@ -14,6 +14,7 @@ DECLARE
     Sound           VARCHAR := 'Som';
     State           VARCHAR := 'Estado';
     Message         VARCHAR := 'Mensagem';
+    Humidity        VARCHAR := 'Umidade';
 
 BEGIN
     INSERT INTO Sensors (name)
@@ -30,7 +31,8 @@ BEGIN
 	        (Force),
             (Power),
             (Sound),
-            (State);
+            (State)
+            (Humidity);
 
     INSERT INTO SensorsUnits (name, initial, precision, id_sensor, isdefault, expression)
     VALUES	('Litro',               'l',    3, (SELECT id FROM Sensors WHERE name = Volume), 'TRUE', 'pv'),
@@ -64,7 +66,8 @@ BEGIN
             ('Aberto/Fechado',      NULL,   NULL, (SELECT id FROM Sensors WHERE name = State), 'TRUE', NULL),
             ('Ligado/Desligado',    NULL,   NULL, (SELECT id FROM Sensors WHERE name = State), 'FALSE', NULL),
             ('Texto',               NULL,   NULL, (SELECT id FROM Sensors WHERE name = Message), 'TRUE', NULL),
-            ('Imagem',              NULL,   NULL, (SELECT id FROM Sensors WHERE name = Message), 'FALSE', NULL);
+            ('Imagem',              NULL,   NULL, (SELECT id FROM Sensors WHERE name = Message), 'FALSE', NULL),
+            ('Umidade Relativa',    'UR',   2, (SELECT id FROM Sensors WHERE name = Humidity), 'TRUE', 'pv');
             
 END;
 $$ LANGUAGE plpgsql;
