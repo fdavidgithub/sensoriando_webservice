@@ -8,7 +8,7 @@ from django.db.models import Count, Avg, Value, CharField
 from django.db.models.functions import Extract, Concat
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
-from django.db.models.functions import TruncMonth
+
 from .legacy_tables import Things, Thingsdata, Thingstags, Sensors, Accounts, Accountsthings, Sensorsunits
 from .legacy_views import Vwthingsdata, Vwaccountsthingssensorsunits
 from .models import Account
