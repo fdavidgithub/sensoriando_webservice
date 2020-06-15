@@ -8,7 +8,7 @@ from django.db.models import Count, Avg, Value, CharField
 from django.db.models.functions import Extract, Concat
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
-
+from django.db.models.functions import TruncMonth
 from .legacy_tables import Things, Thingsdata, Thingstags, Sensors, Accounts, Accountsthings, Sensorsunits
 from .legacy_views import Vwthingsdata, Vwaccountsthingssensorsunits
 from .models import Account
@@ -310,8 +310,8 @@ def SensorDetails(request, id_thing):
    
     # Get data
     thing = Things.objects.get(id = id_thing)
-    account = Accounts.objects.get(accountsthings__id_thing = id_thing)
-    sensors = Sensors.objects.filter(thingsdata__id_thing = id_thing).distinct()
+    account = Accounts.objects.get(accountsthings__id_thing = thing.id)
+    sensors = Sensors.objects.filter(thingsdata__id_thing = thing.id).order_by('name').distinct()
     
     if account.ispublic:
         access = 'Publico'
@@ -344,13 +344,13 @@ def SensorDetails(request, id_thing):
         # Check if is value or message
         if sensorunit.expression is None:
             sensorchart = 'table'
-            data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, payload_value__isnull = True)[:5]
+            data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, payload_value__isnull = True).order_by('dt_thingdatum')
         elif sensorchart is 'display':
             data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id).last()
             chartview_label = data.payload_dt.strftime("%d/%m/%Y %H:%M:S")
         else:
-            data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, payload_value__isnull = False)
-        
+            data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, payload_value__isnull = False).order_by('-dt_thingdatum')
+            
             # Grouping data of sensor        
             if data: 
                 if chartview is None:
@@ -359,53 +359,54 @@ def SensorDetails(request, id_thing):
                 chartview = None
  
             if chartview == 's':
-                chartview_label = data.last().payload_dt.strftime("%d/%m/%Y %H:%M")
+                chartview_label = data[0].payload_dt.strftime("%d/%m/%Y %H:%M") #Last record
                 chartview_title = 'Segundos'
-
-                data = data.annotate(group_dt=Concat(Extract('payload_dt', 'second'), Value('s'), output_field=CharField()))
-                data = data.values('group_dt', 'id_sensor')
-                data = data.annotate(group_value=Avg('payload_value'))
-                data = data.order_by('group_dt', 'id_sensor') 
+ 
+                data = data.values(group_dt=Concat(Extract('payload_dt', 'second'), Value('s'), output_field=CharField())) \
+                        .annotate(group_value=Avg('payload_value')) \
+                        .order_by('group_dt', 'group_value')[:60]
             elif chartview == 'm':
-                chartview_label = data.last().payload_dt.strftime("%d/%m/%Y")
+                chartview_label = data[0].payload_dt.strftime("%d/%m/%Y")
                 chartview_title = 'Minutos'
 
-                data = data.annotate(group_dt=Concat(Extract('payload_dt', 'hour'), Value(':'), Extract('payload_dt', 'minute'), output_field=CharField()))
-                data = data.values('group_dt', 'id_sensor')
-                data = data.annotate(group_value=Avg('payload_value'))
-                data = data.order_by('group_dt', 'id_sensor') 
+                data = data.annotate(group_dt=Concat(Extract('payload_dt', 'hour'), Value(':'), Extract('payload_dt', 'minute'), \
+                                              output_field=CharField())) \
+                        .values('group_dt') \
+                        .annotate(group_value=Avg('payload_value')) \
+                        .values('group_dt', 'group_value') \
+                        .order_by('group_dt', 'group_value')[:60]
             elif chartview == 'h':
                 chartview_label = data.last().payload_dt.strftime("%d/%m/%Y")
                 chartview_title = 'Horas'
 
-                data = data.annotate(group_dt=Concat(Extract('payload_dt', 'hour'), Value('h'), output_field=CharField()))
-                data = data.values('group_dt', 'id_sensor')
-                data = data.annotate(group_value=Avg('payload_value'))
-                data = data.order_by('group_dt', 'id_sensor') 
+                data = data.annotate(group_dt=Concat(Extract('payload_dt', 'hour'), Value('h'), output_field=CharField())) \
+                        .values('group_dt', 'id_sensor') \
+                        .annotate(group_value=Avg('payload_value')) \
+                        .order_by('group_dt', 'id_sensor')[:24] 
             elif chartview == 'd':
                 chartview_label = data.last().payload_dt.strftime("%m/%Y")
                 chartview_title = 'Dias'
 
-                data = data.annotate(group_dt=Extract('payload_dt', 'day'))
-                data = data.values('group_dt', 'id_sensor')
-                data = data.annotate(group_value=Avg('payload_value'))
-                data = data.order_by('group_dt', 'id_sensor')
+                data = data.annotate(group_dt=Extract('payload_dt', 'day')) \
+                        .values('group_dt', 'id_sensor') \
+                        .annotate(group_value=Avg('payload_value')) \
+                        .order_by('group_dt', 'id_sensor')[:30]
             elif chartview == 'M':
                 chartview_label = data.last().payload_dt.strftime("%Y")
                 chartview_title = 'Meses'
 
-                data = data.annotate(group_dt=Extract('payload_dt', 'month'))
-                data = data.values('group_dt', 'id_sensor')
-                data = data.annotate(group_value=Avg('payload_value'))
-                data = data.order_by('group_dt', 'id_sensor')
+                data = data.annotate(group_dt=Extract('payload_dt', 'month')) \
+                        .values('group_dt', 'id_sensor') \
+                        .annotate(group_value=Avg('payload_value')) \
+                        .order_by('group_dt', 'id_sensor')[:12]
             elif chartview == 'y':
                 chartview_label = ''
                 chartview_title = 'Anos'
  
-                data = data.annotate(group_dt=Extract('payload_dt', 'year'))
-                data = data.values('group_dt', 'id_sensor')
-                data = data.annotate(group_value=Avg('payload_value'))
-                data = data.order_by('group_dt', 'id_sensor')
+                data = data.annotate(group_dt=Extract('payload_dt', 'year')) \
+                        .values('group_dt', 'id_sensor') \
+                        .annotate(group_value=Avg('payload_value')) \
+                        .order_by('group_dt', 'id_sensor')
             else:
                 chartview_label = 'ops!!!'
                 chartview_title = 'ops!!!'
@@ -414,15 +415,15 @@ def SensorDetails(request, id_thing):
             for datum in data:
                 pv = datum['group_value'] # Payload value
                 datum['group_value'] = round(eval(sensorunit.expression), sensorprecision)
-                
-        # Build dict sensor + unit
+        
+       # Build dict sensor + unit
         sensorslist.append({
             'sensor': sensor,
             'type': sensorchart,
             'unit': sensorunit,
             'data': data
         })
-
+    
     context = {
         'thing': thing.name,
         'canva': 'chart-line',
@@ -434,9 +435,9 @@ def SensorDetails(request, id_thing):
         'country': account.country,
         'access': access,
         'sensors': sensorslist,
-        'tags': Thingstags.objects.filter(id_thing = id_thing)
+        'tags': Thingstags.objects.filter(id_thing = thing.id)
     }
-
+ 
     return render(request, 'sensor.html', {'context': context})
 
 

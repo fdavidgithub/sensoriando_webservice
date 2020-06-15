@@ -28,7 +28,8 @@ CREATE OR REPLACE VIEW vwThingsData AS
                     THEN CAST(TD.payload AS TEXT)
                 ELSE NULL
             END AS payload_message
-    FROM ThingsData TD;
+    FROM ThingsData TD
+    ORDER BY TD.id;
 
 CREATE OR REPLACE VIEW vwAccountsThings AS
     SELECT ROW_NUMBER() OVER() AS id, /* need to Django ORM */
