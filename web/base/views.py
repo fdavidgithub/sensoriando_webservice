@@ -346,7 +346,7 @@ def SensorDetails(request, id_thing):
             sensorchart = 'table'
             data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, payload_value__isnull = True) \
                     .order_by('-dt_thingdatum')[:10]
-        elif sensorchart is 'display':
+        elif sensorchart == 'display':
             data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, payload_value__isnull = False) \
                     .last()
             chartview_label = data.payload_dt.strftime("%d/%m/%Y %H:%M:S")
