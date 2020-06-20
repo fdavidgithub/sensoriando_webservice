@@ -16,7 +16,7 @@ from .models import Account
 from .forms import SignUpForm, AccountForm, UserForm, ThingForm
 
 from .constants import CHART_DEFAULT, CHARTVIEW_DEFAULT, MAX_PRECISION
-import unicodecsv, datetime
+import unicodecsv, datetime, pytz
 
 #https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
 def SignUp(request):
@@ -344,69 +344,88 @@ def SensorDetails(request, id_thing):
         # Check if is value or message
         if sensorunit.expression is None:
             sensorchart = 'table'
-            data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, payload_value__isnull = True).order_by('dt_thingdatum')
+            data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, payload_value__isnull = True) \
+                    .order_by('-dt_thingdatum')[:10]
         elif sensorchart is 'display':
-            data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id).last()
+            data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, payload_value__isnull = False) \
+                    .last()
             chartview_label = data.payload_dt.strftime("%d/%m/%Y %H:%M:S")
         else:
-            data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, payload_value__isnull = False).order_by('-dt_thingdatum')
-            
+            data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, payload_value__isnull = False) \
+                    .order_by('-dt_thingdatum')
+
+            lastdatum = data[0].payload_dt      #Last record
+            lastdatum = lastdatum.astimezone()  #Set to current timezone
+
             # Grouping data of sensor        
             if data: 
                 if chartview is None:
                     chartview = CHARTVIEW_DEFAULT
             else:
                 chartview = None
- 
+    
             if chartview == 's':
-                chartview_label = data[0].payload_dt.strftime("%d/%m/%Y %H:%M") #Last record
+                chartview_label = lastdatum.strftime("%d/%m/%Y %H:%M")
                 chartview_title = 'Segundos'
  
-                data = data.values(group_dt=Concat(Extract('payload_dt', 'second'), Value('s'), output_field=CharField())) \
+                data = data.filter(payload_dt__year=lastdatum.year, \
+                                   payload_dt__month=lastdatum.month, \
+                                   payload_dt__day=lastdatum.day, \
+                                   payload_dt__hour=lastdatum.hour, \
+                                   payload_dt__minute=lastdatum.minute)
+
+                data = data.values(group_dt=Extract('payload_dt', 'second')) \
                         .annotate(group_value=Avg('payload_value')) \
-                        .order_by('group_dt', 'group_value')[:60]
+                        .order_by('group_dt', 'group_value')                
             elif chartview == 'm':
-                chartview_label = data[0].payload_dt.strftime("%d/%m/%Y")
+                chartview_label = lastdatum.strftime("%d/%m/%Y %Hh")
                 chartview_title = 'Minutos'
 
-                data = data.annotate(group_dt=Concat(Extract('payload_dt', 'hour'), Value(':'), Extract('payload_dt', 'minute'), \
-                                              output_field=CharField())) \
-                        .values('group_dt') \
+                data = data.filter(payload_dt__year = lastdatum.year, \
+                                   payload_dt__month = lastdatum.month, \
+                                   payload_dt__day = lastdatum.day, \
+                                   payload_dt__hour = lastdatum.hour)
+
+                data = data.values(group_dt=Extract('payload_dt', 'minute')) \
                         .annotate(group_value=Avg('payload_value')) \
-                        .values('group_dt', 'group_value') \
-                        .order_by('group_dt', 'group_value')[:60]
+                        .order_by('group_dt', 'group_value')
             elif chartview == 'h':
-                chartview_label = data.last().payload_dt.strftime("%d/%m/%Y")
+                chartview_label = lastdatum.strftime("%d/%m/%Y")
                 chartview_title = 'Horas'
 
-                data = data.annotate(group_dt=Concat(Extract('payload_dt', 'hour'), Value('h'), output_field=CharField())) \
-                        .values('group_dt', 'id_sensor') \
+                data = data.filter(payload_dt__year = lastdatum.year, \
+                                   payload_dt__month = lastdatum.month, \
+                                   payload_dt__day = lastdatum.day)
+
+                data = data.values(group_dt=Extract('payload_dt', 'hour')) \
                         .annotate(group_value=Avg('payload_value')) \
-                        .order_by('group_dt', 'id_sensor')[:24] 
+                        .order_by('group_dt', 'group_value')
             elif chartview == 'd':
-                chartview_label = data.last().payload_dt.strftime("%m/%Y")
+                chartview_label = lastdatum.strftime("%m/%Y")
                 chartview_title = 'Dias'
 
-                data = data.annotate(group_dt=Extract('payload_dt', 'day')) \
-                        .values('group_dt', 'id_sensor') \
+                data = data.filter(payload_dt__year = lastdatum.year, \
+                                   payload_dt__month = lastdatum.month)
+
+                data = data.values(group_dt=Extract('payload_dt', 'day')) \
                         .annotate(group_value=Avg('payload_value')) \
-                        .order_by('group_dt', 'id_sensor')[:30]
+                        .order_by('group_dt', 'group_value')
             elif chartview == 'M':
-                chartview_label = data.last().payload_dt.strftime("%Y")
+                chartview_label = lastdatum.strftime("%Y")
                 chartview_title = 'Meses'
 
-                data = data.annotate(group_dt=Extract('payload_dt', 'month')) \
-                        .values('group_dt', 'id_sensor') \
+                data = data.filter(payload_dt__year = lastdatum.year)
+
+                data = data.values(group_dt=Extract('payload_dt', 'month')) \
                         .annotate(group_value=Avg('payload_value')) \
-                        .order_by('group_dt', 'id_sensor')[:12]
+                        .order_by('group_dt', 'group_value')
             elif chartview == 'y':
                 chartview_label = ''
                 chartview_title = 'Anos'
  
-                data = data.annotate(group_dt=Extract('payload_dt', 'year')) \
-                        .values('group_dt', 'id_sensor') \
+                data = data.values(group_dt=Extract('payload_dt', 'year')) \
                         .annotate(group_value=Avg('payload_value')) \
-                        .order_by('group_dt', 'id_sensor')
+                        .order_by('group_dt', 'group_value')
             else:
                 chartview_label = 'ops!!!'
                 chartview_title = 'ops!!!'
