@@ -16,7 +16,7 @@ from .models import Account
 from .forms import SignUpForm, AccountForm, UserForm, ThingForm
 
 from .constants import CHART_DEFAULT, CHARTVIEW_DEFAULT, MAX_PRECISION
-import unicodecsv, datetime, pytz
+import unicodecsv, datetime
 
 #https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
 def SignUp(request):
@@ -312,7 +312,11 @@ def SensorDetails(request, id_thing):
     thing = Things.objects.get(id = id_thing)
     account = Accounts.objects.get(accountsthings__id_thing = thing.id)
     sensors = Sensors.objects.filter(thingsdata__id_thing = thing.id).order_by('name').distinct()
-    
+    lastdatum = Vwthingsdata.objects.filter(id_thing = thing.id) \
+                    .last() \
+                    .payload_dt \
+                    .astimezone()
+
     if account.ispublic:
         access = 'Publico'
     else:
@@ -353,9 +357,6 @@ def SensorDetails(request, id_thing):
         else:
             data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, payload_value__isnull = False) \
                     .order_by('-dt_thingdatum')
-
-            lastdatum = data[0].payload_dt      #Last record
-            lastdatum = lastdatum.astimezone()  #Set to current timezone
 
             # Grouping data of sensor        
             if data: 
@@ -427,8 +428,8 @@ def SensorDetails(request, id_thing):
                         .annotate(group_value=Avg('payload_value')) \
                         .order_by('group_dt', 'group_value')
             else:
-                chartview_label = 'ops!!!'
-                chartview_title = 'ops!!!'
+                chartview_label = '?'
+                chartview_title = 'No Data'
  
             # Recalc to convert
             for datum in data:
@@ -449,6 +450,7 @@ def SensorDetails(request, id_thing):
         'chart_file': 'chart-line.js',
         'city': account.city,
         'state': account.state,
+        'lastdatum': lastdatum,
         'label': chartview_label,
         'title': chartview_title,
         'country': account.country,
