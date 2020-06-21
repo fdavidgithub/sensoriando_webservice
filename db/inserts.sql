@@ -67,7 +67,7 @@ BEGIN
             ('Ligado/Desligado',    NULL,   NULL, (SELECT id FROM Sensors WHERE name = State), 'FALSE', NULL),
             ('Texto',               NULL,   NULL, (SELECT id FROM Sensors WHERE name = Message), 'TRUE', NULL),
             ('Imagem',              NULL,   NULL, (SELECT id FROM Sensors WHERE name = Message), 'FALSE', NULL),
-            ('Umidade Relativa',    'UR',   2, (SELECT id FROM Sensors WHERE name = Humidity), 'TRUE', 'pv');
+            ('Umidade Relativa',     '%',   2, (SELECT id FROM Sensors WHERE name = Humidity), 'TRUE', 'pv');
             
 END;
 $$ LANGUAGE plpgsql;
