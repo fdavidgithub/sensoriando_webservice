@@ -10,6 +10,7 @@ setdatabase() {
     CREATE=$SQL/create.sql
     TABLES=$SQL/tables.sql
     FUNCTIONS=$SQL/functions.sql
+    PROCEDURES=$SQL/procedures.sql
     TRIGGERS=$SQL/triggers.sql
     INSERTS=$SQL/inserts.sql
     VIEWS=$SQL/views.sql
@@ -48,6 +49,17 @@ setdatabase() {
         MSG="${MSG} FAIL"
     fi   
     log "$MSG"
+
+    MSG="Creating procedures from $PROCEDURES"
+    if [ -e $PRODECURES ]; then
+        psql -f $PROCEDURES
+ 
+	MSG="${MSG} OK"
+    else
+        MSG="${MSG} FAIL"
+    fi   
+    log "$MSG"
+
 
     MSG="Creating functions from $FUNCTIONS"
     if [ -e $FUNCTIONS ]; then

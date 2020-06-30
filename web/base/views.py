@@ -9,8 +9,9 @@ from django.db.models.functions import Extract, Concat
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
 
-from .legacy_tables import Things, Thingsdata, Thingstags, Sensors, Accounts, Accountsthings, Sensorsunits
-from .legacy_views import Vwthingsdata, Vwaccountsthingssensorsunits
+from .legacy_tables import Things, Thingstags, Sensors, Accounts, Accountsthings, Sensorsunits, \
+                           Thingssensorsdata
+from .legacy_views import Vwaccountsthingssensorsunits
 from .models import Account
 
 from .forms import SignUpForm, AccountForm, UserForm, ThingForm
@@ -103,12 +104,12 @@ def ListPrivateSensors(request):
        
         for thing in things:
             try:
-                thingdatum = Thingsdata.objects.filter(id_thing = thing.id).latest('id')
+                thingdatum = Thingssensorsdata.objects.filter(id_thing = thing.id).latest('id')
                 last_update = thingdatum.dt
             except:
                 last_update = 'nenhuma'
 
-            sensors = Sensors.objects.filter(thingsdata__id_thing = thing.id).distinct()
+            sensors = Sensors.objects.filter(thingssensorsdata__id_thing = thing.id).distinct()
 
             datalist.append({
                 'id': thing.id,
@@ -154,13 +155,13 @@ def ListPublicSensors(request, filterparam=None):
        
         for thing in things:
             try:
-                thingdatum = Thingsdata.objects.filter(id_thing = thing.id).latest('id')
+                thingdatum = Thingssensorsdata.objects.filter(id_thing = thing.id).latest('id')
                 last_update = thingdatum.dt
             except:
                 last_update = 'nenhuma'
 
             sensorlist = []
-            sensors = Sensors.objects.filter(thingsdata__id_thing = thing.id).distinct()
+            sensors = Sensors.objects.filter(thingssensorsdata__id_thing = thing.id).distinct()
             
             if filterparam is not None:
                 if "sensor" in query:
@@ -175,7 +176,7 @@ def ListPublicSensors(request, filterparam=None):
  
                     thingstags = Thingstags.objects.filter(id_thing = thing.id, name = query['flag'])
                     thing_ids = thingstags.values_list('id_thing', flat=True)
-                    sensors = sensors.filter(thingsdata__id_thing__in = thing_ids)
+                    sensors = sensors.filter(thingssensorsdata__id_thing__in = thing_ids)
  
             if sensors:
                 datalist.append({
@@ -221,7 +222,7 @@ def MyAccount(request, username, tab):
     things = Things.objects.filter(accountsthings__id_account = account.id)
 
     things_ids = things.values_list('id', flat=True)
-    sensors = Sensors.objects.filter(thingsdata__id_thing__in = things_ids).distinct()
+    sensors = Sensors.objects.filter(thingssensorsdata__id_thing__in = things_ids).distinct()
 
     sensorlist = []
     for sensor in sensors:
@@ -311,11 +312,13 @@ def SensorDetails(request, id_thing):
     # Get data
     thing = Things.objects.get(id = id_thing)
     account = Accounts.objects.get(accountsthings__id_thing = thing.id)
-    sensors = Sensors.objects.filter(thingsdata__id_thing = thing.id).order_by('name').distinct()
-    lastdatum = Vwthingsdata.objects.filter(id_thing = thing.id) \
-                    .last() \
-                    .payload_dt \
-                    .astimezone()
+    sensors = Sensors.objects.filter(thingssensorsdata__id_thing = thing.id).order_by('name').distinct()
+    lastrecord = Thingssensorsdata.objects.filter(id_thing = thing.id).last()
+    
+    if lastrecord is not None:
+        lastdatum = lastrecord.dtread.astimezone()
+    else:
+        lastdatum = None
 
     if account.ispublic:
         access = 'Publico'
@@ -328,104 +331,103 @@ def SensorDetails(request, id_thing):
 
     for sensor in sensors:
         # Get unit select by user
-        sensorunit = request.COOKIES.get('unit' + str(sensor.id))
-        sensorchart = request.COOKIES.get('chart' + str(sensor.id))
-        sensorprecision = request.COOKIES.get('precision' + str(sensor.id))
+        unit = request.COOKIES.get('unit' + str(sensor.id))
+        chart = request.COOKIES.get('chart' + str(sensor.id))
+        precision = request.COOKIES.get('precision' + str(sensor.id))
  
-        if sensorunit is None:
+        if unit is None:
             sensorunit = Sensorsunits.objects.get(id_sensor = sensor.id, isdefault = True)
         else:
-            sensorunit = Sensorsunits.objects.get(id = sensorunit)
+            sensorunit = Sensorsunits.objects.get(id = unit)
 
-        if sensorprecision is None:
-            sensorprecision = Sensorsunits.objects.get(id_sensor = sensor.id, isdefault = True).precision
+        if precision is None:
+            precision = sensorunit.precision
         else:
-            sensorprecision = int(sensorprecision)
+            precision = int(precision)
 
-        if sensorchart is None:
-            sensorchart = CHART_DEFAULT
+        if chart is None:
+            chart = CHART_DEFAULT
  
         # Check if is value or message
-        if sensorunit.expression is None:
-            sensorchart = 'table'
-            data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, payload_value__isnull = True) \
-                    .order_by('-dt_thingdatum')[:10]
-        elif sensorchart == 'display':
-            data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, payload_value__isnull = False) \
+        if chart == 'table':
+            data = Thingssensorsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, message__isnull = False) \
+                    .order_by('-dt')[:10]
+        elif chart == 'display':
+            data = Thingssensorsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, value__isnull = False) \
                     .last()
-            chartview_label = data.payload_dt.strftime("%d/%m/%Y %H:%M:S")
+            chartview_label = data.dtread.strftime("%d/%m/%Y %H:%M:S")
         else:
-            data = Vwthingsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, payload_value__isnull = False) \
-                    .order_by('-dt_thingdatum')
+            data = Thingssensorsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, value__isnull = False) \
+                    .order_by('-dt')
 
             # Grouping data of sensor        
-            if data: 
+            if data is None:
+                chartview = None
+            else:
                 if chartview is None:
                     chartview = CHARTVIEW_DEFAULT
-            else:
-                chartview = None
-    
+          
             if chartview == 's':
                 chartview_label = lastdatum.strftime("%d/%m/%Y %H:%M")
                 chartview_title = 'Segundos'
- 
-                data = data.filter(payload_dt__year=lastdatum.year, \
-                                   payload_dt__month=lastdatum.month, \
-                                   payload_dt__day=lastdatum.day, \
-                                   payload_dt__hour=lastdatum.hour, \
-                                   payload_dt__minute=lastdatum.minute)
 
-                data = data.values(group_dt=Extract('payload_dt', 'second')) \
-                        .annotate(group_value=Avg('payload_value')) \
-                        .order_by('group_dt', 'group_value')                
+                data = data.filter(dtread__year=lastdatum.year, \
+                                   dtread__month=lastdatum.month, \
+                                   dtread__day=lastdatum.day, \
+                                   dtread__hour=lastdatum.hour, \
+                                   dtread__minute=lastdatum.minute)
+ 
+                data = data.values(group_dt=Extract('dtread', 'second')) \
+                        .annotate(group_value=Avg('value')) \
+                        .order_by('group_dt', 'group_value')
             elif chartview == 'm':
                 chartview_label = lastdatum.strftime("%d/%m/%Y %Hh")
                 chartview_title = 'Minutos'
 
-                data = data.filter(payload_dt__year = lastdatum.year, \
-                                   payload_dt__month = lastdatum.month, \
-                                   payload_dt__day = lastdatum.day, \
-                                   payload_dt__hour = lastdatum.hour)
+                data = data.filter(dtread__year = lastdatum.year, \
+                                   dtread__month = lastdatum.month, \
+                                   dtread__day = lastdatum.day, \
+                                   dtread__hour = lastdatum.hour)
 
-                data = data.values(group_dt=Extract('payload_dt', 'minute')) \
-                        .annotate(group_value=Avg('payload_value')) \
+                data = data.values(group_dt=Extract('dtread', 'minute')) \
+                        .annotate(group_value=Avg('value')) \
                         .order_by('group_dt', 'group_value')
             elif chartview == 'h':
                 chartview_label = lastdatum.strftime("%d/%m/%Y")
                 chartview_title = 'Horas'
 
-                data = data.filter(payload_dt__year = lastdatum.year, \
-                                   payload_dt__month = lastdatum.month, \
-                                   payload_dt__day = lastdatum.day)
+                data = data.filter(dtread__year = lastdatum.year, \
+                                   dtread__month = lastdatum.month, \
+                                   dtread__day = lastdatum.day)
 
-                data = data.values(group_dt=Extract('payload_dt', 'hour')) \
-                        .annotate(group_value=Avg('payload_value')) \
+                data = data.values(group_dt=Extract('dtread', 'hour')) \
+                        .annotate(group_value=Avg('value')) \
                         .order_by('group_dt', 'group_value')
             elif chartview == 'd':
                 chartview_label = lastdatum.strftime("%m/%Y")
                 chartview_title = 'Dias'
 
-                data = data.filter(payload_dt__year = lastdatum.year, \
-                                   payload_dt__month = lastdatum.month)
+                data = data.filter(dtread__year = lastdatum.year, \
+                                   dtread__month = lastdatum.month)
 
-                data = data.values(group_dt=Extract('payload_dt', 'day')) \
-                        .annotate(group_value=Avg('payload_value')) \
+                data = data.values(group_dt=Extract('dtread', 'day')) \
+                        .annotate(group_value=Avg('value')) \
                         .order_by('group_dt', 'group_value')
             elif chartview == 'M':
                 chartview_label = lastdatum.strftime("%Y")
                 chartview_title = 'Meses'
 
-                data = data.filter(payload_dt__year = lastdatum.year)
+                data = data.filter(dtread__year = lastdatum.year)
 
-                data = data.values(group_dt=Extract('payload_dt', 'month')) \
-                        .annotate(group_value=Avg('payload_value')) \
+                data = data.values(group_dt=Extract('dtread', 'month')) \
+                        .annotate(group_value=Avg('value')) \
                         .order_by('group_dt', 'group_value')
             elif chartview == 'y':
                 chartview_label = ''
                 chartview_title = 'Anos'
  
-                data = data.values(group_dt=Extract('payload_dt', 'year')) \
-                        .annotate(group_value=Avg('payload_value')) \
+                data = data.values(group_dt=Extract('dtread', 'year')) \
+                        .annotate(group_value=Avg('value')) \
                         .order_by('group_dt', 'group_value')
             else:
                 chartview_label = '?'
@@ -433,17 +435,17 @@ def SensorDetails(request, id_thing):
  
             # Recalc to convert
             for datum in data:
-                pv = datum['group_value'] # Payload value
-                datum['group_value'] = round(eval(sensorunit.expression), sensorprecision)
-        
-       # Build dict sensor + unit
+                pv = datum['group_value'] # Use to calc in expression
+                datum['group_value'] = round(eval(sensorunit.expression), precision)
+      
+        # Build dict sensor + unit
         sensorslist.append({
             'sensor': sensor,
-            'type': sensorchart,
+            'type': chart,
             'unit': sensorunit,
             'data': data
         })
-    
+
     context = {
         'thing': thing.name,
         'canva': 'chart-line',

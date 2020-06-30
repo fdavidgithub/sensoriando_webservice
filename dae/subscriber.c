@@ -188,7 +188,7 @@ void
 msg_storage(char *topic, char *payload, int qos, int retained)
 {
     Thing *thing;
-    Datum datum;
+    Payload datum;
     int id_sensor;
     char uuid[LEN_UUID];
 
@@ -196,30 +196,28 @@ msg_storage(char *topic, char *payload, int qos, int retained)
         sscanf(topic, "%36s/%d", uuid, &id_sensor);
 
 #ifdef DEBUG
-    printf("[sscanf] %s\n", uuid);
-    printf("[sscanf] %d\n", id_sensor);
+printf("[sscanf] %s\n", uuid);printf("[sscanf] %d\n", id_sensor);
 #endif
 
         thing = get_thing_uuid(conn, uuid);
  
         if ( thing != NULL ) {
             strcpy(datum.payload, payload);
-            datum.id_thing = thing->id; 
-	        datum.id_sensor = id_sensor;
             datum.qos = qos;
 	        datum.retained = retained;
+            strcpy(datum.topic, topic); 
 
-           if ( verbose ) {
-                printf("\tThing ID#%d Name: %s\n", thing->id, thing->name);
-                printf("\tUUID: %s\n", thing->uuid);
+            if ( verbose ) {
+                printf("\tUUID: %s\n", uuid);
                 printf("\tSensor: %d\n", id_sensor);
                 printf("\tPayload: %s\n", payload);
 		        printf("\tQos: %d\n", qos);
 		        printf("\tRetained: %d\n", retained);
+                printf("\tTopic: %s\n", topic);
                 printf("\n");
             }
 
-            if ( !data_insert(conn, &datum) ) {
+            if ( !payload_insert(conn, &datum) ) {
                 printf("Error while insert datum of sensor\n");    
             }
         }

@@ -31,19 +31,3 @@ class Vwaccountsthingssensorsunits(models.Model):
         db_table = 'vwaccountsthingssensorsunits'
 
 
-class Vwthingsdata(models.Model):
-    id_thingdatum = models.IntegerField(blank=True, null=True)
-    dt_thingdatum = models.DateTimeField(blank=True, null=True)
-    id_thing = models.IntegerField(blank=True, null=True)
-    id_sensor = models.IntegerField(blank=True, null=True)
-    qos = models.IntegerField(blank=True, null=True)
-    retained = models.BooleanField(blank=True, null=True)
-    payload_dt = models.DateTimeField(blank=True, null=True)
-    payload_value = models.FloatField(blank=True, null=True)
-    payload_message = models.TextField(blank=True, null=True)
-
-    class Meta:
-        managed = False  # Created from a view. Don't remove.
-        db_table = 'vwthingsdata'
-
-

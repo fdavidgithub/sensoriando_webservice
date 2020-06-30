@@ -79,20 +79,6 @@ class Sensorsunits(models.Model):
 
 
 
-class Thingsdata(models.Model):
-    dt = models.DateTimeField()
-    id_thing = models.ForeignKey(Things, models.DO_NOTHING, db_column='id_thing')
-    id_sensor = models.ForeignKey(Sensors, models.DO_NOTHING, db_column='id_sensor')
-    qos = models.IntegerField()
-    retained = models.BooleanField()
-    payload = models.TextField()  # This field type is a guess.
-
-    class Meta:
-        managed = False
-        db_table = 'thingsdata'
-        unique_together = (('id_thing', 'id_sensor', 'payload'),)
-
-
 class Thingstags(models.Model):
     dt = models.DateTimeField()
     id_thing = models.ForeignKey(Things, models.DO_NOTHING, db_column='id_thing')
@@ -115,4 +101,31 @@ class Thingsparams(models.Model):
         db_table = 'thingsparams'
         unique_together = (('id_thing', 'key'),)
 
+
+class Payloads(models.Model):
+    dt = models.DateTimeField()
+    qos = models.IntegerField()
+    retained = models.BooleanField()
+    topic = models.CharField(max_length=265)
+    payload = models.TextField()  # This field type is a guess.
+
+    class Meta:
+        managed = False
+        db_table = 'payloads'
+        unique_together = (('topic', 'payload'),)
+
+
+class Thingssensorsdata(models.Model):
+    dt = models.DateTimeField()
+    id_payload = models.ForeignKey(Payloads, models.DO_NOTHING, db_column='id_payload')
+    id_thing = models.ForeignKey(Things, models.DO_NOTHING, db_column='id_thing')
+    id_sensor = models.ForeignKey(Sensors, models.DO_NOTHING, db_column='id_sensor')
+    dtread = models.DateTimeField()
+    value = models.FloatField(blank=True, null=True)
+    message = models.CharField(max_length=256, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'thingssensorsdata'
+        unique_together = (('id_payload', 'id_thing', 'id_sensor'),)
 

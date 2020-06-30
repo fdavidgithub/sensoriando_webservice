@@ -33,14 +33,14 @@ PGconn* do_connect(char *db, char *user, char *passwd, char *host)
 }
 
 int
-data_insert(PGconn *conn, Datum *datum)
+payload_insert(PGconn *conn, Payload *payload)
 {
     PGresult *res;
     char sql[256];
 
-    sprintf(sql, "INSERT INTO ThingsData (id_thing, id_sensor, payload, qos, retained) \
-                  VALUES (%d, %d, '%s', %d, '%d')", \
-                  datum->id_thing, datum->id_sensor, datum->payload, datum->qos, datum->retained);
+    sprintf(sql, "INSERT INTO Payloads (payload, qos, retained, topic) \
+                  VALUES ('%s', %d, '%d', '%s')", \
+                  payload->payload, payload->qos, payload->retained, payload->topic);
 
 #ifdef DEBUG
     printf("%s\n", sql);

@@ -25,12 +25,11 @@ typedef struct {
 typedef struct {
     int id;
     char dt[20];
-    int id_thing;
-    int id_sensor;
     char payload[256];
     int qos;
     int retained;
-} Datum;
+    char topic[256];
+} Payload;
 
 /* 
  * Prototypes
@@ -38,6 +37,6 @@ typedef struct {
 void do_exit(PGconn *);
 PGconn* do_connect(char *, char *, char *, char *);
 Thing* get_thing_uuid(PGconn *, char *);
-int data_insert(PGconn *, Datum *);
+int payload_insert(PGconn *, Payload *);
 
 #endif

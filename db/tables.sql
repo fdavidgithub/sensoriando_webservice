@@ -72,16 +72,28 @@ CREATE TABLE SensorsParams (
     UNIQUE(id_sensor, key)
 );
 
-CREATE TABLE ThingsData (
+CREATE TABLE Payloads (
     id          SERIAL NOT NULL PRIMARY KEY,
     dt          TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    id_thing    INTEGER NOT NULL REFERENCES Things (id),
-    id_sensor   INTEGER NOT NULL REFERENCES Sensors (id),
     qos         INTEGER NOT NULL,
     retained    BOOLEAN NOT NULL,
+    topic       VARCHAR(265) NOT NULL,
     payload	    JSONb NOT NULL,
 
-    UNIQUE (id_thing, id_sensor, payload)
+    UNIQUE (topic, payload)
+);
+
+CREATE TABLE ThingsSensorsData (
+    id          SERIAL NOT NULL PRIMARY KEY,
+    dt          TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id_payload  INTEGER NOT NULL REFERENCES Payloads (id),
+    id_thing    INTEGER NOT NULL REFERENCES Things (id),
+    id_sensor   INTEGER NOT NULL REFERENCES Sensors (id),
+    dtread      TIMESTAMPTZ NOT NULL,
+    value       FLOAT,
+    message     VARCHAR(256),
+    
+    UNIQUE (id_payload, id_thing, id_sensor)
 );
 
 CREATE TABLE AccountsThings (
