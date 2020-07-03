@@ -9,10 +9,9 @@ from django.db.models.functions import Extract, Concat
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
 
-from .legacy_tables import Things, Thingstags, Sensors, Accounts, Accountsthings, Sensorsunits, \
-                           Thingssensorsdata
-from .legacy_views import Vwaccountsthingssensorsunits
-from .models import Account
+from .legacy_tables import Things, Thingstags, Modulessensors, Accounts, Accountsthings, Sensors, Sensorsunits, \
+                           Thingsmodulessensorsdata
+from .models import djAccount
 
 from .forms import SignUpForm, AccountForm, UserForm, ThingForm
 
@@ -31,7 +30,7 @@ def SignUp(request):
             state   = form.cleaned_data.get('state')
             country = form.cleaned_data.get('country')
        
-            account = Account(
+            account = djAccount(
                         dt=datetime.datetime.today(),
                         username=user.username,
                         city=city, 
@@ -52,45 +51,45 @@ def SignUp(request):
     return render(request, 'signup.html', {'form': form})
 
 
-@csrf_exempt
-def topics(request):
+#@csrf_exempt
+#def topics(request):
     # Monta resposta em CSV
-    response = HttpResponse(content_type='text/csv')
-    writer = unicodecsv.writer(response, encoding='UTF-8')
+#    response = HttpResponse(content_type='text/csv')
+#    writer = unicodecsv.writer(response, encoding='UTF-8')
 
-    valid = Accounts.objects.filter(username=request.POST.get("username"), 
-                                   password=request.POST.get("password"),
-                                  )
+#    valid = Accounts.objects.filter(username=request.POST.get("username"), 
+#                                   password=request.POST.get("password"),
+#                                  )
     
-    regs = Sensors.objects.filter(user_ptr_id=valid[0].user_ptr_id)
+#    regs = Sensors.objects.filter(user_ptr_id=valid[0].user_ptr_id)
 
-    for r in regs:
-        name="{}/{}".format(r.id_local, r.name)
-        row = [r.id, name, r.token]
+#    for r in regs:
+#        name="{}/{}".format(r.id_local, r.name)
+#        row = [r.id, name, r.token]
 
-        writer.writerow(row)
+#        writer.writerow(row)
 
-    return response
+#    return response
 
-@csrf_exempt
-def export_csv(request):
+#@csrf_exempt
+#def export_csv(request):
     # Monta resposta em CSV
-    response = HttpResponse(content_type='text/csv')
-    writer = unicodecsv.writer(response, encoding='UTF-8')
+#    response = HttpResponse(content_type='text/csv')
+#    writer = unicodecsv.writer(response, encoding='UTF-8')
 
-    valid = Accounts.objects.filter(username=request.POST.get("username"), 
-                                   password=request.POST.get("password"),
-                                  )
+#    valid = Accounts.objects.filter(username=request.POST.get("username"), 
+#                                   password=request.POST.get("password"),
+#                                  )
     
-    regs = Sensors.objects.filter(user_ptr_id=valid[0].user_ptr_id)
+#    regs = Sensors.objects.filter(user_ptr_id=valid[0].user_ptr_id)
 
-    for r in regs:
-        name="{}/{}".format(r.id_local, r.name)
-        row = [r.id, name, r.token]
+#    for r in regs:
+#        name="{}/{}".format(r.id_local, r.name)
+#        row = [r.id, name, r.token]
 
-        writer.writerow(row)
+#        writer.writerow(row)
 
-    return response
+#    return response
 
 def ListPrivateSensors(request):
     if not request.user.is_authenticated:
@@ -104,12 +103,15 @@ def ListPrivateSensors(request):
        
         for thing in things:
             try:
-                thingdatum = Thingssensorsdata.objects.filter(id_thing = thing.id).latest('id')
+                thingdatum = Thingsmodulessensorsdata.objects.filter(id_thing = thing.id).latest('id')
                 last_update = thingdatum.dt
             except:
                 last_update = 'nenhuma'
 
-            sensors = Sensors.objects.filter(thingssensorsdata__id_thing = thing.id).distinct()
+            modulessensors = Modulessensors.objects.filter(thingsmodulessensorsdata__id_thing = thing.id).distinct()
+            modulessensors_ids = modulessensors.values_list('id_sensor', flat=True)
+
+            sensors = Sensors.objects.filter(id__in = modulessensors_ids)
 
             datalist.append({
                 'id': thing.id,
@@ -155,14 +157,17 @@ def ListPublicSensors(request, filterparam=None):
        
         for thing in things:
             try:
-                thingdatum = Thingssensorsdata.objects.filter(id_thing = thing.id).latest('id')
+                thingdatum = Thingsmodulessensorsdata.objects.filter(id_thing = thing.id).latest('id')
                 last_update = thingdatum.dt
             except:
                 last_update = 'nenhuma'
 
             sensorlist = []
-            sensors = Sensors.objects.filter(thingssensorsdata__id_thing = thing.id).distinct()
-            
+            modulessensors = Modulessensors.objects.filter(thingsmodulessensorsdata__id_thing = thing.id).distinct()
+            modulessensors_ids = modulessensors.values_list('id_sensor', flat=True)
+
+            sensors = Sensors.objects.filter(id__in = modulessensors_ids)
+
             if filterparam is not None:
                 if "sensor" in query:
                     filterapply = query['sensor']
@@ -176,8 +181,12 @@ def ListPublicSensors(request, filterparam=None):
  
                     thingstags = Thingstags.objects.filter(id_thing = thing.id, name = query['flag'])
                     thing_ids = thingstags.values_list('id_thing', flat=True)
-                    sensors = sensors.filter(thingssensorsdata__id_thing__in = thing_ids)
- 
+                    
+                    modulessensors = Modulessensors.objects.filter(thingsmodulessensorsdata__id_thing__in = thing_ids)
+                    modulessensors_ids = modulessensors.values_list('id_sensor', flat=True)
+
+                    sensors = Sensors.objects.filter(id__in = modulessensors_ids)
+
             if sensors:
                 datalist.append({
                     'id': thing.id,
@@ -222,7 +231,10 @@ def MyAccount(request, username, tab):
     things = Things.objects.filter(accountsthings__id_account = account.id)
 
     things_ids = things.values_list('id', flat=True)
-    sensors = Sensors.objects.filter(thingssensorsdata__id_thing__in = things_ids).distinct()
+    modulessensors = Modulessensors.objects.filter(thingsmodulessensorsdata__id_thing__in = things_ids).distinct()
+    modulessensors_ids = modulessensors.values_list('id_sensor', flat=True)
+    
+    sensors = Sensors.objects.filter(id__in = modulessensors_ids)
 
     sensorlist = []
     for sensor in sensors:
@@ -312,31 +324,29 @@ def SensorDetails(request, id_thing):
     # Get data
     thing = Things.objects.get(id = id_thing)
     account = Accounts.objects.get(accountsthings__id_thing = thing.id)
-    sensors = Sensors.objects.filter(thingssensorsdata__id_thing = thing.id).order_by('name').distinct()
-    lastrecord = Thingssensorsdata.objects.filter(id_thing = thing.id).last()
-    
-    if lastrecord is not None:
-        lastdatum = lastrecord.dtread.astimezone()
-    else:
-        lastdatum = None
-
+ 
     if account.ispublic:
         access = 'Publico'
     else:
         access = 'Privado'
-
+   
+    modulessensors = Modulessensors.objects.filter(thingsmodulessensorsdata__id_thing = thing.id).distinct()
+    
+    # Filter
     sensorslist = []
     chartview_label = None
     chartview_title = None
 
-    for sensor in sensors:
+    for modulesensor in modulessensors:
+        id_sensor = modulesensor.id_sensor.id
+        
         # Get unit select by user
-        unit = request.COOKIES.get('unit' + str(sensor.id))
-        chart = request.COOKIES.get('chart' + str(sensor.id))
-        precision = request.COOKIES.get('precision' + str(sensor.id))
+        unit = request.COOKIES.get('unit' + str(id_sensor))
+        chart = request.COOKIES.get('chart' + str(id_sensor))
+        precision = request.COOKIES.get('precision' + str(id_sensor))
  
         if unit is None:
-            sensorunit = Sensorsunits.objects.get(id_sensor = sensor.id, isdefault = True)
+            sensorunit = Sensorsunits.objects.get(id_sensor = id_sensor, isdefault = True)
         else:
             sensorunit = Sensorsunits.objects.get(id = unit)
 
@@ -350,23 +360,35 @@ def SensorDetails(request, id_thing):
  
         # Check if is value or message
         if chart == 'table':
-            data = Thingssensorsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, message__isnull = False) \
+            data = Thingsmodulessensorsdata.objects.filter(id_thing = thing.id, id_modulesensor = modulesensor.id, message__isnull = False) \
                     .order_by('-dt')[:10]
-        elif chart == 'display':
-            data = Thingssensorsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, value__isnull = False) \
-                    .last()
-            chartview_label = data.dtread.strftime("%d/%m/%Y %H:%M:S")
-        else:
-            data = Thingssensorsdata.objects.filter(id_thing = thing.id, id_sensor = sensor.id, value__isnull = False) \
-                    .order_by('-dt')
 
-            # Grouping data of sensor        
+            lastdatum = None
+        elif chart == 'display':
+            data = Thingsmodulessensorsdata.objects.filter(id_thing = thing.id, id_modulesensor = modulesensor.id, value__isnull = False) \
+                    .last()
+        
+            chartview_label = data.dtread.strftime("%d/%m/%Y %H:%M:S")
+            lastdatum = None
+        else:
+            data = Thingsmodulessensorsdata.objects.filter(id_thing = thing.id, id_modulesensor = modulesensor.id, value__isnull = False) \
+                    .order_by('dt')
+
             if data is None:
                 chartview = None
             else:
                 if chartview is None:
                     chartview = CHARTVIEW_DEFAULT
-          
+
+            # Datetime show data
+            lastrecord = data.last()
+
+            if lastrecord is not None:
+                lastdatum = lastrecord.dtread.astimezone()
+            else:
+                lastdatum = None
+
+            # Grouping data of sensor
             if chartview == 's':
                 chartview_label = lastdatum.strftime("%d/%m/%Y %H:%M")
                 chartview_title = 'Segundos'
@@ -376,7 +398,7 @@ def SensorDetails(request, id_thing):
                                    dtread__day=lastdatum.day, \
                                    dtread__hour=lastdatum.hour, \
                                    dtread__minute=lastdatum.minute)
- 
+                
                 data = data.values(group_dt=Extract('dtread', 'second')) \
                         .annotate(group_value=Avg('value')) \
                         .order_by('group_dt', 'group_value')
@@ -437,11 +459,13 @@ def SensorDetails(request, id_thing):
             for datum in data:
                 pv = datum['group_value'] # Use to calc in expression
                 datum['group_value'] = round(eval(sensorunit.expression), precision)
-      
+     
         # Build dict sensor + unit
         sensorslist.append({
-            'sensor': sensor,
+            'sensor': Sensors.objects.get(id = id_sensor),
             'type': chart,
+            'label': chartview_label,
+            'lastdatum': lastdatum,
             'unit': sensorunit,
             'data': data
         })
@@ -453,7 +477,6 @@ def SensorDetails(request, id_thing):
         'city': account.city,
         'state': account.state,
         'lastdatum': lastdatum,
-        'label': chartview_label,
         'title': chartview_title,
         'country': account.country,
         'access': access,

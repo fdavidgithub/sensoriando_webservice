@@ -23,11 +23,13 @@ class Vwaccountsthings(models.Model):
 class Vwaccountsthingssensorsunits(models.Model):
     id_account = models.IntegerField(blank=True, null=True)
     id_thing = models.IntegerField(blank=True, null=True)
+    id_module= models.IntegerField(blank=True, null=True)
+    id_modulesensor = models.IntegerField(blank=True, null=True)
     id_sensor = models.IntegerField(blank=True, null=True)
-    id_unit = models.IntegerField(blank=True, null=True)
+    id_sensorunit = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False  # Created from a view. Don't remove.
-        db_table = 'vwaccountsthingssensorsunits'
+        db_table = 'vwaccountsthingsmodulessensorsunits'
 
 

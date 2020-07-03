@@ -13,8 +13,13 @@ if [ -z $SENSOR ]; then
     export SENSOR=1
 fi
 
+if [ $SENSOR -eq 2 ]; then
+    echo "Message is incompatible with it"
+    exit
+fi
+
 UUID=$(psql -c "select uuid from things where id = $THING" -t)
-SENSOR=$(psql -c "select id from sensors where id = $SENSOR" -t)
+SENSOR=$(psql -c "select id from modulessensors where id = $SENSOR" -t)
 QOS=1		# 0, 1 or 2
 RETAINED=1 	# 1 true or 0 false
 
@@ -29,7 +34,7 @@ TOPIC=$UUID/$SENSOR
 TOPIC=$(echo $TOPIC | sed 's/ //g') #Remove whitespace
 
 echo "Thing  : $UUID"
-echo "Sensor : $SENSOR"
+echo "ModuleSensor : $SENSOR"
 echo "Topic  : $TOPIC"
 echo "Payload: $PAYLOAD"
 

@@ -17,28 +17,31 @@ CREATE OR REPLACE VIEW vwAccountsThings AS
         INNER JOIN Things T ON T.id = AT.id_thing
     WHERE A.status = 'TRUE';
 
-CREATE OR REPLACE VIEW vwAccountsThingsSensorsUnits AS
+CREATE OR REPLACE VIEW vwAccountsThingsModulesSensorsUnits AS
     SELECT  ROW_NUMBER() OVER() AS id, /* need to Django ORM */
             A.id_account,
             A.id_thing,
+            A.id_module,
+            A.id_modulesensor,
             A.id_sensor,
-            A.id_unit
+            A.id_sensorunit
     FROM (    
     
     SELECT DISTINCT
         A.id AS id_account,
         T.id AS id_thing,
-        S.id AS id_sensor,
-        SU.id AS id_unit
+        MS.id_module AS id_module,
+        MS.id AS id_modulesensor,
+        SU.id_sensor AS id_sensor,
+        SU.id AS id_sensorunit
     FROM Accounts A
         INNER JOIN AccountsThings AT ON AT.id_account = A.id
         INNER JOIN Things T ON T.id = AT.id_thing
-        INNER JOIN ThingsSensorsData TD ON TD.id_thing = T.id
-        INNER JOIN Sensors S ON S.id = TD.id_sensor
-        LEFT JOIN SensorsUnits SU ON SU.id_sensor = S.id
-                                 AND SU.isdefault = 'TRUE'
+        INNER JOIN ThingsModulesSensorsData TD ON TD.id_thing = T.id
+        INNER JOIN ModulesSensors MS ON MS.id = TD.id_modulesensor
+        INNER JOIN SensorsUnits SU ON SU.id_sensor = MS.id_sensor
+                                  AND SU.isdefault = 'TRUE'
     WHERE A.status = 'TRUE'
-    ORDER BY A.id, T.id, S.id
     
     ) A;
 

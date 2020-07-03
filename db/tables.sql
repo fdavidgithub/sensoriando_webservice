@@ -12,6 +12,10 @@ CREATE TABLE Accounts (
     UNIQUE(username)
 );
 
+
+/*
+ * Central
+ */
 CREATE TABLE Things (
     id          SERIAL NOT NULL PRIMARY KEY,
     dt          TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -41,6 +45,23 @@ CREATE TABLE ThingsTags (
     UNIQUE(id_thing, name)
 );
 
+
+/* 
+ * Relation
+ */
+CREATE TABLE AccountsThings (
+    id          SERIAL NOT NULL PRIMARY KEY,
+    dt          TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id_account  INTEGER NOT NULL REFERENCES Accounts (id),
+    id_thing    INTEGER NOT NULL REFERENCES Things (id),
+
+    UNIQUE (id_account, id_thing)
+);
+
+
+/*
+ * Sensors
+ */
 CREATE TABLE Sensors (
 	id          SERIAL NOT NULL PRIMARY KEY,
 	dt          TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -62,16 +83,48 @@ CREATE TABLE SensorsUnits (
     UNIQUE (name)
 );
 
-CREATE TABLE SensorsParams (
+
+/* 
+ * Modulation
+ */
+CREATE TABLE Modules (
     id          SERIAL NOT NULL PRIMARY KEY,
     dt          TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    key         VARCHAR(20) NOT NULL,
-    value       VARCHAR(10) NOT NULL,
-    id_sensor   INTEGER NOT NULL REFERENCES Sensors (id),
+    name        VARCHAR(30) NOT NULL,
 
-    UNIQUE(id_sensor, key)
+    UNIQUE (name)
 );
 
+CREATE TABLE ModulesSensors (
+    id          SERIAL NOT NULL PRIMARY KEY,
+    dt          TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id_module   INTEGER NOT NULL REFERENCES Modules (id),
+    id_sensor   INTEGER NOT NULL REFERENCES Sensors (id)
+);
+
+CREATE TABLE ModulesSensorsParams (
+    id              SERIAL NOT NULL PRIMARY KEY,
+    dt              TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id_modulesensor INTEGER NOT NULL REFERENCES ModulesSensors (id),
+    key             VARCHAR(20) NOT NULL,
+    value           VARCHAR(10) NOT NULL,
+    
+    UNIQUE(id_modulesensor, key)
+);
+
+CREATE TABLE ModulesSensorsTags (
+    id              SERIAL NOT NULL PRIMARY KEY,
+    dt              TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id_modulesensor INTEGER NOT NULL REFERENCES ModulesSensors (id),
+    name            VARCHAR(30) NOT NULL,
+    
+    UNIQUE(id_modulesensor, name)
+);
+
+
+/*
+ * Iot's data
+ */
 CREATE TABLE Payloads (
     id          SERIAL NOT NULL PRIMARY KEY,
     dt          TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -83,26 +136,17 @@ CREATE TABLE Payloads (
     UNIQUE (topic, payload)
 );
 
-CREATE TABLE ThingsSensorsData (
-    id          SERIAL NOT NULL PRIMARY KEY,
-    dt          TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    id_payload  INTEGER NOT NULL REFERENCES Payloads (id),
-    id_thing    INTEGER NOT NULL REFERENCES Things (id),
-    id_sensor   INTEGER NOT NULL REFERENCES Sensors (id),
-    dtread      TIMESTAMPTZ NOT NULL,
-    value       FLOAT,
-    message     VARCHAR(256),
+CREATE TABLE ThingsModulesSensorsData (
+    id              SERIAL NOT NULL PRIMARY KEY,
+    dt              TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id_payload      INTEGER NOT NULL REFERENCES Payloads (id),
+    id_thing        INTEGER NOT NULL REFERENCES Things (id),
+    id_modulesensor INTEGER NOT NULL REFERENCES ModulesSensors (id),
+    dtread          TIMESTAMPTZ NOT NULL,
+    value           FLOAT,
+    message         VARCHAR(256),
     
-    UNIQUE (id_payload, id_thing, id_sensor)
-);
-
-CREATE TABLE AccountsThings (
-    id          SERIAL NOT NULL PRIMARY KEY,
-    dt          TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    id_account  INTEGER NOT NULL REFERENCES Accounts (id),
-    id_thing    INTEGER NOT NULL REFERENCES Things (id),
-
-    UNIQUE (id_account, id_thing)
+    UNIQUE (id_payload, id_thing, id_modulesensor)
 );
 
 

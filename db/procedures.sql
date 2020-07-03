@@ -1,7 +1,7 @@
 CREATE OR REPLACE PROCEDURE DatumFromJson(id_payload INTEGER) AS
 $$
 BEGIN
-    INSERT INTO ThingsSensorsData (id_payload, id_thing, id_sensor, dtread, value, message)
+    INSERT INTO ThingsModulesSensorsData (id_payload, id_thing, id_modulesensor, dtread, value, message)
     SELECT  p.id,
 
             (SELECT t.id

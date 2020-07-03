@@ -20,6 +20,7 @@ setdatabase() {
     psql -f $CREATE
     log "$MSG"
 
+
     MSG="Creating tables from $TABLES"
     if [ -e $TABLES ]; then
         psql -f $TABLES
@@ -29,6 +30,7 @@ setdatabase() {
         MSG="${MSG} FAIL"
     fi   
     log "$MSG"
+
 
     MSG="Creating views from $VIEWS"
     if [ -e $VIEWS ]; then
@@ -40,6 +42,7 @@ setdatabase() {
     fi   
     log "$MSG"
 
+
     MSG="Insert records from $INSERTS:"
     if [ -e $INSERTS ]; then
         psql -f $INSERTS
@@ -49,6 +52,7 @@ setdatabase() {
         MSG="${MSG} FAIL"
     fi   
     log "$MSG"
+
 
     MSG="Creating procedures from $PROCEDURES"
     if [ -e $PRODECURES ]; then
@@ -70,6 +74,7 @@ setdatabase() {
         MSG="${MSG} FAIL"
     fi   
     log "$MSG"
+
 
     MSG="Creating triggers from $TRIGGERS"
     if [ -e $TRIGGERS ]; then
