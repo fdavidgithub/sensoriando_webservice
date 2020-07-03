@@ -6,7 +6,7 @@ from django.dispatch import receiver
 from .legacy_tables import *
 from .legacy_views import *
 
-class Account(Accounts):
+class djAccount(Accounts):
 #    user = models.OneToOneField(User, on_delete=models.CASCADE)
 #
 #    def __init__(self, *args, **kwargs):
@@ -24,7 +24,7 @@ class Account(Accounts):
         verbose_name_plural = 'Accounts'
         proxy = True        
 
-class Thing(Things):
+class djThing(Things):
     def __str__(self):
         return self.name
 
@@ -33,7 +33,7 @@ class Thing(Things):
         verbose_name_plural = 'Things'
         proxy = True        
 
-class Sensor(Sensors):
+class djSensor(Sensors):
     def __str__(self):
         return self.name
 
