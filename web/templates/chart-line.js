@@ -57,7 +57,7 @@ window.onload = function() {
 						display: true,
 						scaleLabel: {
 							display: true,
-                            labelString: '{{ context.label }}'
+                            labelString: '{{ sensor.label }}'
 						}
 					}],
 					yAxes: [{
