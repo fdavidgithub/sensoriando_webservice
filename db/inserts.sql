@@ -53,8 +53,8 @@ BEGIN
 	        ('Metro',               'm',    2, (SELECT id FROM Sensors WHERE name = Distance), 'TRUE',  'pv'),
 	        ('Kilometro',           'km',   2, (SELECT id FROM Sensors WHERE name = Distance), 'FALSE', 'pv / 1000'),
 
-	        ('Celsio',              'C',    2, (SELECT id FROM Sensors WHERE name = Temperature), 'FALSE', 'pv * -273.15'),
-	        ('Farenhit',            'F',    2, (SELECT id FROM Sensors WHERE name = Temperature), 'FALSE', '(pv * -273.15) * 9 / 5 + 32'),
+	        ('Celsio',              'C',    2, (SELECT id FROM Sensors WHERE name = Temperature), 'FALSE', 'pv - 273.15'),
+	        ('Farenhit',            'F',    2, (SELECT id FROM Sensors WHERE name = Temperature), 'FALSE', '(pv - 273.15) * 9 / 5 + 32'),
 	        ('Kelvin',              'K',    2, (SELECT id FROM Sensors WHERE name = Temperature), 'TRUE',  'pv'),
 
 	        ('Grama',               'g',    3, (SELECT id FROM Sensors WHERE name = Mass), 'FALSE', 'pv * 1000'),
