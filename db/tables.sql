@@ -1,13 +1,26 @@
+CREATE TABLE Plans (
+    id          SERIAL NOT NULL PRIMARY KEY,
+	dt          TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    name        VARCHAR(30) NOT NULL,
+    ispublic    BOOLEAN NOT NULL DEFAULT TRUE,
+    istrigger   BOOLEAN NOT NULL DEFAULT FALSE,
+    retation    INTEGER NOT NULL DEFAULT 1,
+    vlhour      FLOAT NOT NULL DEFAULT 0,
+    vltrigger   FLOAT NOT NULL DEFAULT 0,
+    visible     BOOLEAN NOT NULL DEFAULT TRUE, 
+
+    UNIQUE(name)
+);
+
 CREATE TABLE Accounts (
     id          SERIAL NOT NULL PRIMARY KEY,
 	dt          TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id_plan     INTEGER NOT NULL DEFAULT 1 REFERENCES Plans (id),
     username    VARCHAR(20) NOT NULL,
     city        VARCHAR(50) NOT NULL,
     state       VARCHAR(02) NOT NULL,
     country     VARCHAR(02) NOT NULL,
-    ispublic    BOOLEAN NOT NULL DEFAULT TRUE,
     status      BOOLEAN NOT NULL DEFAULT TRUE,
-    usetrigger  BOOLEAN NOT NULL DEFAULT FALSE,
 
     UNIQUE(username)
 );

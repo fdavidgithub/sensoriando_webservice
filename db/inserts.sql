@@ -7,7 +7,7 @@ DECLARE
     Distance        VARCHAR := 'Distancia';
     Temperature     VARCHAR := 'Temperatura';
     Mass            VARCHAR := 'Massa';
-    Time            VARCHAR := 'Tempo';
+    RTC             VARCHAR := 'TempoRTC';
     CurrentEletric  VARCHAR := 'Corrente Eletrica';
     EletricTension  VARCHAR := 'Tensao Eletrica';
     LightIntensity  VARCHAR := 'Intensidade Luminosa';
@@ -18,6 +18,7 @@ DECLARE
     State           VARCHAR := 'Estado';
     Message         VARCHAR := 'Mensagem';
     Humidity        VARCHAR := 'Umidade';
+    Storage         VARCHAR := 'Armazenamento';
 
     /* 
      * Modules
@@ -26,8 +27,12 @@ DECLARE
     Loud            VARCHAR := 'Sonoro';
     Weather         VARCHAR := 'Clima';
 BEGIN
+    INSERT INTO Plans  (name) VALUES ('Gratuito');
+    INSERT INTO Things (name) VALUES ('Prototypes');
+    
     INSERT INTO Sensors (name)
-    VALUES	(Time),
+    VALUES	(RTC),
+            (Storage),
             (Message),
             (Volume),
 	        (Distance),
@@ -61,9 +66,9 @@ BEGIN
 	        ('Kilo',                'kg',   3, (SELECT id FROM Sensors WHERE name = Mass), 'TRUE',  'pv'),
 	        ('Tonelada',            't',    2, (SELECT id FROM Sensors WHERE name = Mass), 'FALSE', 'pv / 1000'),
 
-	        ('Segundo',             's',    3, (SELECT id FROM Sensors WHERE name = Time), 'TRUE',  'pv'),
-	        ('Minuto',              'min',  2, (SELECT id FROM Sensors WHERE name = Time), 'FALSE', 'pv / 60'),
-	        ('Hora',                'h',    2, (SELECT id FROM Sensors WHERE name = Time), 'FALSE', 'pv / 120'),
+	        ('Segundo',             's',    3, (SELECT id FROM Sensors WHERE name = RTC), 'TRUE',  'pv'),
+	        ('Minuto',              'min',  2, (SELECT id FROM Sensors WHERE name = RTC), 'FALSE', 'pv / 60'),
+	        ('Hora',                'h',    2, (SELECT id FROM Sensors WHERE name = RTC), 'FALSE', 'pv / 120'),
 
 	        ('Ampere',              'A',    2, (SELECT id FROM Sensors WHERE name = CurrentEletric), 'TRUE', 'pv'),
 
@@ -89,7 +94,12 @@ BEGIN
             ('Texto',               NULL,   NULL, (SELECT id FROM Sensors WHERE name = Message), 'TRUE', NULL),
             ('Imagem',              NULL,   NULL, (SELECT id FROM Sensors WHERE name = Message), 'FALSE', NULL),
 
-            ('Umidade Relativa',     '%',   2, (SELECT id FROM Sensors WHERE name = Humidity), 'TRUE', 'pv');
+            ('Umidade Relativa',     '%',   2, (SELECT id FROM Sensors WHERE name = Humidity), 'TRUE', 'pv'),
+
+            ('Byte',                 'B',   2, (SELECT id FROM Sensors WHERE name = Storage), 'FALSE', 'pv * 1024'),
+            ('Kilobyte',            'KB',   2, (SELECT id FROM Sensors WHERE name = Storage), 'TRUE', 'pv'),
+            ('Megabyte',            'MB',   2, (SELECT id FROM Sensors WHERE name = Storage), 'FALSE', 'pv / 1024'),
+            ('Gigabyte',            'GB',   2, (SELECT id FROM Sensors WHERE name = Storage), 'FALSE', '(pv / 1024) / 1024');
 
 
     INSERT INTO Modules (name)
@@ -98,9 +108,10 @@ BEGIN
             (Weather);
  
     INSERT INTO ModulesSensors (id_module, id_sensor)
-    VALUES ((SELECT id FROM Modules WHERE name = System), (SELECT id FROM Sensors WHERE name = Time)),
+    VALUES ((SELECT id FROM Modules WHERE name = System), (SELECT id FROM Sensors WHERE name = RTC)),
+           ((SELECT id FROM Modules WHERE name = System), (SELECT id FROM Sensors WHERE name = Storage)),
            ((SELECT id FROM Modules WHERE name = System), (SELECT id FROM Sensors WHERE name = Message)),
-
+        
            ((SELECT id FROM Modules WHERE name = Loud), (SELECT id FROM Sensors WHERE name = Sound)),
 
            ((SELECT id FROM Modules WHERE name = Weather), (SELECT id FROM Sensors WHERE name = Temperature)),

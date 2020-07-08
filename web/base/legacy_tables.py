@@ -7,16 +7,28 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 
+class Plans(models.Model):
+    dt = models.DateTimeField()
+    name = models.CharField(unique=True, max_length=30)
+    ispublic = models.BooleanField()
+    istrigger = models.BooleanField()
+    retation = models.IntegerField()
+    vlhour = models.FloatField()
+    vltrigger = models.FloatField()
+    visible = models.BooleanField()
+
+    class Meta:
+        managed = False
+        db_table = 'plans'
 
 class Accounts(models.Model):
     dt = models.DateTimeField()
+    id_plan = models.ForeignKey(Plans, models.DO_NOTHING, db_column='id_plan')
     username = models.CharField(unique=True, max_length=20)
     city = models.CharField(max_length=50)
     state = models.CharField(max_length=2)
     country = models.CharField(max_length=2)
-    ispublic = models.BooleanField()
     status = models.BooleanField()
-    usetrigger = models.BooleanField()
 
     class Meta:
         managed = False
