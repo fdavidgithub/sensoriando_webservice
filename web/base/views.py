@@ -10,7 +10,7 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
 
 from .legacy_tables import Things, Thingstags, Modulessensors, Accounts, Accountsthings, Sensors, Sensorsunits, \
-                           Thingsmodulessensorsdata
+                           Thingsmodulessensorsdata, Plans
 from .models import djAccount
 
 from .forms import SignUpForm, AccountForm, UserForm, ThingForm
@@ -29,16 +29,17 @@ def SignUp(request):
             city    = form.cleaned_data.get('city')
             state   = form.cleaned_data.get('state')
             country = form.cleaned_data.get('country')
-       
+     
+            plan = Plans.objects.get(id = 1)
+
             account = djAccount(
                         dt=datetime.datetime.today(),
                         username=user.username,
                         city=city, 
                         state=state, 
                         country=country, 
-                        ispublic=True, 
-                        status=True, 
-                        usetrigger=False
+                        id_plan=plan, 
+                        status=True
                       )
             account.save()
 
@@ -132,7 +133,8 @@ def ListPrivateSensors(request):
     return render(request, 'home.html', {'contexts': contexts})
 
 def ListPublicSensors(request, filterparam=None):
-    accounts = Accounts.objects.filter(ispublic = True)
+    plans = Plans.objects.filter(ispublic = True)
+    accounts = Accounts.objects.filter(id_plan__in = plans)
 
     filterapply = ''
     if filterparam is not None:
@@ -324,8 +326,9 @@ def SensorDetails(request, id_thing):
     # Get data
     thing = Things.objects.get(id = id_thing)
     account = Accounts.objects.get(accountsthings__id_thing = thing.id)
- 
-    if account.ispublic:
+    id_plan = account.id_plan.id
+
+    if Plans.objects.get(id = id_plan).ispublic:
         access = 'Publico'
     else:
         access = 'Privado'
