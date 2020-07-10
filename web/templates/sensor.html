@@ -50,7 +50,7 @@ function setCookie(cname, cvalue, exdays) {
         <div class="col-xs-6 col-sm-4">
             <ul class="no_bullets" id="table-channel-metadata">
                 <li><b>Cidade: </b>{{ context.city }}/{{ context.state }}</li>
-                <li><b>País:   </b>{{ context.country }}</li>
+                <li><b>Pais:   </b>{{ context.country }}</li>
                 <li><b>Acesso: </b>{{ context.access }}</li>
             </ul>
         </div>
@@ -140,7 +140,7 @@ function setCookie(cname, cvalue, exdays) {
             <div class="panel-body">
                 <div class="row">
 {% if detail.type == 'table' %}         
-                    <table class="table table-striped">
+                    <table height=201 width=100% class="table table-striped">
                         <tr>
                         <th> Data </th>
                         <th> Mensagem </th>
@@ -148,11 +148,27 @@ function setCookie(cname, cvalue, exdays) {
 
 {% for tablelist in detail.data %}
                             <tr>
-                                <th>{{ tablelist.payload_dt }}</th>
-                                <th>{{ tablelist.payload_message }}</th>
+                                <th>{{ tablelist.dtread }}</th>
+                                <th>{{ tablelist.message }}</th>
                             </tr>
 {% endfor %}
                     </table>
+{% elif detail.type == 'display' %}
+                    <table height=201 width=100% class="table table-striped">
+                        <tr>
+                            <th> {{ detail.unit.name }} </th>
+                            <th> {{ context.title }} </th>
+                        </tr>
+
+                        <tr>
+{% for displaylist in detail.data %}
+<th> <font size="20"> {{ displaylist.group_value }}</font> {{ detail.unit.initial }} </th>
+{% endfor %}
+                        </tr>
+                        <tr>
+                            <th> {{ detail.lastdatum }}</th>
+                        </tr>
+                    </table>   
 {% else %}
                     <canvas id="{{ context.canva }}{{ forloop.counter }}"></canvas>
 {% endif %}

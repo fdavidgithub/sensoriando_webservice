@@ -334,6 +334,7 @@ def SensorDetails(request, id_thing):
         access = 'Privado'
    
     modulessensors = Modulessensors.objects.filter(thingsmodulessensorsdata__id_thing = thing.id).distinct()
+    modulessensors = modulessensors.order_by("-id")
     
     # Filter
     sensorslist = []
@@ -363,19 +364,13 @@ def SensorDetails(request, id_thing):
  
         # Check if is value or message
         if chart == 'table':
-            data = Thingsmodulessensorsdata.objects.filter(id_thing = thing.id, id_modulesensor = modulesensor.id, message__isnull = False) \
-                    .order_by('-dt')[:10]
+            data = Thingsmodulessensorsdata.objects.filter(id_thing = thing.id, id_modulesensor = modulesensor.id, value__isnull = True) \
+                    .order_by('-dt')[:5]
 
             lastdatum = None
-        elif chart == 'display':
-            data = Thingsmodulessensorsdata.objects.filter(id_thing = thing.id, id_modulesensor = modulesensor.id, value__isnull = False) \
-                    .last()
-        
-            chartview_label = data.dtread.strftime("%d/%m/%Y %H:%M:S")
-            lastdatum = None
         else:
-            data = Thingsmodulessensorsdata.objects.filter(id_thing = thing.id, id_modulesensor = modulesensor.id, value__isnull = False) \
-                    .order_by('dt')
+            data = Thingsmodulessensorsdata.objects \
+                    .filter(id_thing = thing.id, id_modulesensor = modulesensor.id, value__isnull = False)
 
             if data is None:
                 chartview = None
@@ -389,7 +384,7 @@ def SensorDetails(request, id_thing):
             if lastrecord is not None:
                 lastdatum = lastrecord.dtread.astimezone()
             else:
-                lastdatum = None
+                chartview = None
 
             # Grouping data of sensor
             if chartview == 's':
@@ -455,12 +450,15 @@ def SensorDetails(request, id_thing):
                         .annotate(group_value=Avg('value')) \
                         .order_by('group_dt', 'group_value')
             else:
-                chartview_label = '?'
-                chartview_title = 'No Data'
- 
-            # Recalc to convert
+                chartview_label = 'Sem Dados'
+                chartview_title = 'Selecione Visualizacao'
+            
+            if chart == 'display':
+                data = data[:1]
+            
+            # Recalc values by expression
             for datum in data:
-                pv = datum['group_value'] # Use to calc in expression
+                pv = datum['group_value'] # Variable use in calc
                 datum['group_value'] = round(eval(sensorunit.expression), precision)
      
         # Build dict sensor + unit

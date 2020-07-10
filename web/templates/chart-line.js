@@ -1,8 +1,10 @@
 window.onload = function() {
 
-{% for sensor in context.sensors %}        
+{% for sensor in context.sensors %}
+{% if sensor.type != 'table' and sensor.type != 'display' %}
     var ctx{{ forloop.counter }} = document.getElementById("{{ context.canva }}{{ forloop.counter }}").getContext('2d');
 	window.myLine = new Chart(ctx{{ forloop.counter }}, config{{ forloop.counter }});
+{% endif %}
 {% endfor %}
 
 //    setInterval(function(){
@@ -12,6 +14,8 @@ window.onload = function() {
 };
 
 {% for sensor in context.sensors %}
+{% if sensor.type != 'table' and sensor.type != 'display' %}
+ 
         var config{{ forloop.counter }} = {
             type: '{{ sensor.type }}',
 			
@@ -70,5 +74,5 @@ window.onload = function() {
 				}
 			}
 		};
+{% endif %}
 {% endfor %}
-
