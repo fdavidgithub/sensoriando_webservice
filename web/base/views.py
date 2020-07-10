@@ -454,7 +454,7 @@ def SensorDetails(request, id_thing):
                 chartview_title = 'Selecione Visualizacao'
             
             if chart == 'display':
-                data = data[:1]
+                data = data.order_by('-group_dt')[:1]
             
             # Recalc values by expression
             for datum in data:
