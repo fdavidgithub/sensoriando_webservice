@@ -117,6 +117,7 @@ def ListPrivateSensors(request):
             datalist.append({
                 'id': thing.id,
                 'name': thing.name,
+                'nameslug': thing.name.replace(" ", "-"),
                 'city': account.city,
                 'cityslug': account.city.replace(" ", "-"),
                 'state': account.state,
@@ -192,6 +193,7 @@ def ListPublicSensors(request, filterparam=None):
             if sensors:
                 datalist.append({
                     'id': thing.id,
+                    'nameslug': thing.name.replace(" ", "-"),
                     'name': thing.name,
                     'city': account.city,
                     'cityslug': account.city.replace(" ", "-"), 
@@ -319,12 +321,12 @@ def MyAccount(request, username, tab):
 def RedirectSensoriando(request):
     return redirect('http://www.sensoriando.com.br')
 
-def SensorDetails(request, id_thing):
+def SensorDetails(request, slug_thing):
     # Get from cookies
     chartview = request.COOKIES.get('chartview')
    
     # Get data
-    thing = Things.objects.get(id = id_thing)
+    thing = Things.objects.get(name = slug_thing.replace("-", " "))
     account = Accounts.objects.get(accountsthings__id_thing = thing.id)
     id_plan = account.id_plan.id
 
