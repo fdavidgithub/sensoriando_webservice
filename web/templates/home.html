@@ -134,13 +134,12 @@ function setFilter(sensor, tag){
       <div class="col-pad">
 
           <div class="form-group">
-            <label>Total de Registros</label>
+              <label>Total de Registros: </label> {{ contexts.records }} {{ contexts.rec_unit }}
           </div>
 
           <div class="form-group">
-            <label>Tempo de retencao</label>
+              <label>Tempo de retencao: </label> {{ contexts.retation_current }} de {{ contexts.retation_full }} {{ contexts.ret_unit }}
           </div>
-
 
       </div>
   </div>

@@ -96,39 +96,67 @@ def ListPrivateSensors(request):
     if not request.user.is_authenticated:
         return redirect('/home')
 
-    accounts = Accounts.objects.filter(username = request.user.username)
-    
+    account = Accounts.objects.get(username = request.user.username)
+
+    accountsthings = Accountsthings.objects.filter(id_account = account.id)
+    ids_thing = accountsthings.values_list('id_thing', flat=True)
+
+    id_plan = account.id_plan.id 
+    plans = Plans.objects.get(id = id_plan)
+
+    records = Thingsmodulessensorsdata.objects.filter(id_thing__in = ids_thing).count()
+
     datalist = []
-    for account in accounts:
-        things = Things.objects.filter(accountsthings__id_account = account.id)
+    things = Things.objects.filter(accountsthings__id_account = account.id)
        
-        for thing in things:
-            try:
-                thingdatum = Thingsmodulessensorsdata.objects.filter(id_thing = thing.id).latest('id')
-                last_update = thingdatum.dt
-            except:
-                last_update = 'nenhuma'
+    for thing in things:
+        try:
+            thingdatum = Thingsmodulessensorsdata.objects.filter(id_thing = thing.id).latest('id')
+            last_update = thingdatum.dt
+        except:
+            last_update = 'nenhuma'
 
-            modulessensors = Modulessensors.objects.filter(thingsmodulessensorsdata__id_thing = thing.id).distinct()
-            modulessensors_ids = modulessensors.values_list('id_sensor', flat=True)
+        modulessensors = Modulessensors.objects.filter(thingsmodulessensorsdata__id_thing = thing.id).distinct()
+        modulessensors_ids = modulessensors.values_list('id_sensor', flat=True)
 
-            sensors = Sensors.objects.filter(id__in = modulessensors_ids)
+        sensors = Sensors.objects.filter(id__in = modulessensors_ids)
 
-            datalist.append({
-                'id': thing.id,
-                'name': thing.name,
-                'nameslug': thing.name.replace(" ", "-"),
-                'city': account.city,
-                'cityslug': account.city.replace(" ", "-"),
-                'state': account.state,
-                'country': account.country,
-                'last_update': last_update,
-                'tags': Thingstags.objects.filter(id_thing = thing.id),
-                'sensors': sensors,
-            })
+        datalist.append({
+            'id': thing.id,
+            'name': thing.name,
+            'nameslug': thing.name.replace(" ", "-"),
+            'city': account.city,
+            'cityslug': account.city.replace(" ", "-"),
+            'state': account.state,
+            'country': account.country,
+            'last_update': last_update,
+            'tags': Thingstags.objects.filter(id_thing = thing.id),
+            'sensors': sensors,
+        })
 
+    if records > 1000000:
+        records = records/1000000
+        rec_unit = 'M'
+    elif records > 1000:
+        records = records/1000
+        rec_unit = 'K'
+    else:
+        rec_unit = ''
+
+    retation_current = round(records/60/60/24/30, 2)
+
+    if plans.retation > 1:
+        ret_unit = 'meses'
+    else:
+        ret_unit = 'mes'
+        
     contexts = {
-        'data': datalist
+        'data': datalist,
+        'records': records,
+        'rec_unit': rec_unit,
+        'retation_current': retation_current,
+        'retation_full': plans.retation,
+        'ret_unit': ret_unit,
     }
            
     return render(request, 'home.html', {'contexts': contexts})
