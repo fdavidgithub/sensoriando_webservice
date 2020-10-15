@@ -370,6 +370,7 @@ def SensorDetails(request, slug_thing):
     sensorslist = []
     chartview_label = None
     chartview_title = None
+    lastdatum = None
 
     for modulesensor in modulessensors:
         id_sensor = modulesensor.id_sensor.id
