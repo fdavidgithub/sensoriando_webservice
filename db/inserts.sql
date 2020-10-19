@@ -7,7 +7,7 @@ DECLARE
     Distance        VARCHAR := 'Distancia';
     Temperature     VARCHAR := 'Temperatura';
     Mass            VARCHAR := 'Massa';
-    RTC             VARCHAR := 'TempoRTC';
+    RTC             VARCHAR := 'Tempo';
     CurrentEletric  VARCHAR := 'Corrente Eletrica';
     EletricTension  VARCHAR := 'Tensao Eletrica';
     LightIntensity  VARCHAR := 'Intensidade Luminosa';
@@ -20,16 +20,19 @@ DECLARE
     Humidity        VARCHAR := 'Umidade';
     Storage         VARCHAR := 'Armazenamento';
 
-    /* 
-     * Modules
+    /*
+     * Things
      */
-    System          VARCHAR := 'Sistema';
-    Loud            VARCHAR := 'Sonoro';
-    Weather         VARCHAR := 'Clima';
+    Hub             VARCHAR := 'Prototype: Hub';
+    Sensor          VARCHAR := 'Prototype: Sensor';
+    Relay           VARCHAR := 'Prototype: Relay';
 BEGIN
     INSERT INTO Plans  (name) VALUES ('Gratuito');
-    INSERT INTO Things (name) VALUES ('Prototypes');
-    
+
+    INSERT INTO Things (name) VALUES (Hub);
+    INSERT INTO Things (name) VALUES (Sensor);
+    INSERT INTO Things (name, isrelay) VALUES (Relay, TRUE);
+
     INSERT INTO Sensors (name)
     VALUES	(RTC),
             (Storage),
@@ -102,20 +105,15 @@ BEGIN
             ('Gigabyte',            'GB',   2, (SELECT id FROM Sensors WHERE name = Storage), 'FALSE', '(pv / 1024) / 1024');
 
 
-    INSERT INTO Modules (name)
-    VALUES	(System),
-            (Loud),
-            (Weather);
+    INSERT INTO ThingsSensors (id_thing, id_sensor)
+    VALUES ((SELECT id FROM Things WHERE name = Hub), (SELECT id FROM Sensors WHERE name = RTC)),
+           ((SELECT id FROM Things WHERE name = Hub), (SELECT id FROM Sensors WHERE name = Storage)),
+           ((SELECT id FROM Things WHERE name = Hub), (SELECT id FROM Sensors WHERE name = Message)),
  
-    INSERT INTO ModulesSensors (id_module, id_sensor)
-    VALUES ((SELECT id FROM Modules WHERE name = System), (SELECT id FROM Sensors WHERE name = RTC)),
-           ((SELECT id FROM Modules WHERE name = System), (SELECT id FROM Sensors WHERE name = Storage)),
-           ((SELECT id FROM Modules WHERE name = System), (SELECT id FROM Sensors WHERE name = Message)),
+           ((SELECT id FROM Things WHERE name = Relay), (SELECT id FROM Sensors WHERE name = State)),
         
-           ((SELECT id FROM Modules WHERE name = Loud), (SELECT id FROM Sensors WHERE name = Sound)),
-
-           ((SELECT id FROM Modules WHERE name = Weather), (SELECT id FROM Sensors WHERE name = Temperature)),
-           ((SELECT id FROM Modules WHERE name = Weather), (SELECT id FROM Sensors WHERE name = Humidity));
+           ((SELECT id FROM Things WHERE name = Sensor), (SELECT id FROM Sensors WHERE name = Temperature)),
+           ((SELECT id FROM Things WHERE name = Sensor), (SELECT id FROM Sensors WHERE name = Humidity));
 
 END;
 $$ LANGUAGE plpgsql;

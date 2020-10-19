@@ -100,66 +100,65 @@ CREATE TABLE SensorsUnits (
 /* 
  * Modulation
  */
-CREATE TABLE Modules (
+CREATE TABLE ThingsSensors (
     id          SERIAL NOT NULL PRIMARY KEY,
     dt          TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    name        VARCHAR(30) NOT NULL,
-
-    UNIQUE (name)
-);
-
-CREATE TABLE ModulesSensors (
-    id          SERIAL NOT NULL PRIMARY KEY,
-    dt          TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    id_module   INTEGER NOT NULL REFERENCES Modules (id),
+    id_thing    INTEGER NOT NULL REFERENCES Things (id),
     id_sensor   INTEGER NOT NULL REFERENCES Sensors (id)
 );
 
-CREATE TABLE ModulesSensorsParams (
+CREATE TABLE ThingsSensorsParams (
     id              SERIAL NOT NULL PRIMARY KEY,
     dt              TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    id_modulesensor INTEGER NOT NULL REFERENCES ModulesSensors (id),
+    id_thingsensor  INTEGER NOT NULL REFERENCES ThingsSensors (id),
     key             VARCHAR(20) NOT NULL,
     value           VARCHAR(10) NOT NULL,
     
-    UNIQUE(id_modulesensor, key)
+    UNIQUE(id_thingsensor, key)
 );
 
-CREATE TABLE ModulesSensorsTags (
+CREATE TABLE ThingsSensorsTags (
     id              SERIAL NOT NULL PRIMARY KEY,
     dt              TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    id_modulesensor INTEGER NOT NULL REFERENCES ModulesSensors (id),
+    id_thingsensor INTEGER NOT NULL REFERENCES ThingsSensors (id),
     name            VARCHAR(30) NOT NULL,
     
-    UNIQUE(id_modulesensor, name)
+    UNIQUE(id_thingsensor, name)
 );
 
 
 /*
  * Iot's data
  */
-CREATE TABLE Payloads (
+CREATE TABLE Connections (
     id          SERIAL NOT NULL PRIMARY KEY,
     dt          TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     qos         INTEGER NOT NULL,
     retained    BOOLEAN NOT NULL,
-    topic       VARCHAR(265) NOT NULL,
-    payload	    JSONb NOT NULL,
+    topic       VARCHAR(256) NOT NULL,
 
-    UNIQUE (topic, payload)
+    UNIQUE (qos, retained, topic)
 );
 
-CREATE TABLE ThingsModulesSensorsData (
+CREATE TABLE Payloads (
+    id              SERIAL NOT NULL PRIMARY KEY,
+    dt              TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id_connection   INTEGER NOT NULL REFERENCES Connections (id),
+    payload	        JSONb NOT NULL,
+
+    UNIQUE (id_connection, payload)
+);
+
+CREATE TABLE ThingsSensorsData (
     id              SERIAL NOT NULL PRIMARY KEY,
     dt              TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     id_payload      INTEGER NOT NULL REFERENCES Payloads (id),
-    id_thing        INTEGER NOT NULL REFERENCES Things (id),
-    id_modulesensor INTEGER NOT NULL REFERENCES ModulesSensors (id),
+    id_thingsensor  INTEGER NOT NULL REFERENCES ThingsSensors (id),
     dtread          TIMESTAMPTZ NOT NULL,
     value           FLOAT,
     message         VARCHAR(256),
     
-    UNIQUE (id_payload, id_thing, id_modulesensor)
+    UNIQUE (id_payload, id_thingsensor)
 );
 
 
