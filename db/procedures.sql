@@ -1,14 +1,37 @@
+CREATE OR REPLACE PROCEDURE PayloadInsert(connPayload JSONb, connQos INTEGER, connRetained BOOLEAN, connTopic VARCHAR) AS
+$$
+DECLARE
+    connId INTEGER;
+BEGIN
+    SELECT c.id INTO connId
+    FROM Connections c
+    WHERE c.qos = connQos
+    AND   c.retained = connRetained
+    AND   c.topic = connTopic;
+
+    IF connId IS NULL THEN
+        INSERT INTO Connections (qos, retained, topic)
+        VALUES (connQos, connRetained, connTopic) 
+        RETURNING id INTO connId;
+    END IF;
+
+    INSERT INTO Payloads (id_connection, payload)
+    VALUES (connId, connPayload);
+END;
+$$ LANGUAGE plpgsql;
+
+
 CREATE OR REPLACE PROCEDURE DatumFromJson(id_payload INTEGER) AS
 $$
 BEGIN
-    INSERT INTO ThingsModulesSensorsData (id_payload, /*id_thing,*/ id_thingsensor, dtread, value, message)
+    INSERT INTO ThingsSensorsData (id_payload, /*id_thing,*/ id_thingsensor, dtread, value, message)
     SELECT  p.id,
 /*
             (SELECT t.id
              FROM Things t
              WHERE t.uuid = SUBSTRING(p.topic, 1, STRPOS(p.topic, '/')-1)::UUID),
 */            
-            SUBSTRING(p.topic, STRPOS(c.topic, '/')+1, LENGTH(c.topic))::INTEGER, 
+            SUBSTRING(c.topic, STRPOS(c.topic, '/')+1, LENGTH(c.topic))::INTEGER, 
 
             CASE 
                 WHEN p.payload->>'dt' IS NOT NULL 

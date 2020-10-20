@@ -14,7 +14,7 @@ if [ -z $SENSOR ]; then
 fi
 
 UUID=$(psql -c "select uuid from things where id = $THING" -t)
-SENSOR=$(psql -c "select id from modulessensors where id = $SENSOR" -t)
+SENSOR=$(psql -c "select id from thingssensors where id = $SENSOR" -t)
 QOS=1		# 0, 1 or 2
 RETAINED=1 	# 1 true or 0 false
 

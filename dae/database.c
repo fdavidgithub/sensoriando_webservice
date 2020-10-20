@@ -38,9 +38,14 @@ payload_insert(PGconn *conn, Payload *payload)
     PGresult *res;
     char sql[256];
 
+    sprintf(sql, "CALL PayloadInsert ('%s', %d, '%d', '%s')", \
+                 payload->payload, payload->qos, payload->retained, payload->topic);
+
+/*
     sprintf(sql, "INSERT INTO Payloads (payload, qos, retained, topic) \
                   VALUES ('%s', %d, '%d', '%s')", \
                   payload->payload, payload->qos, payload->retained, payload->topic);
+*/
 
 #ifdef DEBUG
     printf("%s\n", sql);
@@ -54,7 +59,7 @@ payload_insert(PGconn *conn, Payload *payload)
 
 
 Thing *
-get_thing_uuid(PGconn *conn, char *topic)
+get_thing_uuid(PGconn *conn, char *uuid)
 {
     PGresult *res;
     Thing *thing = NULL;
@@ -63,7 +68,7 @@ get_thing_uuid(PGconn *conn, char *topic)
 
     sprintf(sql, "SELECT id, dt, name, uuid \
                   FROM Things \
-                  WHERE uuid = '%s'", topic);
+                  WHERE uuid = '%s'", uuid);
 
 #ifdef DEBUG
     printf("%s\n", sql);
