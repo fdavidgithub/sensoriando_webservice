@@ -42,12 +42,4 @@ class djSensor(Sensors):
         verbose_name_plural = 'Sensors'
         proxy = True   
 
-class djModule(Modules):
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = "Module"
-        verbose_name_plural = 'Modules'
-        proxy = True   
 

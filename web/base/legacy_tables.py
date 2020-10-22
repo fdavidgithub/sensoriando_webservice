@@ -7,23 +7,10 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 
-class Plans(models.Model):
-    dt = models.DateTimeField()
-    name = models.CharField(unique=True, max_length=30)
-    ispublic = models.BooleanField()
-    istrigger = models.BooleanField()
-    retation = models.IntegerField()
-    vlhour = models.FloatField()
-    vltrigger = models.FloatField()
-    visible = models.BooleanField()
-
-    class Meta:
-        managed = False
-        db_table = 'plans'
 
 class Accounts(models.Model):
     dt = models.DateTimeField()
-    id_plan = models.ForeignKey(Plans, models.DO_NOTHING, db_column='id_plan')
+    id_plan = models.ForeignKey('Plans', models.DO_NOTHING, db_column='id_plan')
     username = models.CharField(unique=True, max_length=20)
     city = models.CharField(max_length=50)
     state = models.CharField(max_length=2)
@@ -46,59 +33,42 @@ class Accountsthings(models.Model):
         unique_together = (('id_account', 'id_thing'),)
 
 
-class Modules(models.Model):
+class Connections(models.Model):
     dt = models.DateTimeField()
-    name = models.CharField(unique=True, max_length=30)
+    qos = models.IntegerField()
+    retained = models.BooleanField()
+    topic = models.CharField(max_length=256)
 
     class Meta:
         managed = False
-        db_table = 'modules'
-
-
-class Modulessensors(models.Model):
-    dt = models.DateTimeField()
-    id_module = models.ForeignKey(Modules, models.DO_NOTHING, db_column='id_module')
-    id_sensor = models.ForeignKey('Sensors', models.DO_NOTHING, db_column='id_sensor')
-
-    class Meta:
-        managed = False
-        db_table = 'modulessensors'
-
-
-class Modulessensorsparams(models.Model):
-    dt = models.DateTimeField()
-    id_modulesensor = models.ForeignKey(Modulessensors, models.DO_NOTHING, db_column='id_modulesensor')
-    key = models.CharField(max_length=20)
-    value = models.CharField(max_length=10)
-
-    class Meta:
-        managed = False
-        db_table = 'modulessensorsparams'
-        unique_together = (('id_modulesensor', 'key'),)
-
-
-class Modulessensorstags(models.Model):
-    dt = models.DateTimeField()
-    id_modulesensor = models.ForeignKey(Modulessensors, models.DO_NOTHING, db_column='id_modulesensor')
-    name = models.CharField(max_length=30)
-
-    class Meta:
-        managed = False
-        db_table = 'modulessensorstags'
-        unique_together = (('id_modulesensor', 'name'),)
+        db_table = 'connections'
+        unique_together = (('qos', 'retained', 'topic'),)
 
 
 class Payloads(models.Model):
     dt = models.DateTimeField()
-    qos = models.IntegerField()
-    retained = models.BooleanField()
-    topic = models.CharField(max_length=265)
+    id_connection = models.ForeignKey(Connections, models.DO_NOTHING, db_column='id_connection')
     payload = models.TextField()  # This field type is a guess.
 
     class Meta:
         managed = False
         db_table = 'payloads'
-        unique_together = (('topic', 'payload'),)
+        unique_together = (('id_connection', 'payload'),)
+
+
+class Plans(models.Model):
+    dt = models.DateTimeField()
+    name = models.CharField(unique=True, max_length=30)
+    ispublic = models.BooleanField()
+    istrigger = models.BooleanField()
+    retation = models.IntegerField()
+    vlhour = models.FloatField()
+    vltrigger = models.FloatField()
+    visible = models.BooleanField()
+
+    class Meta:
+        managed = False
+        db_table = 'plans'
 
 
 class Sensors(models.Model):
@@ -135,21 +105,6 @@ class Things(models.Model):
         db_table = 'things'
 
 
-class Thingsmodulessensorsdata(models.Model):
-    dt = models.DateTimeField()
-    id_payload = models.ForeignKey(Payloads, models.DO_NOTHING, db_column='id_payload')
-    id_thing = models.ForeignKey(Things, models.DO_NOTHING, db_column='id_thing')
-    id_modulesensor = models.ForeignKey(Modulessensors, models.DO_NOTHING, db_column='id_modulesensor')
-    dtread = models.DateTimeField()
-    value = models.FloatField(blank=True, null=True)
-    message = models.CharField(max_length=256, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'thingsmodulessensorsdata'
-        unique_together = (('id_payload', 'id_thing', 'id_modulesensor'),)
-
-
 class Thingsparams(models.Model):
     dt = models.DateTimeField()
     key = models.CharField(max_length=20)
@@ -162,6 +117,53 @@ class Thingsparams(models.Model):
         unique_together = (('id_thing', 'key'),)
 
 
+class Thingssensors(models.Model):
+    dt = models.DateTimeField()
+    id_thing = models.ForeignKey(Things, models.DO_NOTHING, db_column='id_thing')
+    id_sensor = models.ForeignKey(Sensors, models.DO_NOTHING, db_column='id_sensor')
+
+    class Meta:
+        managed = False
+        db_table = 'thingssensors'
+
+
+class Thingssensorsdata(models.Model):
+    dt = models.DateTimeField()
+    id_payload = models.ForeignKey(Payloads, models.DO_NOTHING, db_column='id_payload')
+    id_thingsensor = models.ForeignKey(Thingssensors, models.DO_NOTHING, db_column='id_thingsensor')
+    dtread = models.DateTimeField()
+    value = models.FloatField(blank=True, null=True)
+    message = models.CharField(max_length=256, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'thingssensorsdata'
+        unique_together = (('id_payload', 'id_thingsensor'),)
+
+
+class Thingssensorsparams(models.Model):
+    dt = models.DateTimeField()
+    id_thingsensor = models.ForeignKey(Thingssensors, models.DO_NOTHING, db_column='id_thingsensor')
+    key = models.CharField(max_length=20)
+    value = models.CharField(max_length=10)
+
+    class Meta:
+        managed = False
+        db_table = 'thingssensorsparams'
+        unique_together = (('id_thingsensor', 'key'),)
+
+
+class Thingssensorstags(models.Model):
+    dt = models.DateTimeField()
+    id_thingsensor = models.ForeignKey(Thingssensors, models.DO_NOTHING, db_column='id_thingsensor')
+    name = models.CharField(max_length=30)
+
+    class Meta:
+        managed = False
+        db_table = 'thingssensorstags'
+        unique_together = (('id_thingsensor', 'name'),)
+
+
 class Thingstags(models.Model):
     dt = models.DateTimeField()
     id_thing = models.ForeignKey(Things, models.DO_NOTHING, db_column='id_thing')
@@ -171,4 +173,3 @@ class Thingstags(models.Model):
         managed = False
         db_table = 'thingstags'
         unique_together = (('id_thing', 'name'),)
-

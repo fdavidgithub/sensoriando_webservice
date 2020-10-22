@@ -9,8 +9,8 @@ from django.db.models.functions import Extract, Concat
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
 
-from .legacy_tables import Things, Thingstags, Modulessensors, Accounts, Accountsthings, Sensors, Sensorsunits, \
-                           Thingsmodulessensorsdata, Plans
+from .legacy_tables import Things, Thingstags, Thingssensors, Accounts, Accountsthings, Sensors, Sensorsunits, \
+                           Thingssensorsdata, Plans
 from .models import djAccount
 
 from .forms import SignUpForm, AccountForm, UserForm, ThingForm
@@ -104,22 +104,26 @@ def ListPrivateSensors(request):
     id_plan = account.id_plan.id 
     plans = Plans.objects.get(id = id_plan)
 
-    records = Thingsmodulessensorsdata.objects.filter(id_thing__in = ids_thing).count()
+    thingssensors = Thingssensors.objects.filter(id_thing__in = ids_thing)
+    ids_thingsensor = thingssensors.values_list('id', flat=True)
+
+    records = Thingssensorsdata.objects.filter(id_thingsensor__in = ids_thingsensor).count()
 
     datalist = []
-    things = Things.objects.filter(accountsthings__id_account = account.id)
+    things = Things.objects.filter(id__in = ids_thing)
        
     for thing in things:
+        thingssensors = Thingssensors.objects.filter(id_thing = thing.id)
+        thingsensor_ids = thingssensors.values_list('id', flat=True)
+
         try:
-            thingdatum = Thingsmodulessensorsdata.objects.filter(id_thing = thing.id).latest('id')
+            thingdatum = Thingssensorsdata.objects.filter(id_thingsensor__in = thingsensor_ids).latest('id')
             last_update = thingdatum.dt
         except:
             last_update = 'nenhuma'
 
-        modulessensors = Modulessensors.objects.filter(thingsmodulessensorsdata__id_thing = thing.id).distinct()
-        modulessensors_ids = modulessensors.values_list('id_sensor', flat=True)
-
-        sensors = Sensors.objects.filter(id__in = modulessensors_ids)
+        sensors_ids = thingssensors.values_list('id_sensor', flat=True)
+        sensors = Sensors.objects.filter(id__in = sensors_ids)
 
         datalist.append({
             'id': thing.id,
@@ -181,24 +185,31 @@ def ListPublicSensors(request, filterparam=None):
         if "country" in query:
             filterapply = query['country']
             accounts = accounts.filter(country = filterapply)
- 
+    
     datalist = []
     for account in accounts:
+#        accountsthings = Accountsthings(id_account = account.id)
+#        accountthing_ids = accountsthings.values_list('id_thing', flat=True)
+
+#        things = Things.objects.filter(id__in = accountthing_ids)
         things = Things.objects.filter(accountsthings__id_account = account.id)
-       
+        
         for thing in things:
+            thingssensors = Thingssensors.objects.filter(id_thing = thing.id)
+            thingsensor_ids = thingssensors.values_list('id', flat=True)
+            
             try:
-                thingdatum = Thingsmodulessensorsdata.objects.filter(id_thing = thing.id).latest('id')
+                thingdatum = Thingssensorsdata.objects.filter(id_thingsensor__in = thingsensor_ids).latest('id')
                 last_update = thingdatum.dt
             except:
-                last_update = 'nenhuma'
+                last_update = None
 
             sensorlist = []
-            modulessensors = Modulessensors.objects.filter(thingsmodulessensorsdata__id_thing = thing.id).distinct()
-            modulessensors_ids = modulessensors.values_list('id_sensor', flat=True)
+            sensors = Thingssensors.objects.filter(thingssensorsdata__id_thingsensor__in = thingsensor_ids).distinct()
+            sensor_ids = sensors.values_list('id_sensor', flat=True)
 
-            sensors = Sensors.objects.filter(id__in = modulessensors_ids)
-
+            sensors = Sensors.objects.filter(id__in = sensor_ids)
+            
             if filterparam is not None:
                 if "sensor" in query:
                     filterapply = query['sensor']
@@ -213,10 +224,10 @@ def ListPublicSensors(request, filterparam=None):
                     thingstags = Thingstags.objects.filter(id_thing = thing.id, name = query['flag'])
                     thing_ids = thingstags.values_list('id_thing', flat=True)
                     
-                    modulessensors = Modulessensors.objects.filter(thingsmodulessensorsdata__id_thing__in = thing_ids)
-                    modulessensors_ids = modulessensors.values_list('id_sensor', flat=True)
+                    thingssensors = Thingssensors.objects.filter(thingssensorsdata__id_thing__in = thing_ids)
+                    thingssensors_ids = thingssensors.values_list('id_sensor', flat=True)
 
-                    sensors = Sensors.objects.filter(id__in = modulessensors_ids)
+                    sensors = Sensors.objects.filter(id__in = thingssensors_ids)
 
             if sensors:
                 datalist.append({
@@ -261,12 +272,12 @@ def MyAccount(request, username, tab):
         return redirect('/home')
 
     things = Things.objects.filter(accountsthings__id_account = account.id)
-
     things_ids = things.values_list('id', flat=True)
-    modulessensors = Modulessensors.objects.filter(thingsmodulessensorsdata__id_thing__in = things_ids).distinct()
-    modulessensors_ids = modulessensors.values_list('id_sensor', flat=True)
+
+    thingssensors = Thingssensors.objects.filter(id_thing__in = things_ids).distinct()
+    thingssensors_ids = thingssensors.values_list('id_sensor', flat=True)
     
-    sensors = Sensors.objects.filter(id__in = modulessensors_ids)
+    sensors = Sensors.objects.filter(id__in = thingssensors_ids)
 
     sensorlist = []
     for sensor in sensors:
@@ -363,8 +374,8 @@ def SensorDetails(request, slug_thing):
     else:
         access = 'Privado'
    
-    modulessensors = Modulessensors.objects.filter(thingsmodulessensorsdata__id_thing = thing.id).distinct()
-    modulessensors = modulessensors.order_by("-id")
+    thingssensors = Thingssensors.objects.filter(id_thing = thing.id).distinct()
+    thingssensors = thingssensors.order_by("-id")
     
     # Filter
     sensorslist = []
@@ -372,8 +383,8 @@ def SensorDetails(request, slug_thing):
     chartview_title = None
     lastdatum = None
 
-    for modulesensor in modulessensors:
-        id_sensor = modulesensor.id_sensor.id
+    for thingsensor in thingssensors:
+        id_sensor = thingsensor.id_sensor.id
         
         # Get unit select by user
         unit = request.COOKIES.get('unit' + str(id_sensor))
@@ -394,14 +405,15 @@ def SensorDetails(request, slug_thing):
             chart = CHART_DEFAULT
  
         # Check if is value or message
-        if chart == 'table':
-            data = Thingsmodulessensorsdata.objects.filter(id_thing = thing.id, id_modulesensor = modulesensor.id, value__isnull = True) \
+        if thingsensor.id == 3: #ID for Sensor Message
+            data = Thingssensorsdata.objects.filter(id_thingsensor = thingsensor.id, value__isnull = True) \
                     .order_by('-dt')[:5]
-
+ 
+            chart = 'table'
             lastdatum = None
         else:
-            data = Thingsmodulessensorsdata.objects \
-                    .filter(id_thing = thing.id, id_modulesensor = modulesensor.id, value__isnull = False)
+            data = Thingssensorsdata.objects \
+                    .filter(id_thingsensor = thingsensor.id, value__isnull = False)
 
             if data is None:
                 chartview = None
