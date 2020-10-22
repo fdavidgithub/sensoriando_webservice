@@ -91,8 +91,8 @@ BEGIN
 
 		    ('Decibeis',            'dB',   0, (SELECT id FROM Sensors WHERE name = Sound), 'TRUE', 'pv'),
 
-            ('Aberto/Fechado',      NULL,   NULL, (SELECT id FROM Sensors WHERE name = State), 'TRUE', NULL),
-            ('Ligado/Desligado',    NULL,   NULL, (SELECT id FROM Sensors WHERE name = State), 'FALSE', NULL),
+            ('Aberto/Fechado',      NULL,   NULL, (SELECT id FROM Sensors WHERE name = State), 'TRUE', 'pv'),
+            ('Ligado/Desligado',    NULL,   NULL, (SELECT id FROM Sensors WHERE name = State), 'FALSE', 'pv'),
 
             ('Texto',               NULL,   NULL, (SELECT id FROM Sensors WHERE name = Message), 'TRUE', NULL),
             ('Imagem',              NULL,   NULL, (SELECT id FROM Sensors WHERE name = Message), 'FALSE', NULL),
