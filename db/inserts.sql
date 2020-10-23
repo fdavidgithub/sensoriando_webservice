@@ -23,9 +23,9 @@ DECLARE
     /*
      * Things
      */
-    Hub             VARCHAR := 'Prototype: Hub';
-    Sensor          VARCHAR := 'Prototype: Sensor';
-    Relay           VARCHAR := 'Prototype: Relay';
+    Hub             VARCHAR := 'Prototype Hub';
+    Sensor          VARCHAR := 'Prototype Sensor';
+    Relay           VARCHAR := 'Prototype Relay';
 BEGIN
     INSERT INTO Plans  (name) VALUES ('Gratuito');
 
