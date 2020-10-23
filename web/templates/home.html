@@ -67,14 +67,14 @@ function setFilter(sensor, tag){
             <h1>Sensores Públicos {{ contexts.filterapply }}</h1>
 {% endif %}
 
-<!-- Sensors list: BEGIN -->
+<!-- Sensors list: BEGIN class="link-no-hover"-->
 {% for context in contexts.data %}
 
-<div class="col-md-5 col-sm-6 col-xs-12" data-no-turbolink>
+<div class="col-md-5 col-sm-6 col-xs-12" data-turbolink="false">
     <div class="panel panel-primary">
         <div class="panel-heading ellipsis">
           <i class="fa fa-bar-chart-o"></i>
-          <a class="link-no-hover" href="/thing/{{ context.nameslug }}"><b>{{ context.name }}</b></a>
+          <a class="bg-info text-info" href="/thing/{{ context.nameslug }}"><b>{{ context.name }}</b></a>
         </div>
         
         <div class="panel-body">
