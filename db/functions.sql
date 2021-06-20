@@ -1,8 +1,0 @@
-CREATE OR REPLACE FUNCTION ThingsSensorsDataCreate() RETURNS TRIGGER AS
-$BODY$
-BEGIN
-    CALL DatumFromJson(NEW.id);
-    RETURN NEW;      
-END;
-$BODY$ LANGUAGE plpgsql;
-

@@ -8,11 +8,6 @@
 
 ## Install
 
-1. Create database
-```console
-./install.sh
-```
-
 2. Django init
 ```console
 source ~/envs/Sensoriando/bin/activate
