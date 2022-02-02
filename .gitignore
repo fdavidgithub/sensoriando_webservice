@@ -1,8 +1,3 @@
-sensoriando.log
-subscriber
-*.o
-*.swp
-a.out
 *.*~
 *.pyc
-
+venv
