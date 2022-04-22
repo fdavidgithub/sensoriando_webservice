@@ -2,9 +2,25 @@
 **Hub de Sensores**
 [web.sensoriando.com.br](http://web.sensoriando.com.br)
 
-## [Requirement](doc/requirement.md)
+## Requirement
+Homologated
+* Ubuntu 18.04
 
-## [Setup](doc/setup.md)
+```console
+sudo apt-get update
+sudo apt-get upgrade
+```
+
+### Python
+```console
+sudo apt-get install python3-pip
+```
+
+### Postgres
+```console
+sudo apt-get install postgresql-13 postgresql-client-13
+```
+
 
 ## Install
 
@@ -23,6 +39,8 @@ python manage.py runserver
 
 4. Browser URL
 localhost:8000
+
+
 
 
 

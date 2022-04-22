@@ -1,7 +1,0 @@
-#Sensoriando
-**Setup**
-
-## Django
-```console
-
-```
