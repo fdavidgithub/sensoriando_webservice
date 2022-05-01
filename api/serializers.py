@@ -4,16 +4,19 @@ from . import models
 class ThingSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Things
-        fields = '__all__'
+        fields = ('name',  
+        )
 
 class SensorSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Sensors
-        fields = '__all__'
+        fields = ('name',
+        )
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Thingssensorstags
-        fields = '__all__'
+        fields = ('name',
+        )
 
 
