@@ -31,7 +31,13 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 LOCAL_APPS = [
         'base',
+        'api',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
+}
 
 DEFAULT_APPS = [
     'django.contrib.admin',
@@ -40,6 +46,7 @@ DEFAULT_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
 ]
 
 INSTALLED_APPS = LOCAL_APPS + DEFAULT_APPS
