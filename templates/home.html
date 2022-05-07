@@ -156,8 +156,8 @@ function setFilter(sensor, tag){
  
             <select name="SearchSensor" id="SearchSensor">
                 <option value="" selected>Todos sensores</option>
-                {% for searchsensor in contexts.searchsensors %}
-                <option value={{ searchsensor.name }}>{{ searchsensor.name }}</option>
+                {% for sensor in contexts.filters.sensors %}
+                <option value={{ sensor.name }}>{{ sensor.name }}</option>
                 {% endfor %}
             </select>
           </div>
@@ -167,8 +167,8 @@ function setFilter(sensor, tag){
  
             <select name="SearchTag" id="SearchTag">
                 <option value="" selected>Todas tags</option>
-                {% for searchflag in contexts.searchtags %}
-                <option value={{ searchflag.name }}>{{ searchflag.name }}</option>
+                {% for tag in contexts.filters.tags %}
+                <option value={{ tag.name }}>{{ tag.name }}</option>
                 {% endfor %}
             </select>
           </div>
