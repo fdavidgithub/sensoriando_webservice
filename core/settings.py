@@ -33,6 +33,7 @@ LOCAL_APPS = [
         'base',
         'api',
         'overview',
+        'sensors',
 
 ]
 
@@ -98,7 +99,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'sensoriando',
         'USER': 'postgres',
-        'PASSWORD': 'masterkey',
+        'PASSWORD': 'postgres',
         'HOST': 'localhost',
         'PORT': '',
     }
