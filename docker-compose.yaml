@@ -1,0 +1,35 @@
+version: "3.7"
+ 
+# USAGE: 
+# Create and start the cluster: docker-compose up -d 
+# Tear down the cluster: docker-compose down 
+# Remove everything including the volumes: docker-compose down -v  
+#
+# Backup:
+# docker exec -t your-container pg_dumpall -c -U postgres > your-backup.bkp
+#
+# Restore:
+# cat your_backup.bkp | docker exec -i your-container psql -U postgres -d yout-database -W
+#
+# Shell:
+# docker exec -it yout-container <cmd>
+services: 
+  database: 
+    image: postgres:13.7 
+    ports: 
+      - 5432:5432
+    env_file:
+      - .env
+    volumes:
+      - ./db-data/:/var/lib/postgresql/data/
+ 
+  django: 
+    build: Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
+    ports: 
+      - 8000:8000
+    volumes:
+      - .:/usr/src/app
+    depends_on:
+      - database
+    
