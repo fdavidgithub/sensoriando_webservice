@@ -14,22 +14,29 @@ version: "3.7"
 # Shell:
 # docker exec -it yout-container <cmd>
 services: 
-  database: 
-    image: postgres:13.7 
-    ports: 
-      - 5432:5432
-    env_file:
-      - .env
-    volumes:
-      - ./db-data/:/var/lib/postgresql/data/
+#  database: 
+#    image: postgres:13.7 
+#    ports: 
+#      - 5432:5432
+#    env_file:
+#      - .env
+#    volumes:
+#      - ./db-data/:/var/lib/postgresql/data/
  
-  django: 
-    build: Dockerfile
+  django:
+#    image: python:3.8
+    build: 
+        context: ./
+        dockerfile: Dockerfile
     command: python manage.py runserver 0.0.0.0:8000
     ports: 
       - 8000:8000
     volumes:
       - .:/usr/src/app
-    depends_on:
-      - database
-    
+    networks:
+      - sensoriando
+
+networks:
+    sensoriando:
+        external: true
+
