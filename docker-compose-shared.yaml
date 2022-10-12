@@ -14,17 +14,6 @@ version: "3.7"
 # Shell:
 # docker exec -it yout-container <cmd>
 services: 
-  database:
-    container_name: sensoriando_database
-    image: postgres:13.7 
-    ports: 
-      - 5432:5432
-    env_file:
-      - .env
-    volumes:
-      - ./db-data/:/var/lib/postgresql/data/
-      - ../sensoriando_daemon/db/:/docker-entrypoint-initdb.d/
- 
   django:
 #    image: python:3.8
     build: 
@@ -35,4 +24,10 @@ services:
       - 8000:8000
     volumes:
       - .:/usr/src/app
+    networks:
+      - sensoriando
+
+networks:
+    sensoriando:
+        external: true
 

@@ -100,7 +100,7 @@ DATABASES = {
         'NAME': 'sensoriando',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
-        'HOST': 'database',
+        'HOST': 'sensoriando_database',
         'PORT': '5432',
     }
 }
