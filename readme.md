@@ -63,4 +63,10 @@ POSTGRES_PASSWORD=postgres
 POSTGRES_DB=sensoriando
 ```
 
+### Prompt database
+#### Docker
+docker exec -it sensoriando_database psql -U postgres -d sensoriando
+#### Native
+psql -U postgres -d sensoriando
+
 
