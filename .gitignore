@@ -10,6 +10,8 @@ db.sqlite3
 *migrations
 node_modules/
 dist/
+db-data
+.env
 
 # Compiled Java class files
 *.class

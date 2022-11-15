@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 import requests
+from sensors.views import ListPublicSensors
 
 def Filters():
     api_url = "http://localhost:8000"
@@ -18,6 +19,7 @@ def Filters():
 def Home(request):
        
     contexts = {
+        'things': ListPublicSensors(), 
         'filters': Filters(),
 
     }

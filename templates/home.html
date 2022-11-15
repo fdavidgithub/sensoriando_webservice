@@ -68,7 +68,7 @@ function setFilter(sensor, tag){
 {% endif %}
 
 <!-- Sensors list: BEGIN class="link-no-hover"-->
-{% for context in contexts.data %}
+{% for context in contexts.things %}
 
 <div class="col-md-5 col-sm-6 col-xs-12" data-turbolink="false">
     <div class="panel panel-primary">
@@ -111,8 +111,8 @@ function setFilter(sensor, tag){
             <div class="public_channel_tags">
                 <i class="fa fa-tags"></i>
                 
-                {% for flag in context.tags %}
-                    <a href="/home/search/flag={{ flag.name }}">{{ flag.name }}</a>     
+                {% for tag in context.tags %}
+                    <a href="/home/search/flag={{ tag.name }}">{{ tag.name }}</a>     
                 {% endfor %}
             </div>
         </div>
