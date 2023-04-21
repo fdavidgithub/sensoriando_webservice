@@ -8,16 +8,28 @@ from django.db.models import Count, Avg, Value, CharField
 from django.db.models.functions import Extract, Concat
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
-
+from django.conf import settings
+from rest_framework.response import Response
 from .legacy_tables import Things, Thingstags, Thingssensors, Accounts, Accountsthings, Sensors, Sensorsunits, \
                            Thingssensorsdata, Plans
-from .models import djAccount
-
 from .forms import SignUpForm, AccountForm, UserForm, ThingForm
 
 from .constants import CHART_DEFAULT, CHARTVIEW_DEFAULT, MAX_PRECISION
 import unicodecsv, datetime
 
+import requests
+
+def callAPI(endpoint):
+    try:
+        response = requests.get(settings.PREFIX_API + endpoint)
+    
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return Response({'warning': 'Invalid request: ' + str(response.status_code)})
+    except:
+        return Response({'error': 'Bad request: ' + settings.PREFIX_API + endpoint})
+        
 #https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
 def SignUp(request):
     if request.method == 'POST':

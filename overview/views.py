@@ -1,24 +1,23 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-import requests
+from base.views import callAPI
 
 def Filters():
-    api_url = "http://localhost:8000"
-    sensors = requests.get(api_url + "/apisensor/").json()
-    tags = requests.get(api_url + "/apitag/").json()
+    sensors = callAPI("/sensor/")
+    sensortags = callAPI("/sensor/tag/")
  
     filters = {
         'sensors': sensors,
-        'tags': tags,
+        'tags': sensortags,
 
     }
 
     return filters
 
 def Home(request):
-       
     contexts = {
         'filters': Filters(),
+        'things': callAPI("/data/public/thing"),
 
     }
            
