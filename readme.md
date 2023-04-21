@@ -50,11 +50,13 @@ source venv/bin/activate
 docker-compose up
 ```
 
+Executar o comando **docker-compose build** novamente para reconstruir a imagem do serviço sempre que o arquivo requiriment.txt ou Dockerfile for alterado
+
+
 ### Docker shared
 ```console
 docker-compose -f docker-compose-shared up
 ```
-
 When use docker-compose-shared, need create .env file
 
 ```
@@ -69,4 +71,5 @@ docker exec -it sensoriando_database psql -U postgres -d sensoriando
 #### Native
 psql -U postgres -d sensoriando
 
-
+### Shell
+docker exec -it sensoriando_webservice-django-1 python manage.py [command]
