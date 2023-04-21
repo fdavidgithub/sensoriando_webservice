@@ -1,9 +1,13 @@
 from django.contrib import admin
-from .models import djAccount, djThing, djSensor, djPlan
+from base.models import AccountsModel, ThingsModel, SensorsModel, PlansModel, SensorsUnitsModel, ThingsTagsModel, ThingsSensorsTagsModel, \
+                        AccountsThingsModel
 
 # Register your models here.
-admin.site.register(djAccount)
-admin.site.register(djThing)
-admin.site.register(djSensor)
-admin.site.register(djPlan)
-
+admin.site.register(AccountsModel)
+admin.site.register(ThingsModel)
+admin.site.register(SensorsModel)
+admin.site.register(PlansModel)
+admin.site.register(SensorsUnitsModel)
+admin.site.register(ThingsTagsModel)
+admin.site.register(ThingsSensorsTagsModel)
+admin.site.register(AccountsThingsModel)

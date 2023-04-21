@@ -74,21 +74,21 @@ function setFilter(sensor, tag){
     <div class="panel panel-primary">
         <div class="panel-heading ellipsis">
           <i class="fa fa-bar-chart-o"></i>
-          <a class="bg-info text-info" href="/thing/{{ context.nameslug }}"><b>{{ context.name }}</b></a>
+          <a class="bg-info text-info" href="/thing/{{ context.thing }}"><b>{{ context.thing }}</b></a>
         </div>
         
         <div class="panel-body">
             <div class="row">
                 <div class="col-sm-6 col-xs-6"><b>Cidade</b></div>
                 <div class="col-sm-6 col-xs-6">
-                    <a href="/home/search/city={{ context.cityslug }}">{{ context.city }}</a>
-                    <a href="/home/search/state={{ context.state }}">{{ context.state }}</a>
+                    <a href="/home/search/city={{ context.account.city }}">{{ context.account.city }}</a>
+                    <a href="/home/search/state={{ context.account.state }}">{{ context.account.state }}</a>
                 </div>
             </div>
         
             <div class="row">
                 <div class="col-sm-6 col-xs-6"><b>País</b></div>
-                <div class="col-sm-6 col-xs-6"><a href="/home/search/country={{ context.country }}">{{ context.country }}</a></div>
+                <div class="col-sm-6 col-xs-6"><a href="/home/search/country={{ context.account.country }}">{{ context.account.country }}</a></div>
             </div> 
  
             <hr style="height:2px;border-width:0;color:gray;background-color:gray">
@@ -103,7 +103,7 @@ function setFilter(sensor, tag){
 
             <div class="row">
                 <div class="col-sm-6 col-xs-6"><b>Última leitura</b></div>
-                <div class="col-sm-6 col-xs-6">{{ context.last_update }}</div>
+                <div class="col-sm-6 col-xs-6">{{ context.lastupdate }}</div>
             </div> 
  
             <hr style="height:2px;border-width:0;color:gray;background-color:gray">
@@ -111,7 +111,7 @@ function setFilter(sensor, tag){
             <div class="public_channel_tags">
                 <i class="fa fa-tags"></i>
                 
-                {% for tag in context.tags %}
+                {% for tag in context.thingtags %}
                     <a href="/home/search/flag={{ tag.name }}">{{ tag.name }}</a>     
                 {% endfor %}
             </div>
