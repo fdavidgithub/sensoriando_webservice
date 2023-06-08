@@ -32,27 +32,47 @@
 
 {% block content %}
 <script type="text/javascript">
-function setFilter(sensor, tag){
-    var selectSensor = document.getElementById(sensor);
-    var selectTag = document.getElementById(tag);
-    var href="/home/search/";
+function clearFilter() {
+    const jsonString = JSON.stringify('');
+ 
+    var searchSensor = document.getElementById("SearchSensor");
+    var searchTag = document.getElementById("SearchTag");
+
+    searchSensor.selectedIndex = 0;
+    searchTag.selectedIndex = 0;
+    document.cookie = `setFilterHome = ${jsonString}; SameSite=None; secure=True`;
+    
+    location.reload();
+}
+
+function setFilter(key=null, value=null){
+    var selectSensor = document.getElementById("SearchSensor");
+    var selectTag = document.getElementById("SearchTag");
+    var data = {};
 
     var SensorItem = selectSensor.options[selectSensor.selectedIndex];
     if (SensorItem.value !== "") {
-        var href=href + 'sensor=' + SensorItem.value;
+        data["sensor"] = SensorItem.value;
     }
 
     var TagItem =  selectTag.options[selectTag.selectedIndex];
     if (TagItem.value !== "") {
-        if (SensorItem.value == "") {
-            var href=href + 'flag=' + TagItem.value;
-        } else {
-            var href=href + '&flag=' + TagItem.value;
+        data["sensor_tag"] = TagItem.value;
+    }
+
+    if ( key ) {
+        data[key] = value;
+
+        if ( key == "sensor" ) {
+            selectSensor.value = value;
         }
     }
 
-    if (href !== "/home/search/") {
-        window.location = href;
+    if (Object.keys(data).length > 0) {
+        const jsonString = JSON.stringify(data);
+
+        document.cookie = `setFilterHome = ${jsonString}; SameSite=None; secure=True`;
+        location.reload();
     }
 }    
 </script>
@@ -64,7 +84,12 @@ function setFilter(sensor, tag){
 {% if request.path == '/home/private' %} 
             <h1>Meus Sensores</h1>
 {% else %}
-            <h1>Sensores Públicos {{ contexts.filterapply }}</h1>
+            <h1>Sensores Públicos</h1>
+            <p>
+            {% for key, value in contexts.filterApply.items %}
+                {{value}} {%if not forloop.last %}, {% endif %}
+            {% endfor %}
+            </p>
 {% endif %}
 
 <!-- Sensors list: BEGIN class="link-no-hover"-->
@@ -81,14 +106,14 @@ function setFilter(sensor, tag){
             <div class="row">
                 <div class="col-sm-6 col-xs-6"><b>Cidade</b></div>
                 <div class="col-sm-6 col-xs-6">
-                    <a href="/home/search/city={{ context.account.city }}">{{ context.account.city }}</a> /
-                    <a href="/home/search/state={{ context.account.state }}">{{ context.account.state }}</a>
+                    <a href="#" onclick="setFilter('city', '{{ context.account.city }}');">{{ context.account.city }}</a> /
+                    <a href="#" onclick="setFilter('state', '{{ context.account.state }}');">{{ context.account.state }}</a>
                 </div>
             </div>
         
             <div class="row">
                 <div class="col-sm-6 col-xs-6"><b>País</b></div>
-                <div class="col-sm-6 col-xs-6"><a href="/home/search/country={{ context.account.country }}">{{ context.account.country }}</a></div>
+                <div class="col-sm-6 col-xs-6"><a href="#" onclick="setFilter('country', '{{ context.account.country }}');">{{ context.account.country }}</a></div>
             </div> 
  
             <hr style="height:2px;border-width:0;color:gray;background-color:gray">
@@ -97,7 +122,7 @@ function setFilter(sensor, tag){
                 <i class="fa fa-dashboard"></i>
 
                 {% for sensor in context.sensors %}
-                    <a href="/home/search/sensor={{ sensor.name }}">{{ sensor.name }}</a>
+                    <a href="#" onclick="setFilter('sensor', '{{ sensor.name }}');">{{ sensor.name }}</a>
                 {% endfor %}
             </div>
 
@@ -112,7 +137,7 @@ function setFilter(sensor, tag){
                 <i class="fa fa-tags"></i>
                 
                 {% for tag in context.thingtags %}
-                    <a href="/home/search/flag={{ tag.name }}">{{ tag.name }}</a>     
+                    <a href="#" onclick="setFilter('thing_tag', '{{ tag.name }}');">{{ tag.name }}</a>     
                 {% endfor %}
             </div>
         </div>
@@ -173,8 +198,8 @@ function setFilter(sensor, tag){
             </select>
           </div>
 
-          <button type="button" id="search" onclick="javascript:setFilter('SearchSensor', 'SearchTag');" class="btn btn-primary btn-sm">Aplicar</button>
-          <button type="reset" id="clear" onclick="window.location.href='/home'" class="btn btn-primary btn-sm">Limpar</button>
+          <button type="button" id="search" onclick="setFilter();" class="btn btn-primary btn-sm">Aplicar</button>
+          <button type="reset" id="clear" onclick="clearFilter();" class="btn btn-primary btn-sm">Limpar</button>
 
       </div>
   </div>

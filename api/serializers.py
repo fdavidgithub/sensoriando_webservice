@@ -55,7 +55,7 @@ class DataThingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ThingsSensorsModel
         fields = ('thing', 'lastupdate', 'account', 'sensors', 'thingtags')
-
+    
     def get_thing(self, obj):
         return obj.id_thing.name
 
@@ -64,14 +64,16 @@ class DataThingsSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def get_sensors(self, obj):
-        thing_sensors = ThingsSensorsModel.objects.filter(id_thing = obj.id_thing)
-        sensor_ids = [ts.id_sensor_id for ts in thing_sensors]
-        sensors = SensorsModel.objects.filter(id__in=sensor_ids)
-        return SensorSerializer(sensors, many=True).data
+        #thing_sensors = ThingsSensorsModel.objects.filter(id_thing = obj.id_thing)
+        #sensor_ids = [ts.id_sensor_id for ts in thing_sensors]
+        sensor_ids = ThingsSensorsModel.objects.filter(id_thing = obj.id_thing).values_list("id_sensor_id", flat=True)
+
+        sensors = SensorsModel.objects.filter(id__in = sensor_ids)
+        return SensorSerializer(sensors, many = True).data
 
     def get_thingtags(self, obj):
         thing_tags = ThingsTagsModel.objects.filter(id_thing = obj.id_thing)
-        return SensorSerializer(thing_tags, many=True).data
+        return SensorSerializer(thing_tags, many = True).data
 
     def get_lastupdate(self, obj):
         thingsensor_ids = ThingsSensorsModel.objects.filter(id_thing = obj.id_thing)
