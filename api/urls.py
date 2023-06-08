@@ -27,7 +27,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
    
-    path('data/public/thing/', views.PublicThingsViewSets.as_view({'get': 'list'}), name='PublicThings'),
+    path('data/public/thing/', views.PublicThingsViewSets.as_view(), name='PublicThings'),
 
     path('account/public/', views.PublicAccountViewSets.as_view({'get': 'list'}), name='PublicAccount'),
     path('account/private/', views.PrivateAccountViewSets.as_view({'get': 'list'}), name='PrivateAccount'),

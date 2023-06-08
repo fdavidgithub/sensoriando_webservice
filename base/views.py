@@ -19,10 +19,13 @@ import unicodecsv, datetime
 
 import requests
 
-def callAPI(endpoint):
+def callAPI(endpoint, data=None):
     try:
-        response = requests.get(settings.PREFIX_API + endpoint)
-    
+        if data is None:
+            response = requests.get(settings.PREFIX_API + endpoint)
+        else:
+            response = requests.post(settings.PREFIX_API + endpoint, data)
+
         if response.status_code == 200:
             return response.json()
         else:
