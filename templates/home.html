@@ -7,25 +7,22 @@
 
 {% block menu %}
 
+<ul class="nav navbar-nav">
+
 {% if user.is_authenticated %}
-    <ul class="nav navbar-nav">
-
-        <li class="active dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="nav-channels-after">Sensores<b class="caret"></b></a>
-          <ul class="dropdown-menu">
+    <li class="active dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="nav-channels-after">Dispositivos<b class="caret"></b></a>
+        <ul class="dropdown-menu">
             <li><a id="nav-my-channels" href="/home/private">Meus Sensores</a></li>
-            <li><a id="nav-public-channels" href="/home">Sensores Públicos</a></li>
-          </ul>
-        </li>
-
-        <li><a href="/map">Mapa</a></li>
-    </ul>
+            <li><a id="nav-public-channels" href="/home">Sensores Publicos</a></li>
+        </ul>
+    </li>
 {% else %}
-    <ul class="nav navbar-nav">
-      <li class="active"><a href="#">Sensores</a></li>
-      <li><a href="/map">Mapa</a></li>
-    </ul>
+    <li class="active"><a href="#">Dispositivos</a></li>
 {% endif %}
+    
+    <li><a href="/map">Mapa</a></li>
+</ul>
 
 {% endblock %}
 
@@ -50,20 +47,24 @@ function setFilter(key=null, value=null){
     var selectTag = document.getElementById("SearchTag");
     var data = {};
 
-    var SensorItem = selectSensor.options[selectSensor.selectedIndex];
-    if (SensorItem.value !== "") {
-        data["sensor"] = SensorItem.value;
+    if ( selectSensor ) {
+        var SensorItem = selectSensor.options[selectSensor.selectedIndex];
+        if (SensorItem.value !== "") {
+            data["sensor"] = SensorItem.value;
+        }
     }
 
-    var TagItem =  selectTag.options[selectTag.selectedIndex];
-    if (TagItem.value !== "") {
-        data["sensor_tag"] = TagItem.value;
+    if ( selectTag ) {
+        var TagItem =  selectTag.options[selectTag.selectedIndex];
+        if (TagItem.value !== "") {
+            data["sensor_tag"] = TagItem.value;
+        }
     }
 
     if ( key ) {
         data[key] = value;
 
-        if ( key == "sensor" ) {
+        if ( key == "sensor" && selectSensor ) {
             selectSensor.value = value;
         }
     }
@@ -85,12 +86,14 @@ function setFilter(key=null, value=null){
             <h1>Meus Sensores</h1>
 {% else %}
             <h1>Sensores Públicos</h1>
+{% endif %}
+
+<!-- Print filter apply -->
             <p>
             {% for key, value in contexts.filterApply.items %}
                 {{value}} {%if not forloop.last %}, {% endif %}
             {% endfor %}
             </p>
-{% endif %}
 
 <!-- Sensors list: BEGIN class="link-no-hover"-->
 {% for context in contexts.things %}

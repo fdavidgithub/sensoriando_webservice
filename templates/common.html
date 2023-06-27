@@ -45,9 +45,10 @@
 
 {% if user.is_authenticated %}
     <li><a href="/account/{{ user.username }}/profile"><span class="glyphicon glyphicon-user"></span> {{ user.username }}</a></li>
-    <li><a href=""><span class="glyphicon glyphicon-log-out"></span> Sair</a></li>
+    <li><a href="{% url 'users:logout' %}"><span class="glyphicon glyphicon-log-out"></span> Sair</a></li>
 {% else %}
-    <li><a href="/signup"><span class="glyphicon glyphicon-user"></span>Cadastrar</a></li>
+    <li><a href="/users/signup"><span class="glyphicon glyphicon-user"></span>Cadastrar</a></li>
+    <li><a href="{% url 'users:login' %}"><span class="glyphicon glyphicon-log-in"></span> Entrar</a></li>
 {% endif %}
 
                 </ul>

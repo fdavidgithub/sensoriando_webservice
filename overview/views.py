@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+
 from base.views import callAPI
+from users.views import check_and_refresh_token
 
 import pycountry
 import json
@@ -17,30 +19,61 @@ def Filters():
 
     return filters
 
-def Home(request):
+def readCookie(request):
     cookieValue = request.COOKIES.get("setFilterHome")
 
     if cookieValue:
-        jsonData = json.loads(cookieValue)
+        jsonCookie = json.loads(cookieValue)
 
-        if "country" in jsonData:
-            country = pycountry.countries.get(name=jsonData["country"])
-            jsonData["country"] = country.alpha_2 
+        if "country" in jsonCookie:
+            country = pycountry.countries.get(name=jsonCookie["country"])
+            jsonCookie["country"] = country.alpha_2 
     else:
-        jsonData = None
+        jsonCookie = None
 
-    jsonResult = callAPI("/data/public/thing/", jsonData)
+    return jsonCookie
 
-    for item in jsonResult:
-        if "country" in item["account"]:
-            country_code = item["account"]["country"]
-            country_name = pycountry.countries.get(alpha_2=country_code).name
-            item["account"]["country"] = country_name
+def getCountry(jsonResult):
+    if jsonResult:
+        for item in jsonResult:
+            if "country" in item["account"]:
+                country_code = item["account"]["country"]
+                country_name = pycountry.countries.get(alpha_2=country_code).name
+                item["account"]["country"] = country_name
+
+    return jsonResult
+
+def Public(request):
+    jsonParams = readCookie(request)
+    jsonResult = callAPI(endpoint = "/data/public/thing/", data = jsonParams)
+    
+    jsonResult = getCountry(jsonResult)
 
     contexts = {
         'filters': Filters(),
         'things': jsonResult,
-        'filterApply': jsonData,
+        'filterApply': jsonParams,
+
+    }
+    
+    return render(request, 'home.html', {'contexts': contexts})
+
+def Private(request):
+    try:
+        token = check_and_refresh_token()
+    except:
+        token = None
+
+    jsonParams = readCookie(request)
+    jsonResult = callAPI(endpoint = "/data/private/thing/" , data = jsonParams, \
+                         method = "POST", token = token)
+    
+    jsonResult = getCountry(jsonResult)
+   
+    contexts = {
+        'filters': Filters(),
+        'things': jsonResult,
+        'filterApply': jsonParams,
 
     }
     

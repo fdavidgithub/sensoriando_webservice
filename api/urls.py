@@ -28,7 +28,8 @@ urlpatterns = [
     path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
    
     path('data/public/thing/', views.PublicThingsViewSets.as_view(), name='PublicThings'),
-
+    path('data/private/thing/', views.PrivateThingsViewSets.as_view(), name='PrivateThings'),
+    
     path('account/public/', views.PublicAccountViewSets.as_view({'get': 'list'}), name='PublicAccount'),
     path('account/private/', views.PrivateAccountViewSets.as_view({'get': 'list'}), name='PrivateAccount'),
     #path('account/thing/', views.AccountThingViewSets.as_view({'get': 'list'}), name='ThingsAccount'),
