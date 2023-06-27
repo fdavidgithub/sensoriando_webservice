@@ -2,12 +2,11 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.forms import ModelForm
-
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.utils.translation import ugettext_lazy as _
 
-from .legacy_tables import Accounts, Accountsthings, Things
-from .constants import COUNTRY_CHOICES, BRAZIL_STATES_CHOICES
+from base.models import AccountsModel, AccountsThingsModel, ThingsModel
+from base.constants import COUNTRY_CHOICES, BRAZIL_STATES_CHOICES
 
 class SignUpForm(UserCreationForm):
     first_name = forms.CharField(max_length=30, required=True, help_text='Obrigatório.')
@@ -28,7 +27,7 @@ class AccountForm(ModelForm):
     country = forms.CharField(max_length=20, required=True, help_text='Obrigatório.', label='País', widget=forms.Select(choices=COUNTRY_CHOICES))
     
     class Meta:
-        model = Accounts
+        model = AccountsModel
         fields = ('city', 'state', 'country', )
 
 class UserForm(ModelForm):
@@ -47,12 +46,12 @@ class ThingForm(ModelForm):
         uuid = self.cleaned_data.get('uuid')
         
         try:
-            thing = Things.objects.get(uuid = uuid)
+            thing = ThingsModel.objects.get(uuid = uuid)
         except ObjectDoesNotExist:
             raise ValidationError(_('UUID não encontrado'))
      
         try:
-            Accountsthings.objects.get(id_thing = thing.id)
+            AccountsModelthings.objects.get(id_thing = thing.id)
             raise ValidationError(_('UUID indisponível'))
         except ObjectDoesNotExist:
             pass
@@ -60,6 +59,6 @@ class ThingForm(ModelForm):
         return uuid
 
     class Meta:
-        model = Accountsthings
+        model = AccountsThingsModel
         fields = ('uuid',)
 
