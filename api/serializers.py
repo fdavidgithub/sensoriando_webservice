@@ -80,4 +80,36 @@ class DataThingsSerializer(serializers.ModelSerializer):
         lastread = ThingsSensorsDataModel.objects.filter(id_thingsensor__in = thingsensor_ids).aggregate(Max('dtread'))['dtread__max']
        
         return lastread.strftime("%d/%m/%Y %H:%M:%S") if lastread else "---"
+
+class DataStatsSerializer(serializers.Serializer):
+    user = serializers.CharField()
+    plan = serializers.CharField()
+    records = serializers.IntegerField()
+    record_unit = serializers.CharField()
+    retation_current = serializers.IntegerField()
+    retation_full = serializers.IntegerField()
+    retation_unit = serializers.CharField()
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        records = representation['records']  
+
+        if representation["retation_full"] > 1:
+            representation["retation_unit"] = 'meses'
+        else:
+            representation["retation_unit"] = 'mes'
+
+        representation["retation_current"] = round(records/60/60/24/30, 2)
         
+        if records > 1000000:
+            representation['records'] = round(records/1000000, 2)
+            representation["record_unit"] = 'M' 
+        elif records > 1000:
+            representation['records'] = round(records/1000, 2)
+            representation["record_unit"] = 'k' 
+        else:
+            representation["record_unit"] = '' 
+ 
+        return representation
+

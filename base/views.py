@@ -23,7 +23,7 @@ def callAPI(endpoint, data = None, method = "GET", token=None):
         if method.upper() == "POST" or data:
             response = requests.post(settings.PREFIX_API + endpoint, data, headers=headers)
         else:
-            response = requests.get(settings.PREFIX_API + endpoint)
+            response = requests.get(settings.PREFIX_API + endpoint, headers=headers)
         
         if response.status_code == 200:
             return response.json()
