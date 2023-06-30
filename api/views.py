@@ -15,7 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from api import serializers
 from base.models import ThingsModel, ThingsTagsModel, SensorsModel, ThingsSensorsTagsModel, AccountsModel, \
-                        ThingsSensorsModel, AccountsThingsModel
+                        ThingsSensorsModel, AccountsThingsModel, ThingsSensorsDataModel, PlansModel
 
 class ThingViewSets(viewsets.ModelViewSet):
     serializer_class = serializers.ThingSerializer
@@ -178,4 +178,51 @@ class PrivateThingsViewSets(APIView):
         thingsensor_ids = ThingsSensorsTagsModel.objects.filter(name = value).values_list("id_thingsensor_id", flat = True)
         thing_ids = ThingsSensorsModel.objects.filter(id__in = thingsensor_ids).values_list("id_thing", flat = True)
         return thing_ids
+
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+class PrivateStatisticsViewSets(APIView):
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        id_account = AccountsModel.objects.get(username = user).id
+
+        data = {
+            'user': user,
+            'plan': self.get_plan(id_account),
+            'records': self.get_records(id_account),
+            'retation_full': self.get_retation_plan(id_account),
+            'retation_unit': None,
+            'retation_current': None,
+            'record_unit': None,
+
+        }
+
+        serializer = serializers.DataStatsSerializer(data)
+        return Response(serializer.data)
+
+    def get_records(self, id_account):
+        thing_ids = AccountsThingsModel.objects.filter(
+            id_account = id_account
+
+        ).values_list("id_thing", flat = True)
+       
+        thingsensor_ids = ThingsSensorsModel.objects.filter(
+            id_thing__in = thing_ids,
+
+        ).values_list("id", flat = True)
  
+        return ThingsSensorsDataModel.objects.filter(
+            id_thingsensor__in = thingsensor_ids,
+
+        ).count()
+     
+    def get_plan(self, id_account):
+        account = AccountsModel.objects.get(id = id_account)
+
+        return account.id_plan.name
+      
+    def get_retation_plan(self, id_account):
+        account = AccountsModel.objects.get(id = id_account)
+
+        return account.id_plan.retation
+

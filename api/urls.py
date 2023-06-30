@@ -29,6 +29,7 @@ urlpatterns = [
    
     path('data/public/thing/', views.PublicThingsViewSets.as_view(), name='PublicThings'),
     path('data/private/thing/', views.PrivateThingsViewSets.as_view(), name='PrivateThings'),
+    path('data/private/stats/', views.PrivateStatisticsViewSets.as_view(), name='PrivateStatistics'),
     
     path('account/public/', views.PublicAccountViewSets.as_view({'get': 'list'}), name='PublicAccount'),
     path('account/private/', views.PrivateAccountViewSets.as_view({'get': 'list'}), name='PrivateAccount'),

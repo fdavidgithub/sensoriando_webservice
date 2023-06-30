@@ -162,11 +162,9 @@ function setFilter(key=null, value=null){
       <div class="col-pad">
 
           <div class="form-group">
-              <label>Total de Registros: </label> {{ contexts.records }} {{ contexts.rec_unit }}
-          </div>
-
-          <div class="form-group">
-              <label>Tempo de retencao: </label> {{ contexts.retation_current }} de {{ contexts.retation_full }} {{ contexts.ret_unit }}
+              <label>Plano: </label> {{ contexts.stats.plan }} <br>
+              <label>Total de Registros: </label> {{ contexts.stats.records }} {{ contexts.stats.record_unit }} <br>
+              <label>Retencao: </label> {{ contexts.stats.retation_current }} de {{ contexts.stats.retation_full }} {{ contexts.stats.retation_unit }}
           </div>
 
       </div>

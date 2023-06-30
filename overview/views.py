@@ -3,6 +3,7 @@ from django.http import HttpResponse
 
 from base.views import callAPI
 from users.views import check_and_refresh_token
+from base.models import ThingsSensorsDataModel
 
 import pycountry
 import json
@@ -58,6 +59,15 @@ def Public(request):
     
     return render(request, 'home.html', {'contexts': contexts})
 
+def getStatistics():
+    try:
+        token = check_and_refresh_token()
+    except:
+        token = None
+
+    jsonResult = callAPI(endpoint = "/data/private/stats/", token = token)
+    return jsonResult
+
 def Private(request):
     try:
         token = check_and_refresh_token()
@@ -74,7 +84,7 @@ def Private(request):
         'filters': Filters(),
         'things': jsonResult,
         'filterApply': jsonParams,
-
+        'stats': getStatistics(),
     }
     
     return render(request, 'home.html', {'contexts': contexts})

@@ -65,6 +65,7 @@ class SignIn(LoginView):
 
         return response
 
+'''
 def MyAccount(request, username, tab):
     try:
         account = AccountsModel.objects.get(username = username)
@@ -157,6 +158,7 @@ def MyAccount(request, username, tab):
     }
 
     return render(request, 'account.html', {'form': form})
+'''
 
 def getToken(user, password):
     access = None
@@ -208,5 +210,5 @@ def check_and_refresh_token():
         redirect('/users/login')
 
     return os.environ["TOKEN_ACCESS"]
- 
+
 
