@@ -9,7 +9,7 @@ from base.models import ThingsModel, ThingsTagsModel, SensorsModel, ThingsSensor
 class ThingSerializer(serializers.ModelSerializer):
     class Meta:
         model = ThingsModel
-        fields = ('id',
+        fields = ('uuid',
                   'name',  
 
         )
@@ -47,6 +47,7 @@ class AccountSerializer(serializers.ModelSerializer):
 
 class DataThingsSerializer(serializers.ModelSerializer):
     thing = serializers.SerializerMethodField()
+    uuid = serializers.SerializerMethodField()
     account = serializers.SerializerMethodField()
     sensors = serializers.SerializerMethodField()
     lastupdate = serializers.SerializerMethodField()
@@ -54,10 +55,13 @@ class DataThingsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ThingsSensorsModel
-        fields = ('thing', 'lastupdate', 'account', 'sensors', 'thingtags')
+        fields = ('thing', 'uuid', 'lastupdate', 'account', 'sensors', 'thingtags')
     
     def get_thing(self, obj):
         return obj.id_thing.name
+
+    def get_uuid(self, obj):
+        return obj.id_thing.uuid
 
     def get_account(self, obj):
         serializer = AccountSerializer(obj.id_account)
@@ -112,4 +116,15 @@ class DataStatsSerializer(serializers.Serializer):
             representation["record_unit"] = '' 
  
         return representation
+
+class ThingsSensorsDataSerializer(serializers.ModelSerializer):
+    dtread = serializers.DateTimeField(source='timestamp_period')  # Define um campo personalizado 'dtread' usando o alias 'timestamp_period'
+
+    class Meta:
+        model = ThingsSensorsDataModel
+        fields = ('dtread',
+                  'value',
+                  'message',
+       
+        )
 

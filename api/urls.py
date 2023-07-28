@@ -26,21 +26,22 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-   
-    path('data/public/thing/', views.PublicThingsViewSets.as_view(), name='PublicThings'),
-    path('data/private/thing/', views.PrivateThingsViewSets.as_view(), name='PrivateThings'),
-    path('data/private/stats/', views.PrivateStatisticsViewSets.as_view(), name='PrivateStatistics'),
+
+    path('data/stats/private/', views.PrivateStatisticsViewSets.as_view(), name='PrivateStatistics'),
+    path('data/detail/', views.PublicDetailViewSets.as_view(), name='PublicDetailThingSensor'),
+    path('data/detail/private', views.PrivateDetailViewSets.as_view(), name='PrivateDetailThingSensor'),
     
-    path('account/public/', views.PublicAccountViewSets.as_view({'get': 'list'}), name='PublicAccount'),
-    path('account/private/', views.PrivateAccountViewSets.as_view({'get': 'list'}), name='PrivateAccount'),
+    path('accounts/', views.PublicAccountViewSets.as_view({'get': 'list'}), name='PublicAccount'),
+    #path('account/private/', views.PrivateAccountViewSets.as_view({'get': 'list'}), name='PrivateAccount'),
     #path('account/thing/', views.AccountThingViewSets.as_view({'get': 'list'}), name='ThingsAccount'),
     #path('account/thing/tag/', views.AccountThingSensorTagView.as_view(), name='TagThingAccount'),
     
-    path('thing/', views.ThingViewSets.as_view({'get': 'list'}), name='ListThings'),
-    path('thing/tag/', views.ThingTagViewSets.as_view({'get': 'list'}), name='TagsThings'),
-
-    path('sensor/', views.SensorViewSets.as_view({'get': 'list'}), name='ListSensors'),
-    path('sensor/tag/', views.SensorTagViewSets.as_view({'get': 'list'}), name='TagsSensors'),
+    path('things/', views.PublicThingsViewSets.as_view(), name='PublicThings'),
+    path('things/private/', views.PrivateThingsViewSets.as_view(), name='PrivateThings'),
+    #path('things/', views.ThingViewSets.as_view({'get': 'list'}), name='ListThings'),
+    #path('things/tags/', views.ThingTagViewSets.as_view({'get': 'list'}), name='TagsThings'),
+    path('sensors/', views.SensorViewSets.as_view({'get': 'list'}), name='ListSensors'),
+    path('sensors/tags/', views.PublicSensorTagViewSets.as_view({'get': 'list'}), name='TagsSensors'),
 
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

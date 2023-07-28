@@ -18,8 +18,7 @@
 <!-- Bootstrap CSS: END -->
 
 <!-- Chart.js: BEGIN -->
-	<script src="https://www.chartjs.org/dist/2.9.3/Chart.min.js"></script>
-	<script src="https://www.chartjs.org/samples/latest/utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- Chats.js: END -->
 
     </head>
@@ -38,20 +37,33 @@
                     <a class="navbar-brand" href="/www">Sensoriando</a>
                 </div>
 
-{% block menu %}
-{% endblock %}
-    
-                <ul class="nav navbar-nav navbar-right">
-
-{% if user.is_authenticated %}
-    <li><a href="/account/{{ user.username }}/profile"><span class="glyphicon glyphicon-user"></span> {{ user.username }}</a></li>
-    <li><a href="{% url 'users:logout' %}"><span class="glyphicon glyphicon-log-out"></span> Sair</a></li>
-{% else %}
-    <li><a href="/users/signup"><span class="glyphicon glyphicon-user"></span>Cadastrar</a></li>
-    <li><a href="{% url 'users:login' %}"><span class="glyphicon glyphicon-log-in"></span> Entrar</a></li>
-{% endif %}
-
+            <ul class="nav navbar-nav">
+            {% if user.is_authenticated %}
+                <li class="active dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="nav-channels-after">Dispositivos<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                <li><a id="nav-my-channels" href="/home/private">Meus Sensores</a></li>
+                <li><a id="nav-public-channels" href="/home">Sensores Publicos</a></li>
                 </ul>
+                </li>
+            {% else %}
+                <li class="active"><a href="#">Dispositivos</a></li>
+            {% endif %}
+    
+                <li><a href="/map">Mapa</a></li>
+                <li><a href="/api">API</a></li>
+            </ul>
+    
+            <ul class="nav navbar-nav navbar-right">
+            {% if user.is_authenticated %}
+                <li><a href="/account/{{ user.username }}/profile"><span class="glyphicon glyphicon-user"></span> {{ user.username }}</a></li>
+                <li><a href="{% url 'users:logout' %}"><span class="glyphicon glyphicon-log-out"></span> Sair</a></li>
+            {% else %}
+                <li><a href="/users/signup"><span class="glyphicon glyphicon-user"></span>Cadastrar</a></li>
+                <li><a href="{% url 'users:login' %}"><span class="glyphicon glyphicon-log-in"></span> Entrar</a></li>
+            {% endif %}
+            </ul>
+            
             </div>
         </nav> 
 

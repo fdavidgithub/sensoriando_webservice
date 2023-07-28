@@ -14,7 +14,7 @@ from rest_framework.response import Response
 
 import requests
 
-def callAPI(endpoint, data = None, method = "GET", token=None):
+def callAPI(endpoint, data = None, method = "GET", token = None):
     headers = {}
     if token:
         headers['Authorization'] = 'Bearer ' + token

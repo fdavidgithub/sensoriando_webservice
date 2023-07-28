@@ -6,28 +6,6 @@
 <title> Web Service: Visualizar</title>
 {% endblock %}
 
-{% block menu %}
-{% if user.is_authenticated %}
-    <ul class="nav navbar-nav">
-
-        <li class="desactive dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="nav-channels-after">Sensores<b class="caret"></b></a>
-          <ul class="dropdown-menu">
-            <li><a id="nav-my-channels" href="/home/private">Meus Sensores</a></li>
-            <li><a id="nav-public-channels" href="/home">Sensores Públicos</a></li>
-          </ul>
-        </li>
-
-        <li><a href="/map">Mapa</a></li>
-    </ul>
-{% else %}
-    <ul class="nav navbar-nav">
-      <li><a href="/home">Sensores</a></li>
-      <li><a href="/map">Mapa</a></li>
-    </ul>
-{% endif %}
-{% endblock %}
-
 {% block content %}
 <script type="text/javascript">
     {% include context.chart_file %}
@@ -51,21 +29,20 @@ function setCookie(cname, cvalue, exdays) {
             <ul class="no_bullets" id="table-channel-metadata">
                 <li><b>Cidade: </b>{{ context.city }}/{{ context.state }}</li>
                 <li><b>Pais:   </b>{{ context.country }}</li>
-                <li><b>Acesso: </b>{{ context.access }}</li>
             </ul>
         </div>
 
         <div class="col-xs-6 col-sm-4" style="border-left: 1px solid #ccc;">
             <i class="fa fa-dashboard"></i>&nbsp;
-{% for detail in context.sensors %}
-                {{ detail.sensor.name }}
+{% for sensor in context.sensors %}
+                {{ sensor.name }}
 {% endfor %}
             <br>
 
             <p id="channel-tags">
                 <i class="fa fa-tags"></i>&nbsp;
-{% for flag in context.tags %}
-                {{ flag.name }}
+{% for tag in context.thing_tags %}
+                {{ tag }}
 {% endfor %}
             </p>
         
@@ -73,12 +50,12 @@ function setCookie(cname, cvalue, exdays) {
                 <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Visualizar dados
                 <span class="caret"></span></button>
                 <ul class="dropdown-menu">
-                    <li><a href="javascript:setCookie('chartview','s',365);location.reload();">Segundos</a></li>
-                    <li><a href="javascript:setCookie('chartview','m',365);location.reload();">Minutos</a></li>
-                    <li><a href="javascript:setCookie('chartview','h',365);location.reload();">Horas</a></li>
-                    <li><a href="javascript:setCookie('chartview','d',365);location.reload();">Dias</a></li>
-                    <li><a href="javascript:setCookie('chartview','M',365);location.reload();">Meses</a></li>
-                    <li><a href="javascript:setCookie('chartview','y',365);location.reload();">Anos</a></li>
+                    <li><a href="javascript:setCookie('chartview','second',365);location.reload();">Segundos</a></li>
+                    <li><a href="javascript:setCookie('chartview','minute',365);location.reload();">Minutos</a></li>
+                    <li><a href="javascript:setCookie('chartview','hour',365);location.reload();">Horas</a></li>
+                    <li><a href="javascript:setCookie('chartview','day',365);location.reload();">Dias</a></li>
+                    <li><a href="javascript:setCookie('chartview','month',365);location.reload();">Meses</a></li>
+                    <li><a href="javascript:setCookie('chartview','year',365);location.reload();">Anos</a></li>
                 </ul>
 
                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">
@@ -106,7 +83,7 @@ function setCookie(cname, cvalue, exdays) {
 
 {% for detail in context.sensors %}
             <tr>
-                <th> {{ detail.sensor.name }} </th>
+                <th> {{ detail.name }} </th>
                 <th> <a target="_blank" href="#">CSV</a></th>
             </tr>
 {% endfor %}
@@ -134,7 +111,7 @@ function setCookie(cname, cvalue, exdays) {
         <div class="panel panel-primary">
             <div class="panel-heading ellipsis">
                 <i class="fa fa-bar-chart-o"></i>
-                <b>{{ detail.sensor.name }}</b>
+                <b>{{ detail.name }}</b>
             </div>
 
             <div class="panel-body">
@@ -146,12 +123,12 @@ function setCookie(cname, cvalue, exdays) {
                         <th> Mensagem </th>
                         </tr>
 
-{% for tablelist in detail.data %}
+    {% for tablelist in detail.data %}
                             <tr>
                                 <th>{{ tablelist.dtread }}</th>
                                 <th>{{ tablelist.message }}</th>
                             </tr>
-{% endfor %}
+    {% endfor %}
                     </table>
 {% elif detail.type == 'display' %}
                     <table height=201 width=100% class="table table-striped">
@@ -161,9 +138,9 @@ function setCookie(cname, cvalue, exdays) {
                         </tr>
 
                         <tr>
-{% for displaylist in detail.data %}
-<th> <font size="20"> {{ displaylist.group_value }}</font> {{ detail.unit.initial }} </th>
-{% endfor %}
+    {% for displaylist in detail.data %}
+        <th> <font size="20"> {{ displaylist.group_value }}</font> {{ detail.unit.initial }} </th>
+    {% endfor %}
                         </tr>
                         <tr>
                             <th> {{ detail.lastdatum }}</th>

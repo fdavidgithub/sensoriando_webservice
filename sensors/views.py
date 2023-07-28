@@ -1,209 +1,118 @@
-from api.views import *
 from django.conf import settings
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
 
-#from constants import CHART_DEFAULT, CHARTVIEW_DEFAULT, MAX_PRECISION
-import unicodecsv, datetime
+from base.views import callAPI
+from users.views import check_and_refresh_token
+from base.models import ThingsModel, AccountsModel, PlansModel, ThingsSensorsModel, ThingsTagsModel
 
+from dateutil.parser import parse
+import pandas as pd
+import json
 
-def ListPublicSensors(filterSensor=None, filterTag=None):
-    data = []
-    
-    publicAccounts = requests.get(settings.PREFIX_API + "/account/public/").json()
-    public = requests.get(settings.PREFIX_API + "/account/thing/sensor/tag/").json()
-    
-    for public in publics:
-        filterControl = False
+def ThingDetails(request, uuid = None):
+    dateFormats = {
+        'second': {'label': '%d/%m/%Y %H:%M', 'legend': '%S'},
+        'minute': {'label': '%d/%m/%Y %Hh', 'legend': '%M'},
+        'hour': {'label': '%d/%m/%Y', 'legend': '%H'},
+        'day': {'label': '%m/%Y', 'legend': '%d'},
+        'month': {'label': '%Y', 'legend': '%m'},
+        'year': {'label': '', 'legend': '%Y'}
+    }
 
-        if filterSensor is not None:
-            if filterSensor in public['sensors']:
-                filterControl = True
-
-        if filterTag is not None:
-            if filterTag in public['tags']:
-                filterControl = True
-
-        if filterControl:
-            data.append({
-                'thing': public["name"],
-                'city': public['city'],
-                'estate': public['state'],
-                'country': public['country'],
-                'last_update': "2022-05-07",
-                'tags': public["tags"],
-                'sensors': public["sensors"],
-    
-            })
-
-    return data
-'''
-def SensorDetails(request, slug_thing):
     # Get from cookies
-    chartview = request.COOKIES.get('chartview')
-   
+    try:
+        chartView = request.COOKIES.get('chartview')
+    except:
+        chartView = 'second'
+
     # Get data
-    thing = Things.objects.get(name = slug_thing.replace("-", " "))
-    account = Accounts.objects.get(accountsthings__id_thing = thing.id)
-    id_plan = account.id_plan.id
+    thing = ThingsModel.objects.get(uuid = uuid)
+    thingtags = ThingsTagsModel.objects.filter(id_thing = thing.id)
+    thingssensors = ThingsSensorsModel.objects.filter(id_thing = thing.id)
+    account = AccountsModel.objects.get(accountsthings__id_thing = thing.id)
+ 
+    tags = []
+    for tag in thingtags:
+        tags.append(tag.name)
 
-    if Plans.objects.get(id = id_plan).ispublic:
-        access = 'Publico'
-    else:
-        access = 'Privado'
-   
-    thingssensors = Thingssensors.objects.filter(id_thing = thing.id).distinct()
-    thingssensors = thingssensors.order_by("-id")
-    
-    # Filter
-    sensorslist = []
-    chartview_label = None
-    chartview_title = None
-    lastdatum = None
-
+    sensors = []
     for thingsensor in thingssensors:
-        id_sensor = thingsensor.id_sensor.id
+        try:
+            charttype = request.COOKIES.get('chart' + str(id_sensor))
+        except:
+            chartType = 'line'
+
+        try:
+            chartUnit = request.COOKIES.get('unit' + str(id_sensor))
+        except:
+            chartUnit = '???' 
+
+        sensor = thingsensor.id_sensor.name
+
+        jsonParams = {
+            'thing': uuid,
+            'sensor': sensor,
+            'period': chartView,
+
+        }
+    
+        if account.id_plan.ispublic:
+            jsonResult = callAPI(
+                endpoint = "/data/detail/", \
+                data = jsonParams, \
+                method = "POST"
+            )
+        else:
+            jsonResult = callAPI(
+                endpoint = "/data/detail/private/", \
+                data = jsonParams, \
+                method = "POST", \
+                token = check_and_refresh_token()
+            )
+
+        # Precisa melhorar isso
+        try:
+            len(jsonResult)
+        except:
+            jsonResult = None
+        ####
+
+        if jsonResult: 
+            lastDatum = parse(jsonResult[-1]['dtread'])
+            chartLabel = lastDatum.strftime(dateFormats[chartView]['label'])
+
+            for read in jsonResult:
+                dtPart = parse(read['dtread'])
+                read['dtread'] = dtPart.strftime(dateFormats[chartView]['legend'])
+
+            #Grouping values
+            df = pd.DataFrame(jsonResult)                                   #Panda: Convert json to DataFrame
+            df["value"] = df.groupby("dtread")["value"].transform("mean")   #Panda: Calc average
+            processedData = df.to_dict("records")                           #Panda: Convert DataFrame to Dict
         
-        # Get unit select by user
-        unit = request.COOKIES.get('unit' + str(id_sensor))
-        chart = request.COOKIES.get('chart' + str(id_sensor))
-        precision = request.COOKIES.get('precision' + str(id_sensor))
- 
-        if unit is None:
-            sensorunit = Sensorsunits.objects.get(id_sensor = id_sensor, isdefault = True)
-        else:
-            sensorunit = Sensorsunits.objects.get(id = unit)
+            sensors.append({
+                'name': sensor,
+                'type': chartType,
+                'label': chartLabel,
+                'lastdatum': lastDatum,
+                'unit': chartUnit,
+                'data': processedData,
 
-        if precision is None:
-            precision = sensorunit.precision
-        else:
-            precision = int(precision)
-
-        if chart is None:
-            chart = CHART_DEFAULT
- 
-        # Check if is value or message
-        if thingsensor.id == 3: #ID for Sensor Message
-            data = Thingssensorsdata.objects.filter(id_thingsensor = thingsensor.id, value__isnull = True) \
-                    .order_by('-dt')[:5]
- 
-            chart = 'table'
-            lastdatum = None
-        else:
-            data = Thingssensorsdata.objects \
-                    .filter(id_thingsensor = thingsensor.id, value__isnull = False)
-
-            if data is None:
-                chartview = None
-            else:
-                if chartview is None:
-                    chartview = CHARTVIEW_DEFAULT
-
-            # Datetime show data
-            lastrecord = data.last()
-
-            if lastrecord is not None:
-                lastdatum = lastrecord.dtread.astimezone()
-            else:
-                chartview = None
-
-            # Grouping data of sensor
-            if chartview == 's':
-                chartview_label = lastdatum.strftime("%d/%m/%Y %H:%M")
-                chartview_title = 'Segundos'
-
-                data = data.filter(dtread__year=lastdatum.year, \
-                                   dtread__month=lastdatum.month, \
-                                   dtread__day=lastdatum.day, \
-                                   dtread__hour=lastdatum.hour, \
-                                   dtread__minute=lastdatum.minute)
-                
-                data = data.values(group_dt=Extract('dtread', 'second')) \
-                        .annotate(group_value=Avg('value')) \
-                        .order_by('group_dt', 'group_value')
-            elif chartview == 'm':
-                chartview_label = lastdatum.strftime("%d/%m/%Y %Hh")
-                chartview_title = 'Minutos'
-
-                data = data.filter(dtread__year = lastdatum.year, \
-                                   dtread__month = lastdatum.month, \
-                                   dtread__day = lastdatum.day, \
-                                   dtread__hour = lastdatum.hour)
-
-                data = data.values(group_dt=Extract('dtread', 'minute')) \
-                        .annotate(group_value=Avg('value')) \
-                        .order_by('group_dt', 'group_value')
-            elif chartview == 'h':
-                chartview_label = lastdatum.strftime("%d/%m/%Y")
-                chartview_title = 'Horas'
-
-                data = data.filter(dtread__year = lastdatum.year, \
-                                   dtread__month = lastdatum.month, \
-                                   dtread__day = lastdatum.day)
-
-                data = data.values(group_dt=Extract('dtread', 'hour')) \
-                        .annotate(group_value=Avg('value')) \
-                        .order_by('group_dt', 'group_value')
-            elif chartview == 'd':
-                chartview_label = lastdatum.strftime("%m/%Y")
-                chartview_title = 'Dias'
-
-                data = data.filter(dtread__year = lastdatum.year, \
-                                   dtread__month = lastdatum.month)
-
-                data = data.values(group_dt=Extract('dtread', 'day')) \
-                        .annotate(group_value=Avg('value')) \
-                        .order_by('group_dt', 'group_value')
-            elif chartview == 'M':
-                chartview_label = lastdatum.strftime("%Y")
-                chartview_title = 'Meses'
-
-                data = data.filter(dtread__year = lastdatum.year)
-
-                data = data.values(group_dt=Extract('dtread', 'month')) \
-                        .annotate(group_value=Avg('value')) \
-                        .order_by('group_dt', 'group_value')
-            elif chartview == 'y':
-                chartview_label = ''
-                chartview_title = 'Anos'
- 
-                data = data.values(group_dt=Extract('dtread', 'year')) \
-                        .annotate(group_value=Avg('value')) \
-                        .order_by('group_dt', 'group_value')
-            else:
-                chartview_label = 'Sem Dados'
-                chartview_title = 'Selecione Visualizacao'
-            
-            if chart == 'display':
-                data = data.order_by('-group_dt')[:1]
-            
-            # Recalc values by expression
-            for datum in data:
-                pv = datum['group_value'] # Variable use in calc
-                datum['group_value'] = round(eval(sensorunit.expression), precision)
-     
-        # Build dict sensor + unit
-        sensorslist.append({
-            'sensor': Sensors.objects.get(id = id_sensor),
-            'type': chart,
-            'label': chartview_label,
-            'lastdatum': lastdatum,
-            'unit': sensorunit,
-            'data': data
-        })
+            })
 
     context = {
         'thing': thing.name,
+        'thing_tags': tags,
         'canva': 'chart-line',
         'chart_file': 'chart-line.js',
         'city': account.city,
         'state': account.state,
-        'lastdatum': lastdatum,
-        'title': chartview_title,
+        'title': chartView,
         'country': account.country,
-        'access': access,
-        'sensors': sensorslist,
-        'tags': Thingstags.objects.filter(id_thing = thing.id)
+        'sensors': sensors,
+
     }
- 
+
     return render(request, 'sensor.html', {'context': context})
-'''
 

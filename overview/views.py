@@ -9,8 +9,8 @@ import pycountry
 import json
 
 def Filters():
-    sensors = callAPI("/sensor/")
-    sensortags = callAPI("/sensor/tag/")
+    sensors = callAPI("/sensors/")
+    sensortags = callAPI("/sensors/tags/")
  
     filters = {
         'sensors': sensors,
@@ -46,7 +46,7 @@ def getCountry(jsonResult):
 
 def Public(request):
     jsonParams = readCookie(request)
-    jsonResult = callAPI(endpoint = "/data/public/thing/", data = jsonParams)
+    jsonResult = callAPI(endpoint = "/things/", data = jsonParams, method = "POST")
     
     jsonResult = getCountry(jsonResult)
 
@@ -65,7 +65,7 @@ def getStatistics():
     except:
         token = None
 
-    jsonResult = callAPI(endpoint = "/data/private/stats/", token = token)
+    jsonResult = callAPI(endpoint = "/data/stats/private/", token = token)
     return jsonResult
 
 def Private(request):
@@ -75,7 +75,7 @@ def Private(request):
         token = None
 
     jsonParams = readCookie(request)
-    jsonResult = callAPI(endpoint = "/data/private/thing/" , data = jsonParams, \
+    jsonResult = callAPI(endpoint = "/things/private/" , data = jsonParams, \
                          method = "POST", token = token)
     
     jsonResult = getCountry(jsonResult)
