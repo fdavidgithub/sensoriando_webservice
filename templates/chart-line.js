@@ -1,10 +1,10 @@
 window.onload = function() {
 
 {% for sensor in context.sensors %}
-{% if sensor.type != 'table' and sensor.type != 'display' %}
-    var ctx{{ forloop.counter }} = document.getElementById("{{ context.canva }}{{ forloop.counter }}").getContext('2d');
-	window.myLine = new Chart(ctx{{ forloop.counter }}, config{{ forloop.counter }});
-{% endif %}
+    {% if sensor.type != 'table' and sensor.type != 'display' %}
+        var ctx{{ forloop.counter }} = document.getElementById("{{ context.canva }}{{ forloop.counter }}").getContext('2d');
+	    window.myLine = new Chart(ctx{{ forloop.counter }}, config{{ forloop.counter }});
+    {% endif %}
 {% endfor %}
 
 //    setInterval(function(){
@@ -14,7 +14,7 @@ window.onload = function() {
 };
 
 {% for sensor in context.sensors %}
-{% if sensor.type != 'table' and sensor.type != 'display' %}
+    {% if sensor.type != 'table' or sensor.type != 'display' %}
  
         var config{{ forloop.counter }} = {
             type: '{{ sensor.type }}',
@@ -22,19 +22,22 @@ window.onload = function() {
             data: {
                 labels: [
 
-{% for datum in sensor.data %}                
-                    '{{ datum.group_dt }}',
-{% endfor %}
+        {% for datum in sensor.data %}                
+                    '{{ datum.dtread }}',
+        {% endfor %}
 
                 ],
                 datasets: [{
-					backgroundColor: window.chartColors.red,
-					borderColor: window.chartColors.red,
+                    label: '{{ sensor.unit }}',
+                    pointStyle: 'circle',
+                    pointRadius: 5,
+					backgroundColor: 'white',
+					borderColor: 'red',
 					data: [
 
-{% for datum in sensor.data %}
-                    parseFloat('{{ datum.group_value }}'.replace(",", ".")),
-{% endfor %}
+        {% for datum in sensor.data %}
+                    parseFloat('{{ datum.value }}'.replace(",", ".")),
+        {% endfor %}
 
                     ],
 					fill: false,
@@ -42,37 +45,27 @@ window.onload = function() {
 			},
 			
             options: {
-				responsive: true,
-                title: {
-					display: true,
-					text: '{{ context.title }}'
-				},
-                legend: false,
-			    tooltips: {
-					mode: 'index',
-					intersect: false,
-				},
-				hover: {
-					mode: 'nearest',
-					intersect: true
-				},
-				scales: {
-					xAxes: [{
-						display: true,
-						scaleLabel: {
-							display: true,
-                            labelString: '{{ sensor.label }}'
-						}
-					}],
-					yAxes: [{
-						display: true,
-						scaleLabel: {
-							display: true,
-							labelString: '{{ sensor.unit.name }}'
-						}
-					}]
-				}
-			}
+                responsive: true,
+
+                scales: {
+                    x: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: '{{ sensor.label }}'
+                        }
+                    },
+                    y: {
+                        display: true,
+                        title: {
+                            display: false,
+                            text: 'Value'
+                        }
+                    }
+                },
+
+            }
 		};
-{% endif %}
+
+    {% endif %}
 {% endfor %}

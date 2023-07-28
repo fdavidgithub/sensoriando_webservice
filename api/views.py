@@ -12,6 +12,8 @@ from drf_yasg.utils import swagger_auto_schema
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models.functions import TruncSecond, TruncMinute, TruncHour, TruncDay, TruncMonth, TruncYear
+from django.db.models import Avg, F
 
 from api import serializers
 from base.models import ThingsModel, ThingsTagsModel, SensorsModel, ThingsSensorsTagsModel, AccountsModel, \
@@ -29,9 +31,10 @@ class SensorViewSets(viewsets.ModelViewSet):
     serializer_class = serializers.SensorSerializer
     queryset  = SensorsModel.objects.all()
 
-class SensorTagViewSets(viewsets.ModelViewSet):
+class PublicSensorTagViewSets(viewsets.ModelViewSet):
     serializer_class = serializers.SensorTagSerializer
-    queryset  = ThingsSensorsTagsModel.objects.values('name').distinct()
+    thingPublic_ids = AccountsThingsModel.objects.filter(id_account__id_plan__ispublic = True).values('id_thing_id')
+    queryset  = ThingsSensorsTagsModel.objects.filter(id_thingsensor__id_thing__in = thingPublic_ids).values('name').distinct()
 
 class PublicAccountViewSets(viewsets.ModelViewSet):
     serializer_class = serializers.AccountSerializer
@@ -48,10 +51,10 @@ class PrivateAccountViewSets(viewsets.ModelViewSet):
     )
 
 class PublicThingsViewSets(APIView):
-    def get(self, request, *args, **kwargs):
-        queryset = self.get_queryset(request.GET)
-        serializer = serializers.DataThingsSerializer(queryset, many=True)
-        return Response(serializer.data)
+#    def get(self, request, *args, **kwargs):
+#        queryset = self.get_queryset(request.GET)
+#        serializer = serializers.DataThingsSerializer(queryset, many=True)
+#        return Response(serializer.data)
 
     @swagger_auto_schema(
         request_body=openapi.Schema(
@@ -111,8 +114,180 @@ class PublicThingsViewSets(APIView):
         thing_ids = ThingsSensorsModel.objects.filter(id__in = thingsensor_ids).values_list("id_thing", flat = True)
         return thing_ids
 
+class DataViewSets(APIView):
+    isPublic = None
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'thing': openapi.Schema(type=openapi.TYPE_STRING, format='uuid'),
+                'sensor': openapi.Schema(type=openapi.TYPE_STRING),
+                'period': openapi.Schema(type=openapi.TYPE_STRING, default="second", description="Permitted values: second, minute, hour, day, month, year"),
+            
+            }
+        )
+    )
+    def post(self, request, *args, **kwargs):
+        queryset = self.get_queryset(request)
+        serializer = serializers.ThingsSensorsDataSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def get_queryset(self, request):
+        data = None
+        lastread = None
+
+        try:
+            thing = request.data["thing"]
+        except:
+            thing = None
+            
+        try:
+            sensor = request.data["sensor"]
+        except:
+            sensor = None
+
+        try:
+            period = request.data["period"].lower()
+        except:
+            period = 'second'
+
+        period_mapping = {
+            "second": TruncSecond,
+            "minute": TruncMinute,
+            "hour": TruncHour,
+            "day": TruncDay,
+            "month": TruncMonth,
+            "year": TruncYear,
+        }
+
+        checkPublic = AccountsThingsModel.objects.filter(
+            id_thing__uuid = thing,
+            id_account__id_plan__ispublic = self.isPublic,
+        )
+
+        if checkPublic:
+            lastread = ThingsSensorsDataModel.objects.filter(
+                id_thingsensor__id_thing__uuid = thing,
+                id_thingsensor__id_sensor__name = sensor,
+
+            ).last()
+
+        if lastread and period in period_mapping:
+            trunc_class = period_mapping[period]
+            dt_lastread = lastread.dtread.astimezone()
+
+            if period == "second":
+                data = ThingsSensorsDataModel.objects.filter(
+                    id_thingsensor__id_thing__uuid = thing,
+                    id_thingsensor__id_sensor__name = sensor,
+
+                    dtread__year = dt_lastread.year,
+                    dtread__month = dt_lastread.month,
+                    dtread__day = dt_lastread.day,
+                    dtread__hour = dt_lastread.hour,
+                    dtread__minute = dt_lastread.minute,
+                ).annotate(
+                    timestamp_period = trunc_class('dtread')  # Truncate dtread to the nearest second
+                ).values(
+                    'timestamp_period'  # Group by truncated dtread
+                ).annotate(
+                    value = Avg('value')  # Calculate average value per second
+                ).order_by(
+                    'timestamp_period'  # Order by dtread ascending
+                )
+            elif period == "minute":
+                data = ThingsSensorsDataModel.objects.filter(
+                    id_thingsensor__id_thing__uuid = thing,
+                    id_thingsensor__id_sensor__name = sensor,
+
+                    dtread__year = dt_lastread.year,
+                    dtread__month = dt_lastread.month,
+                    dtread__day = dt_lastread.day,
+                    dtread__hour = dt_lastread.hour,
+                ).annotate(
+                    timestamp_period = trunc_class('dtread')  # Truncate dtread to the nearest second
+                ).values(
+                    'timestamp_period'  # Group by truncated dtread
+                ).annotate(
+                    value = Avg('value')  # Calculate average value per second
+                ).order_by(
+                    'timestamp_period'  # Order by dtread ascending
+                )
+            elif period == "hour":
+                data = ThingsSensorsDataModel.objects.filter(
+                    id_thingsensor__id_thing__uuid = thing,
+                    id_thingsensor__id_sensor__name = sensor,
+
+                    dtread__year = dt_lastread.year,
+                    dtread__month = dt_lastread.month,
+                    dtread__day = dt_lastread.day,
+                ).annotate(
+                    timestamp_period = trunc_class('dtread')  # Truncate dtread to the nearest second
+                ).values(
+                    'timestamp_period'  # Group by truncated dtread
+                ).annotate(
+                    value = Avg('value')  # Calculate average value per second
+                ).order_by(
+                    'timestamp_period'  # Order by dtread ascending
+                )
+            elif period == "day":
+                data = ThingsSensorsDataModel.objects.filter(
+                    id_thingsensor__id_thing__uuid = thing,
+                    id_thingsensor__id_sensor__name = sensor,
+
+                    dtread__year = dt_lastread.year,
+                    dtread__month = dt_lastread.month,
+                ).annotate(
+                    timestamp_period = trunc_class('dtread')  # Truncate dtread to the nearest second
+                ).values(
+                    'timestamp_period'  # Group by truncated dtread
+                ).annotate(
+                    value = Avg('value')  # Calculate average value per second
+                ).order_by(
+                    'timestamp_period'  # Order by dtread ascending
+                )
+            elif period == "month":
+                data = ThingsSensorsDataModel.objects.filter(
+                    id_thingsensor__id_thing__uuid = thing,
+                    id_thingsensor__id_sensor__name = sensor,
+
+                    dtread__year = dt_lastread.year,
+                ).annotate(
+                    timestamp_period = trunc_class('dtread')  # Truncate dtread to the nearest second
+                ).values(
+                    'timestamp_period'  # Group by truncated dtread
+                ).annotate(
+                    value = Avg('value')  # Calculate average value per second
+                ).order_by(
+                    'timestamp_period'  # Order by dtread ascending
+                )
+            elif period == "year":
+                data = ThingsSensorsDataModel.objects.filter(
+                    id_thingsensor__id_thing__uuid = thing,
+                    id_thingsensor__id_sensor__name = sensor,
+                ).annotate(
+                    timestamp_period = trunc_class('dtread')  # Truncate dtread to the nearest second
+                ).values(
+                    'timestamp_period'  # Group by truncated dtread
+                ).annotate(
+                    value = Avg('value')  # Calculate average value per second
+                ).order_by(
+                    'timestamp_period'  # Order by dtread ascending
+                )
+
+        return data
+   
+class PublicDetailViewSets(DataViewSets):
+    isPublic = True
+
 #Abourt token
 #https://django-rest-framework-simplejwt.readthedocs.io/en/latest/getting_started.html
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+class PrivateDetailViewSets(DataViewSets):
+    isPublic = False
+
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 class PrivateThingsViewSets(APIView):

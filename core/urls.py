@@ -25,6 +25,6 @@ urlpatterns = [
     path('', include('overview.urls')),
     path('users/', include('users.urls')),
     path('www/', views.RedirectSensoriando, name='www'),
-
+    path('thing/', include('sensors.urls')),
 
 ]
