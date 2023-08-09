@@ -4,7 +4,7 @@ from django.http import HttpResponse
 
 from base.views import callAPI
 from users.views import check_and_refresh_token
-from base.models import ThingsModel, AccountsModel, PlansModel, ThingsSensorsModel, ThingsTagsModel
+from base.models import ThingsModel, AccountsModel, PlansModel, ThingsSensorsModel, ThingsTagsModel, SensorsUnitsModel
 
 from dateutil.parser import parse
 import pandas as pd
@@ -38,17 +38,37 @@ def ThingDetails(request, uuid = None):
 
     sensors = []
     for thingsensor in thingssensors:
+        id_sensor = thingsensor.id_sensor_id
+        sensor = thingsensor.id_sensor.name
+
+        chartType = None
+        chartUnit = None
+        chartPrecision = None
+
         try:
-            charttype = request.COOKIES.get('chart' + str(id_sensor))
+            chartPrecision = int(request.COOKIES.get('precision' + str(id_sensor)))
         except:
+            pass
+
+        if not chartPrecision:
+            chartPrecision = 0
+
+        try:
+            chartType = request.COOKIES.get('chart' + str(id_sensor))
+        except:
+            pass
+
+        if not chartType:
             chartType = 'line'
 
         try:
-            chartUnit = request.COOKIES.get('unit' + str(id_sensor))
+            id_unit = request.COOKIES.get('unit' + str(id_sensor))
+            chartUnit = SensorsUnitsModel.objects.get(id = id_unit)
         except:
-            chartUnit = '???' 
+            pass 
 
-        sensor = thingsensor.id_sensor.name
+        if not chartUnit:
+            chartUnit = '?'
 
         jsonParams = {
             'thing': uuid,
@@ -89,6 +109,9 @@ def ThingDetails(request, uuid = None):
             #Grouping values
             df = pd.DataFrame(jsonResult)                                   #Panda: Convert json to DataFrame
             df["value"] = df.groupby("dtread")["value"].transform("mean")   #Panda: Calc average
+            df.eval("value = " + chartUnit.expression.replace("pv", "value"), \
+                    inplace = True)                                         #Panda: Math Expression
+            df["value"] = df["value"].round(chartPrecision)
             processedData = df.to_dict("records")                           #Panda: Convert DataFrame to Dict
         
             sensors.append({
@@ -104,8 +127,7 @@ def ThingDetails(request, uuid = None):
     context = {
         'thing': thing.name,
         'thing_tags': tags,
-        'canva': 'chart-line',
-        'chart_file': 'chart-line.js',
+        'chart_file': 'chart.js',
         'city': account.city,
         'state': account.state,
         'title': chartView,

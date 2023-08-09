@@ -1,15 +1,20 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.views import LoginView
+from django.contrib.auth.models import User
 
 from rest_framework_simplejwt.tokens import AccessToken
 
 import datetime
 import os
 
-from base.models import AccountsModel, AccountsThingsModel, ThingsModel, PlansModel
+from base.models import AccountsModel, AccountsThingsModel, ThingsModel, PlansModel, ThingsSensorsModel, SensorsModel, \
+                        SensorsUnitsModel
 from users.forms import SignUpForm, AccountForm, UserForm, ThingForm
 from base.views import callAPI
+
+CHART_DEFAULT = 'chart-line'
+MAX_PRECISION = 3
 
 # Create your views here.
 #https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
@@ -65,7 +70,6 @@ class SignIn(LoginView):
 
         return response
 
-'''
 def MyAccount(request, username, tab):
     try:
         account = AccountsModel.objects.get(username = username)
@@ -76,7 +80,7 @@ def MyAccount(request, username, tab):
     things = ThingsModel.objects.filter(accountsthings__id_account = account.id)
     things_ids = things.values_list('id', flat=True)
 
-    thingssensors = ThingssensorsModel.objects.filter(id_thing__in = things_ids).distinct()
+    thingssensors = ThingsSensorsModel.objects.filter(id_thing__in = things_ids).distinct()
     thingssensors_ids = thingssensors.values_list('id_sensor', flat=True)
     
     sensors = SensorsModel.objects.filter(id__in = thingssensors_ids)
@@ -93,7 +97,7 @@ def MyAccount(request, username, tab):
 
         precisionselect = request.COOKIES.get('precision' + str(sensor.id))
         if precisionselect is None:
-            precisionselect = SensorsunitsModel.objects.get(isdefault = True, id_sensor = sensor.id).precision
+            precisionselect = SensorsUnitsModel.objects.get(isdefault = True, id_sensor = sensor.id).precision
         else:
             precisionselect = int(precisionselect)
         
@@ -103,7 +107,7 @@ def MyAccount(request, username, tab):
             'unitselect': unitselect,
             'chartselect': chartselect,
             'precisionselect': precisionselect,
-            'units': SensorsunitsModel.objects.filter(id_sensor = sensor.id)
+            'units': SensorsUnitsModel.objects.filter(id_sensor = sensor.id)
         })
 
     if request.method == 'POST' and 'profileform' in request.POST:
@@ -158,7 +162,6 @@ def MyAccount(request, username, tab):
     }
 
     return render(request, 'account.html', {'form': form})
-'''
 
 def getToken(user, password):
     access = None
