@@ -2,7 +2,7 @@ window.onload = function() {
 
 {% for sensor in context.sensors %}
     {% if sensor.type != 'table' and sensor.type != 'display' %}
-        var ctx{{ forloop.counter }} = document.getElementById("{{ context.canva }}{{ forloop.counter }}").getContext('2d');
+        var ctx{{ forloop.counter }} = document.getElementById("ChartDetail{{ forloop.counter }}").getContext('2d');
 	    window.myLine = new Chart(ctx{{ forloop.counter }}, config{{ forloop.counter }});
     {% endif %}
 {% endfor %}
@@ -14,18 +14,16 @@ window.onload = function() {
 };
 
 {% for sensor in context.sensors %}
-    {% if sensor.type != 'table' or sensor.type != 'display' %}
+    {% if sensor.type != 'table' and sensor.type != 'display' %}
  
         var config{{ forloop.counter }} = {
             type: '{{ sensor.type }}',
 			
             data: {
                 labels: [
-
-        {% for datum in sensor.data %}                
-                    '{{ datum.dtread }}',
-        {% endfor %}
-
+                    {% for datum in sensor.data %}                
+                        '{{ datum.dtread }}',
+                    {% endfor %}
                 ],
                 datasets: [{
                     label: '{{ sensor.unit }}',
@@ -34,11 +32,9 @@ window.onload = function() {
 					backgroundColor: 'white',
 					borderColor: 'red',
 					data: [
-
-        {% for datum in sensor.data %}
-                    parseFloat('{{ datum.value }}'.replace(",", ".")),
-        {% endfor %}
-
+                        {% for datum in sensor.data %}
+                            parseFloat('{{ datum.value }}'.replace(",", ".")),
+                        {% endfor %}
                     ],
 					fill: false,
 				}, ]

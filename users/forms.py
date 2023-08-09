@@ -51,7 +51,7 @@ class ThingForm(ModelForm):
             raise ValidationError(_('UUID não encontrado'))
      
         try:
-            AccountsModelthings.objects.get(id_thing = thing.id)
+            AccountsThingsModel.objects.get(id_thing = thing.id)
             raise ValidationError(_('UUID indisponível'))
         except ObjectDoesNotExist:
             pass
