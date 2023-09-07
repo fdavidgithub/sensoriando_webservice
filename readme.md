@@ -19,8 +19,10 @@ Create .env file
 
 ```console
 touch .env
+export DOCKER_COMPOSE_ENV_FILE=.env
 ```
-```console
+
+```
 export POSTGRES_HOST=sensoriando_database
 export POSTGRES_USER=postgres
 export POSTGRES_PASSWORD=[your password]
