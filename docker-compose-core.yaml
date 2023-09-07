@@ -14,18 +14,20 @@ version: "3.7"
 # Shell:
 # docker exec -it yout-container <cmd>
 services: 
-  django:
-#    image: python:3.8
+  framework:
+    container_name: sensoriando_webservice
+    image: python:3.8
     build: 
         context: ./
         dockerfile: Dockerfile
     command: python manage.py runserver 0.0.0.0:8000
+    working_dir: /usr/src/app
     ports: 
-      - 8000:8000
+        - 8000:8000
     volumes:
-      - .:/usr/src/app
+        - .:/usr/src/app
     networks:
-      - sensoriando
+        - sensoriando
 
 networks:
     sensoriando:

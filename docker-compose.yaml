@@ -23,7 +23,6 @@ services:
       - .env
     volumes:
       - ./db-data/:/var/lib/postgresql/data/
-      - ../sensoriando_daemon/db/:/docker-entrypoint-initdb.d/
  
   framework:
     container_name: sensoriando_webservice
