@@ -2,74 +2,34 @@
 **Hub de Sensores**
 [web.sensoriando.com.br](http://web.sensoriando.com.br)
 
-## Requirement
-Homologated
-* Ubuntu 18.04
-
-```console
-sudo apt-get update
-sudo apt-get upgrade
-```
-
-### Python
-```console
-sudo apt-get install python3-pip
-```
-
-### Postgres
-```console
-sudo apt-get install postgresql-13 postgresql-client-13
-```
-
-
 ## Install
 
-2. Django init
+1. Create docker's images
 ```console
-source ~/envs/Sensoriando/bin/activate
-pytnon manage.py makemigrations
-python manage.py migrate
-python manage.py createsuperuser
+docker-compose build
 ```
 
-3. Django runtime
+2. Docker
 ```console
-python manage.py runserver
+docker-compose up -d
 ```
 
-4. Browser URL
-localhost:8000
+3. Environment
+Create .env file
 
-## Run
-### Virtualenv
-echo "127.0.0.1 sensoriando_database" >> /etc/hosts
-source venv/bin/activate
-
-### via Docker local
 ```console
-docker-compose up
+touch .env
 ```
-
-Executar o comando **docker-compose build** novamente para reconstruir a imagem do serviço sempre que o arquivo requiriment.txt ou Dockerfile for alterado
-
-
-### Docker shared
 ```console
-docker-compose -f docker-compose-shared up
-```
-When use docker-compose-shared, need create .env file
-
-```
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-POSTGRES_DB=sensoriando
+export POSTGRES_HOST=sensoriando_database
+export POSTGRES_USER=postgres
+export POSTGRES_PASSWORD=[your password]
+export POSTGRES_DB=sensoriando
+export POSTGRES_PORT=5432
 ```
 
-### Prompt database
-#### Docker
-docker exec -it sensoriando_database psql -U postgres -d sensoriando
-#### Native
-psql -U postgres -d sensoriando
+5. Reload
+```console
+docker-compose restart
+```
 
-### Shell
-docker exec -it sensoriando_webservice-django-1 python manage.py [command]
