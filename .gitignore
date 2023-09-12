@@ -12,7 +12,6 @@ node_modules/
 dist/
 db-data
 .env
-db-data
 
 # Compiled Java class files
 *.class
