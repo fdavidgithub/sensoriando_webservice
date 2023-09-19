@@ -28,6 +28,8 @@ export POSTGRES_USER=postgres
 export POSTGRES_PASSWORD=[your password]
 export POSTGRES_DB=sensoriando
 export POSTGRES_PORT=5432
+
+export DJANGO_PORT=8000
 ```
 
 5. Reload
