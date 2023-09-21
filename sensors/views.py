@@ -11,20 +11,23 @@ import pandas as pd
 import json
 
 def ThingDetails(request, uuid = None):
+    defaults = {
+        "charttype": 'line',
+        "chartview": "second",
+ 
+    }
+
     dateFormats = {
         'second': {'label': '%d/%m/%Y %H:%M', 'legend': '%S'},
         'minute': {'label': '%d/%m/%Y %Hh', 'legend': '%M'},
         'hour': {'label': '%d/%m/%Y', 'legend': '%H'},
         'day': {'label': '%m/%Y', 'legend': '%d'},
         'month': {'label': '%Y', 'legend': '%m'},
-        'year': {'label': '', 'legend': '%Y'}
+        'year': {'label': '', 'legend': '%Y'},
+
     }
 
-    # Get from cookies
-    try:
-        chartView = request.COOKIES.get('chartview')
-    except:
-        chartView = 'second'
+    chartView = defaults['chartview']
 
     # Get data
     thing = ThingsModel.objects.get(uuid = uuid)
@@ -40,35 +43,44 @@ def ThingDetails(request, uuid = None):
     for thingsensor in thingssensors:
         id_sensor = thingsensor.id_sensor_id
         sensor = thingsensor.id_sensor.name
+        sensor_unit = SensorsUnitsModel.objects.get(isdefault = True, id_sensor = id_sensor)
 
-        chartType = None
-        chartUnit = None
-        chartPrecision = None
-
+        defaults["chartunit"] = sensor_unit
+        defaults["chartprecision"] = sensor_unit.precision
+ 
+        # Get from cookies
         try:
-            chartPrecision = int(request.COOKIES.get('precision' + str(id_sensor)))
-        except:
-            pass
+            chartView = request.COOKIES.get('chartview')
 
-        if not chartPrecision:
-            chartPrecision = 0
+            if not chartView:
+                chartView = defaults['chartview']
+        except:
+            chartView = defaults['chartview']
 
         try:
             chartType = request.COOKIES.get('chart' + str(id_sensor))
-        except:
-            pass
 
-        if not chartType:
-            chartType = 'line'
+            if not chartType:
+                chartType = defaults['charttype']
+        except:
+            chartType = defaults['charttype']
+    
+        try:
+            chartPrecision = int(request.COOKIES.get('precision' + str(id_sensor)))
+        
+            if not chartPrecision:
+                chartPrecision = defaults['chartprecision']
+        except:
+            chartPrecision = defaults['chartprecision']
 
         try:
             id_unit = request.COOKIES.get('unit' + str(id_sensor))
             chartUnit = SensorsUnitsModel.objects.get(id = id_unit)
-        except:
-            pass 
 
-        if not chartUnit:
-            chartUnit = '?'
+            if not chartUnit:
+                chartUnit = defaults['chartunit']
+        except:
+            chartUnit = defaults['chartunit']
 
         jsonParams = {
             'thing': uuid,
