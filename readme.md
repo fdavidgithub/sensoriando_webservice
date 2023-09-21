@@ -32,6 +32,12 @@ export POSTGRES_PORT=5432
 export DJANGO_PORT=8000
 ```
 
+4. Django Migrate
+```console
+docker exec -it sensoriando_webservice python manage.py makemigrations
+docker exec -it sensoriando_webservice python manage.py migrate
+```
+
 5. Reload
 ```console
 docker-compose restart
