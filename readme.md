@@ -30,6 +30,7 @@ export POSTGRES_DB=sensoriando
 export POSTGRES_PORT=5432
 
 export DJANGO_PORT=8000
+export DJANGO_PARAMS=""
 ```
 
 4. Django Migrate

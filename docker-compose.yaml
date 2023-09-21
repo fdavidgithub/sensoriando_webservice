@@ -22,10 +22,10 @@ services:
         dockerfile: Dockerfile
     env_file:
         - .env
-    command: python manage.py runserver 0.0.0.0:${DJANGO_PORT}
+    command: python manage.py runserver 0.0.0.0:${DJANGO_PORT} ${DJANGO_PARAMS}
     working_dir: /usr/src/app
     ports: 
-        - 8000:8000
+        - ${DJANGO_PORT}:8000
     volumes:
         - .:/usr/src/app
     networks:
