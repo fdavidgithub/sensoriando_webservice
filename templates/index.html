@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+   <head>
+      {% load static %}
+
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <meta name='robots' content='max-image-preview:large' />
+      <title>Sensoriando: Webservice</title>
+
+      <link rel="stylesheet" href="{% static "css/style.css" %}"> <!-- Referência ao arquivo CSS -->
+
+      <link rel='stylesheet' id='wp-block-cover-css' href='https://sensoriando.com.br/wp-includes/blocks/cover/style.min.css?ver=6.3.1' media='all' />      
+      <link rel='stylesheet' id='wp-block-navigation-css' href='https://sensoriando.com.br/wp-includes/blocks/navigation/style.min.css?ver=6.3.1' media='all' />
+      <link rel='stylesheet' id='gutenify-lynx-parent-style-css' href='https://sensoriando.com.br/wp-content/themes/gutenify-base/style.css?ver=6.3.1' media='all' />
+      <link rel='stylesheet' id='gutenify-base-theme-style-css' href='https://sensoriando.com.br/wp-content/themes/gutenify-base/css/theme-style.css?ver=20230815-11606' media='all' />
+
+      <script src="{% static "js/cookies.js" %}"></script>
+
+   </head>
+   
+   {% include 'header.html' %} 
+   
+   <body data-rsssl=1 class="home blog wp-embed-responsive">
+      <div class="wp-site-blocks">
+
+        {% include 'background.html' %}
+       
+        {% include 'titlebar.html' %}
+        
+        {% include 'things.html' %}
+
+      </div>
+   </body>
+
+   {% include 'footer.html' %}
+
+</body>
+</html>
+
