@@ -16,24 +16,21 @@
       <link rel='stylesheet' id='gutenify-base-theme-style-css' href='https://sensoriando.com.br/wp-content/themes/gutenify-base/css/theme-style.css?ver=20230815-11606' media='all' />
 
       <script src="{% static "js/cookies.js" %}"></script>
-
    </head>
    
-   {% include 'header.html' %} 
+   <header class="transparent-header"> 
+        {% include 'header.html' %} 
+   </header>
    
-   <body data-rsssl=1 class="home blog wp-embed-responsive">
-      <div class="wp-site-blocks">
-
+   <body>
         {% include 'background.html' %}
-       
-        {% include 'titlebar.html' %}
-        
+        {% include 'barfilter.html' %}
         {% include 'things.html' %}
-
-      </div>
    </body>
 
-   {% include 'footer.html' %}
+   <footer>
+        {% include 'footer.html' %}
+   </footer>
 
 </body>
 </html>
