@@ -1,37 +1,61 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
-   <head>
-      {% load static %}
+<html lang="en">
 
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <meta name='robots' content='max-image-preview:large' />
-      <title>Sensoriando: Webservice</title>
+<head>
+    {% load static %}
 
-      <link rel="stylesheet" href="{% static "css/style.css" %}"> <!-- Referência ao arquivo CSS -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensoriando: Webservice</title>
 
-      <link rel='stylesheet' id='wp-block-cover-css' href='https://sensoriando.com.br/wp-includes/blocks/cover/style.min.css?ver=6.3.1' media='all' />      
-      <link rel='stylesheet' id='wp-block-navigation-css' href='https://sensoriando.com.br/wp-includes/blocks/navigation/style.min.css?ver=6.3.1' media='all' />
-      <link rel='stylesheet' id='gutenify-lynx-parent-style-css' href='https://sensoriando.com.br/wp-content/themes/gutenify-base/style.css?ver=6.3.1' media='all' />
-      <link rel='stylesheet' id='gutenify-base-theme-style-css' href='https://sensoriando.com.br/wp-content/themes/gutenify-base/css/theme-style.css?ver=20230815-11606' media='all' />
+    <link rel="stylesheet" href="{% static "css/style.css" %}">
+    <script src="{% static "js/cookies.js" %}"></script>
+</head>
 
-      <script src="{% static "js/cookies.js" %}"></script>
-   </head>
-   
-   <header class="transparent-header"> 
-        {% include 'header.html' %} 
-   </header>
-   
-   <body>
-        {% include 'background.html' %}
-        {% include 'barfilter.html' %}
-        {% include 'things.html' %}
-   </body>
+<body>
+    <section class="background">
+        <img class="grayscale" src="{% static "img/background.jpeg" %}" alt="technology components">
+    </section>
 
-   <footer>
+    <header>
+        {% include 'header.html' %}
+    </header>
+
+    <main>
+        <section class="home">
+            {% include 'barfilter.html' %}
+        </section>
+
+        <section class="cards">
+            {% include 'things.html' %}
+        </section>
+    </main>
+
+    <footer>
         {% include 'footer.html' %}
-   </footer>
-
+    </footer>
+    
+    <!-- modal css-->
+    <dialog id="dialog">
+        <div class="dialog-container">
+            <div class="modal-header">
+                <h5 class="modal-title font-22px" id="exampleModalLongTitle">Exportar dados</h5>
+                <button>
+                    <a href="#!">X</a>
+                </button>
+            </div>
+            <ul>
+                <li>sensor 1</li>
+                <li>sensor 2</li>
+                <li>sensor 3</li>
+                <li>sensor 4</li>
+            </ul>
+            <button>
+                <a href="#!">Fechar</a>
+            </button>
+        </div>
+    </dialog>
 </body>
+
 </html>
 

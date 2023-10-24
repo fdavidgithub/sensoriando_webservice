@@ -1,25 +1,20 @@
 <!DOCTYPE html>
 {% load static %}
 
-<div class="wp-block-group alignfull has-background-background-color has-background is-layout-constrained wp-block-group-is-layout-constrained" style="padding-top:100px;padding-right:30px;padding-bottom:100px;padding-left:30px">
 
-<div class="wp-block-columns alignwide is-layout-flex wp-container-64 wp-block-columns-is-layout-flex">
+<ul>
+    {% for i in "123" %}
 
-{% for i in "123" %}
-    <div class="wp-block-group has-no-hover-shadow-dark is-layout-flow wp-container-50 wp-block-group-is-layout-flow" style="border-style:none;border-width:0px;border-radius:0px;padding-top:60px;padding-right:50px;padding-bottom:60px;padding-left:50px">
-        <div class="wp-block-group is-content-justification-center is-nowrap is-layout-flex wp-container-48 wp-block-group-is-layout-flex" style="padding-bottom:10px">
-            <div class="wp-block-group has-no-hover-shadow-dark has-background-background-color has-background is-nowrap is-layout-flex wp-container-47 wp-block-group-is-layout-flex" style="border-radius:10px;padding-top:1.5rem;padding-right:1.5rem;padding-bottom:1.5rem;padding-left:1.5rem">
-                <figure class="wp-block-image alignleft size-full is-resized wp-duotone-403eff-403eff-46"><img decoding="async" src="{% static "img/service-1.png" %}" alt="" class="wp-image-212" style="width:52px;height:52px" width="52" height="52" /></figure>
-            </div>
+    <li>
+        <div>
+            <img src="{% static "img/service-1.png" %}" alt="Icon">
         </div>
-
-        <h3 class="wp-block-heading has-text-align-center has-foreground-color has-text-color has-link-color" style="font-style:normal;font-weight:600;text-transform:capitalize"><a href="#">Sensor #{{ i }}</a></h3>
-        <p class="has-text-align-center has-foreground-color has-text-color">Lorem is simply dummy text of the printing and typesetting. </p>
-        <p class="has-text-align-center is-style-underline has-no-underline has-foreground-color has-text-color has-link-color"><a href="#"><strong>Details </strong></a></p>
-    </div>
-{% endfor %}
-
-</div>
-
-</div>
+        
+        <h3 class="font-22px">Sensor #{{ i }}</h3>
+        <p class="font-17px">Lorem is simply dummy text of the printing and typesetting.</p>
+        <a href="" class="font-17px">Details</a>
+    </li>
+    
+    {% endfor %}
+</ul>
 

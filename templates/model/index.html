@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensoriando: Webservice</title>
+
+    <link rel="stylesheet" href="style.css" />
+
+</head>
+
+<body>
+    <section class="background">
+        <img class="grayscale" src="./img/background.jpeg" alt="technology components">
+    </section>
+    <header>
+        <nav>
+            <a href="" class="font-27px">Sensoriando</a>
+            <div class="dropdown">
+                <img src="./img/bars.svg" alt="menu icon">
+                <div class="dropdown-content">
+                    <a href="" class="font-16px">Mapa</a>
+                    <a href="" class="font-16px">API</a>
+                    <a href="" class="font-16px">Cadastro</a>
+                </div>
+            </div>
+            <button class="font-16px">Entrar</button>
+        </nav>
+    </header>
+    <main>
+        <section class="home">
+            <div>
+                <h1 class="font-36px">Dispositivos</h1>
+                <button class="font-16px">
+                    <a href="#dialog">Filtros</a>
+                </button>
+            </div>
+        </section>
+        <section class="cards">
+            <ul>
+                <li>
+                    <div>
+                        <img src="https://sensoriando.com.br/wp-content/themes/gutenify-lynx/images/service-1.png"
+                            alt="Icon">
+                    </div>
+                    <h3 class="font-22px">Sensor #{{ i }}</h3>
+                    <p class="font-17px">Lorem is simply dummy text of the printing and typesetting.</p>
+                    <a href="" class="font-17px">Details</a>
+                </li>
+            </ul>
+        </section>
+    </main>
+    <footer>
+        <div>
+            <div class="sobre-nos">
+                <h3 class="font-22px">Sobre Nos</h3>
+                <p class="font-17px">Exploramos o potencial da IoT para oferecer insights inovadores. Combinamos
+                    conhecimento técnico,
+                    experiência em análise de dados e um profundo entendimento de IoT para fornecer soluções que
+                    impulsionam o sucesso dos nossos clientes</p>
+                <button class="font-16px">Saiba Mais</button>
+            </div>
+            <div>
+                <h3 class="font-22px">Páginas</h3>
+                <ul>
+                    <li>
+                        <p class="font-17px">Serviços</p>
+                    </li>
+                    <li>
+                        <p class="font-17px">Produtos</p>
+                    </li>
+                    <li>
+                        <p class="font-17px">Contato</p>
+                    </li>
+                    <li>
+                        <p class="font-17px">Blog</p>
+                    </li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="font-22px">Automação</h3>
+                <p class="font-17px">Automação (1)</p>
+            </div>
+            <div>
+                <h3 class="font-22px">Contato Rápido</h3>
+                <div>
+                    <img src="https://sensoriando.com.br/wp-content/themes/gutenify-lynx/images/icon-location.png"
+                        alt="icon">
+                    <p class="font-17px">Ribeirão Preto, BRASIL</p>
+                </div>
+                <div>
+                    <img src="https://sensoriando.com.br/wp-content/themes/gutenify-lynx/images/icon-envelope.png"
+                        alt="icon">
+                    <p class="font-17px">contato@sensoriando.com.br</p>
+                </div>
+                <div>
+                    <img src="https://sensoriando.com.br/wp-content/themes/gutenify-lynx/images/icon-phone.png"
+                        alt="icon">
+                    <p class="font-17px">+55 16 99722 0946</p>
+                </div>
+                <div>
+                    <img src="https://sensoriando.com.br/wp-content/themes/gutenify-lynx/images/icon-clock.png"
+                        alt="icon">
+                    <p class="font-17px">8 AM – 18 PM</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- modal css-->
+    <dialog id="dialog">
+        <div class="dialog-container">
+            <div class="modal-header">
+                <h5 class="modal-title font-22px" id="exampleModalLongTitle">Exportar dados</h5>
+                <button>
+                    <a href="#!">X</a>
+                </button>
+            </div>
+            <ul>
+                <li>sensor 1</li>
+                <li>sensor 2</li>
+                <li>sensor 3</li>
+                <li>sensor 4</li>
+            </ul>
+            <button>
+                <a href="#!">Fechar</a>
+            </button>
+        </div>
+    </dialog>
+</body>
+
+</html>
