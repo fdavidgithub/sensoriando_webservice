@@ -40,7 +40,13 @@ docker exec -it sensoriando_webservice python manage.py makemigrations
 docker exec -it sensoriando_webservice python manage.py migrate
 ```
 
-5. Reload
+5. Django Super user
+```console
+docker exec -it sensoriando_webservice python manage.py createsuperuser
+```
+
+
+6. Reload
 ```console
 docker-compose restart
 ```
