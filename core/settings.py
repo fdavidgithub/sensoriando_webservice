@@ -23,7 +23,8 @@ PREFIX_API = 'http://localhost:8000/api'
 SECRET_KEY = 'bbk!v&t!d9b(+%4zd-g13=^v2s(3j^x)e571y8f_fb#_a+$3rn'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG')
+
 
 ALLOWED_HOSTS = ['*']
 

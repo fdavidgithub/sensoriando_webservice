@@ -31,6 +31,7 @@ export POSTGRES_PORT=5432
 
 export DJANGO_PORT=8000
 export DJANGO_PARAMS=""
+export DJANGO_DEBUG="True"
 ```
 
 4. Django Migrate
