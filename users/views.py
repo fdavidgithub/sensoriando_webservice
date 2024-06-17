@@ -135,7 +135,7 @@ def MyAccount(request, username, tab):
             account = AccountsModel.objects.get(username = username)
             thing = ThingsModel.objects.get(uuid = uuid)
 
-            accountthing = Accountsthings(
+            accountthing = AccountsThingsModel(
                             dt=datetime.datetime.today(),
                             id_thing=thing,
                             id_account=account
@@ -145,7 +145,7 @@ def MyAccount(request, username, tab):
 #            thing.id_thing=thing
 #            thing.id_account=account
 #            thing.save()
-            return redirect('/account/' + username + '/things')
+            return redirect('/users/account/' + username + '/things')
         else:
             tab = 'things'
     else:
