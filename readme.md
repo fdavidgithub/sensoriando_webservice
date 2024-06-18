@@ -32,6 +32,7 @@ export POSTGRES_PORT=5432
 export DJANGO_PORT=8000
 export DJANGO_PARAMS=""
 export DJANGO_DEBUG="True"
+export DJANGO_PREFIX_API="http://localhost:8000/api/"
 ```
 
 4. Django Migrate
