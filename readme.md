@@ -2,6 +2,10 @@
 **Hub de Sensores**
 [web.sensoriando.com.br](http://web.sensoriando.com.br)
 
+**Requirement**
+[Sensoriando Core](https://github.com/fdavidgithub/sensoriando_core/)
+
+
 ## Install
 
 1. Create docker's images
@@ -32,7 +36,6 @@ export POSTGRES_PORT=5432
 export DJANGO_PORT=8000
 export DJANGO_PARAMS=""
 export DJANGO_DEBUG="True"
-export DJANGO_PREFIX_API="http://localhost:8000/api/"
 ```
 
 4. Django Migrate
@@ -41,13 +44,7 @@ docker exec -it sensoriando_webservice python manage.py makemigrations
 docker exec -it sensoriando_webservice python manage.py migrate
 ```
 
-5. Django Super user
-```console
-docker exec -it sensoriando_webservice python manage.py createsuperuser
-```
-
-
-6. Reload
+5. Reload
 ```console
 docker-compose restart
 ```
