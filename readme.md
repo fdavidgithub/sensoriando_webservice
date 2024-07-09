@@ -1,7 +1,10 @@
 # Sensoriando
 **Hub de Sensores**
 [web.sensoriando.com.br](http://web.sensoriando.com.br)
-**Requirement [*Sensoriando Core](https://github.com/fdavidgithub/sensoriando_core)
+
+**Requirement**
+[Sensoriando Core](https://github.com/fdavidgithub/sensoriando_core/)
+
 
 ## Install
 
