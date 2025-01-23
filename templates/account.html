@@ -1,40 +1,15 @@
-<!-- templates/home.html-->
-{% extends 'common.html' %}
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
 
-{% block title %}
-<title> Web Service: Conta</title>
-{% endblock %}
-
-{% block menu %}
-
-{% if user.is_authenticated %}
-    <ul class="nav navbar-nav">
-
-        <li class="active dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="nav-channels-after">Sensores<b class="caret"></b></a>
-          <ul class="dropdown-menu">
-            <li><a id="nav-my-channels" href="/home/private">Meus Sensores</a></li>
-            <li><a id="nav-public-channels" href="/home">Sensores Públicos</a></li>
-          </ul>
-        </li>
-
-        <li><a href="/map">Mapa</a></li>
-    </ul>
-{% else %}
-    <ul class="nav navbar-nav">
-      <li class="active"><a href="#">Sensores</a></li>
-      <li><a href="/map">Mapa</a></li>
-    </ul>
-{% endif %}
-
-{% endblock %}
+<head>
+    {% include 'head.html' %}
 
 
-{% block content %}
 <script type="text/javascript">
 function setCookie(cname, cvalue, exdays) {
     var d = new Date();
-    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
 
     var expires = "expires=" + d.toGMTString();
     var cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
@@ -61,9 +36,7 @@ function getCookie(cname) {
 
     return "";
 }
-</script>
 
-<script type="text/javascript">
 function getValue(combobox){
     var cb_name = combobox;
     var selectCtrl = document.getElementById(cb_name);
@@ -73,14 +46,28 @@ function getValue(combobox){
 }    
 </script>
 
-<div class="container">
-    <div class="row">
-        <h1>Minha Conta</h1>
+</head>
 
-<ul class="nav nav-tabs">    
-    <li {% if form.active == "profile" %}class="active"{% endif %}><a href="#profile" class="nav-link" data-toggle="tab">Perfil</a></li>
-    <li {% if form.active == "things" %}class="active"{% endif %}><a href="#things" class="nav-link" data-toggle="tab">Centrais</a></li>
-    <li {% if form.active == "sensors" %}class="active"{% endif %}><a href="#sensors" class="nav-link" data-toggle="tab">Sensores</a></li>
+<body>
+    <section class="background">
+        <img class="grayscale" src="{% static "img/background.jpeg" %}" alt="technology components">
+    </section>
+
+    <header>
+        {% include 'header.html' %}
+    </header>
+
+    <main>
+        <section class="home">
+            {% include 'baraccount.html' %}
+        </section>
+
+        <section class="account">
+
+ <ul class="nav nav-tabs">    
+    <li id="account-profile" {% if form.active == "profile" %}class="active"{% endif %}><span class="nav-link" data-toggle="tab">Perfil</span></li>
+    <li id="account-thing" {% if form.active == "things" %}class="active"{% endif %}><span class="nav-link" data-toggle="tab">Centrais</span></li>
+    <li id="account-sensor" {% if form.active == "sensors" %}class="active"{% endif %}><span class="nav-link" data-toggle="tab">Sensores</span></li>
 </ul>
 
 <div class="tab-content">
@@ -89,9 +76,38 @@ function getValue(combobox){
 
 <form method="post">
   {% csrf_token %}
-  {{ form.user.as_p }}
-  {{ form.profile.as_p }}
+  <p>
+    <label for="{{ form.user.first_name.id_for_label }}" class="font-16px">Nome</label> {{ form.user.first_name }}
+    <span class="helptext font-11px">Obrigatório.</span>
+  </p>
+
+  <p>
+    <label for="{{ form.user.last_name.id_for_label }}" class="font-16px">Sobrenome</label> {{ form.user.last_name }}
+    <span class="helptext font-11px">Obrigatório.</span>
+  </p>
+
+  <p>
+    <label for="{{ form.user.email.id_for_label }}" class="font-16px">{{ form.user.email.label }}</label> {{ form.user.email }}
+    <span class="helptext font-11px">Obrigatório que seja um endereço de e-mail válido.</span>
+  </p>
+
+  <p>
+    <label for="{{ form.profile.city.id_for_label }}" class="font-16px">{{ form.profile.city.label }}</label> {{ form.profile.city }}
+    <span class="helptext font-11px">Obrigatório.</span>
+  </p>
+
+  <p>
+    <label for="{{ form.profile.state.id_for_label }}" class="font-16px">{{ form.profile.state.label }}</label> {{ form.profile.state }}
+    <span class="helptext font-11px">Obrigatório.</span>
+  </p>
+
+  <p>
+    <label for="{{ form.profile.country.id_for_label }}" class="font-16px">{{ form.profile.country.label }}</label> {{ form.profile.country }}
+    <span class="helptext font-11px">Obrigatório.</span>
+  </p>
+
   <button name="profileform" type="submit">Alterar</button>
+
 </form>
       
     </div>
@@ -108,7 +124,7 @@ function getValue(combobox){
             <tr>
                 <th> Nome </th>
                 <th> UUID </th>
-                <th> Configurações </tr>
+                <th> Configurações </th>
             </tr>
 
 {% for thing in form.things %}
@@ -186,9 +202,58 @@ function getValue(combobox){
 </div>
 
 
-    </div>
-</div>
+        </section>
+    </main>
 
-{% endblock %}
+    <footer>
+        {% include 'footer.html' %}
+    </footer>
+    
+</body>
+
+<script type="text/javascript">
+  const handleNav = () => {
+    const profile = document.getElementById('account-profile');
+    const things = document.getElementById('account-thing');
+    const sensors = document.getElementById('account-sensor');
+    const profileTab = document.getElementById('profile');
+    const thingsTab = document.getElementById('things');
+    const sensorsTab = document.getElementById('sensors');
+
+    profile.addEventListener('click', () => {
+      profile.classList.add('active');
+      things.classList.remove('active');
+      sensors.classList.remove('active');
+
+      profileTab.classList.add('active');
+      thingsTab.classList.remove('active');
+      sensorsTab.classList.remove('active');
+
+    });
+    things.addEventListener('click', () => {
+      profile.classList.remove('active');
+      things.classList.add('active');
+      sensors.classList.remove('active');
+
+      profileTab.classList.remove('active');
+      thingsTab.classList.add('active');
+      sensorsTab.classList.remove('active');
+
+    });
+    sensors.addEventListener('click', () => {
+      profile.classList.remove('active');
+      things.classList.remove('active');
+      sensors.classList.add('active');
+
+      profileTab.classList.remove('active');
+      thingsTab.classList.remove('active');
+      sensorsTab.classList.add('active');
+
+    });
+  }
+  handleNav();
+</script>
+
+</html>
 
 

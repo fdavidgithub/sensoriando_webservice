@@ -1,0 +1,42 @@
+<!-- templates/registration/login.html -->
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+
+<head>
+    {% include 'head.html' %}
+</head>
+
+<body>
+    <section class="background">
+        <img class="grayscale" src="{% static "img/background.jpeg" %}" alt="technology components">
+    </section>
+
+    <header>
+        {% include 'header.html' %}
+    </header>
+
+    <main>
+        <section class="home">
+            {% include 'barsignin.html' %}
+        </section>
+
+        <section class="signUp">
+        <form method="post">
+            {% csrf_token %}
+            <p><label for="{{ form.username.id_for_label }}" class="font-17px">{{ form.username.label }}</label> {{ form.username }}</p>
+            <p><label for="{{ form.password.id_for_label }}" class="font-17px">{{ form.password.label }}</label> {{ form.password }}</p> 
+            <button type="submit" class="font-16px"><span>Entrar</span></button>
+        </form>
+        </section>
+    </main>
+
+    <footer>
+        {% include 'footer.html' %}
+    </footer>
+    
+</body>
+
+</html>
+
+

@@ -1,0 +1,90 @@
+<!-- detail.html: BEGIN -->
+<html lang="en">
+{% load static %}
+
+<head>
+    {% include 'head.html' %}
+
+    <!-- Chart.js: BEGIN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="text/javascript">
+        {% include context.chart_file %}
+    </script>
+    <!-- Chats.js: END -->    
+</head>
+
+<body>
+    <section class="background">
+        <img class="grayscale" src="{% static "img/background.jpeg" %}" alt="technology components">
+    </section>
+
+    <header>
+        {% include 'header.html' %}
+    </header>
+
+    <main>
+        <section class="home">
+            {% include 'bardetail.html' %}
+        </section>
+
+        <section class="charts">
+            {% include 'chart.html' %} 
+        </section>
+    </main>
+
+    <footer>
+        {% include 'footer.html' %}
+    </footer>
+    
+    <!-- modal css-->
+    <dialog id="export">
+      <div class="dialog-container">
+        <div class="modal-header">
+          <h5 class="modal-title font-22px" id="exampleModalLongTitle">
+            Exportar dados
+          </h5>
+          <button>
+            <a href="#!">X</a>
+          </button>
+        </div>
+        <table class="modal-table">
+          <thead></thead>
+          <tbody>
+            <tr>
+              <td><span class="font-13px">Todos sensores</span></td>
+              <td class="modal-link-column">
+                <a href="#" class="font-13px underline-black">CSV</a>
+                <a href="#" class="font-13px underline-black">JSON</a>
+                <a href="#" class="font-13px underline-black">XLS</a>
+              </td>
+            </tr>
+
+            {% for sensor in context.sensors %}
+            <tr>
+              <td><span class="font-13px">{{ sensor.name }}</span></td>
+              <td class="modal-link-column">
+                <a href="#" class="font-13px underline-black">CSV</a>
+                <a href="#" class="font-13px underline-black">JSON</a>
+                <a href="#" class="font-13px underline-black">XLS</a>
+              </td>
+            </tr>
+            {% endfor %}
+
+          </tbody>
+        </table>
+        </ul>
+        <div class="modal-button-div">
+            <button>
+              <a href="#!">Fechar</a>
+            </button>
+        </div>
+      </div>
+    </dialog>
+
+</body>
+
+</html>
+
+<!-- detail.html: END -->
+
+

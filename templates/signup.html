@@ -1,25 +1,92 @@
 <!-- templates/registration/login.html -->
-{% extends 'common.html' %}
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
 
-{% block title %}
-<title> Web Service: Cadastro</title>
-{% endblock %}
+<head>
+    {% include 'head.html' %}
+</head>
 
-{% block menu %}
-    <ul class="nav navbar-nav">
-      <li><a href="/home">Sensores</a></li>
-      <li><a href="/map">Mapa</a></li>
-    </ul>
-{% endblock %}
+<body>
+    <section class="background">
+        <img class="grayscale" src="{% static "img/background.jpeg" %}" alt="technology components">
+    </section>
 
-{% block content %}
+    <header>
+        {% include 'header.html' %}
+    </header>
 
-<h2>Cadastro</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Cadastrar</button>
-</form>
+    <main>
+        <section class="home">
+            {% include 'barsignup.html' %}
+        </section>
 
-{% endblock %}
+        <section class="signUp register">
+        <form method="post">
+            {% csrf_token %}
+             <p>
+                <label for="{{ form.username.id_for_label }}" class="font-16px">{{ form.username.label }}</label> {{ form.username }}
+                <span class="helptext font-11px">Obrigatório. 150 caracteres ou menos. Letras, números e @/./+/-/_ apenas.</span>
+             </p>
+
+             <p>
+                <label for="{{ form.first_name.id_for_label }}" class="font-16px">Nome</label> {{ form.first_name }}
+                <span class="helptext font-11px">Obrigatório.</span>
+             </p>
+
+             <p>
+                <label for="{{ form.last_name.id_for_label }}" class="font-16px">Sobrenome</label> {{ form.last_name }}
+                <span class="helptext font-11px">Obrigatório.</span>
+             </p>
+
+             <p>
+                <label for="{{ form.email.id_for_label }}" class="font-16px">{{ form.email.label }}</label> {{ form.email }}
+                <span class="helptext font-11px">Obrigatório, seja um endereço de e-mail válido.</span>
+             </p>
+
+             <p>
+                <label for="{{ form.password1.id_for_label }}" class="font-16px">{{ form.password1.label }}</label> {{ form.password1 }}
+                <span class="helptext">
+                    <ul>
+                    <li class="font-11px">Sua senha não pode ser muito parecida com o resto das suas informações pessoais.</li>
+                    <li class="font-11px">Sua senha precisa conter pelo menos 8 caracteres.</li>
+                    <li class="font-11px">Sua senha não pode ser uma senha comumente utilizada.</li>
+                    <li class="font-11px">Sua senha não pode ser inteiramente numérica.</li>
+                    </ul>
+                </span>
+             </p>
+
+             <p>
+                <label for="{{ form.password2.id_for_label }}" class="font-16px">{{ form.password2.label }}</label> {{ form.password2 }}
+                <span class="helptext font-11px">Informe a mesma senha informada anteriormente, para verificação.</span>
+             </p>
+
+             <p>
+                <label for="{{ form.city.id_for_label }}" class="font-16px">{{ form.city.label }}</label> {{ form.city }}
+                <span class="helptext font-11px">Obrigatório.</span>
+             </p>
+
+             <p>
+                <label for="{{ form.state.id_for_label }}" class="font-16px">{{ form.state.label }}</label> {{ form.state }}
+                <span class="helptext font-11px">Obrigatório.</span>
+             </p>
+
+             <p>
+                <label for="{{ form.country.id_for_label }}" class="font-16px">{{ form.country.label }}</label> {{ form.country }}
+                <span class="helptext font-11px">Obrigatório.</span>
+             </p>
+
+            <button type="submit"><span class="font-16px">Cadastrar</span></button>
+        </form>
+        </section>
+    </main>
+
+    <footer>
+        {% include 'footer.html' %}
+    </footer>
+    
+</body>
+
+</html>
+
 
