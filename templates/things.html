@@ -1,20 +1,72 @@
-<!DOCTYPE html>
+<!-- things.html: BEGIN -->
 {% load static %}
 
-
 <ul>
-    {% for i in "123" %}
 
+{% if not contexts.things %}
     <li>
-        <div>
-            <img src="{% static "img/service-1.png" %}" alt="Icon">
-        </div>
-        
-        <h3 class="font-22px">Sensor #{{ i }}</h3>
-        <p class="font-17px">Lorem is simply dummy text of the printing and typesetting.</p>
-        <a href="" class="font-17px">Details</a>
+        <div><img src="{% static "img/nosensor.png" %}" alt="Icon"></div>
+ 
+        <h3 class="font-22px">Ops...</h3>
+        <p class="font-17px">Não há dispositivos para exibir.</p>
     </li>
-    
+
+{% else %}
+    {% for context in contexts.things %}
+
+        <li>
+            <div class="card-icon"><img src="{% static "img/service-1.png" %}" alt="Icon"></div>
+            
+            <h3 class="font-22px">
+                <a href="/thing/detail/{{ context.uuid }}" class="underline-black__half">{{ context.thing }}</a>
+            </h3>
+            
+            <div class="font-13px card-body">
+                <div class="column">
+                    <div> <b>Cidade</b> </div>
+                    <div> <b>Pais</b> </div>
+                    <div> <b>Sensores</b> </div>
+                    <div> <b>Tags</b> </div>
+                </div>
+
+                <div class="column">
+                    <div>
+                    <a href="#" class="underline-black" onclick="setFilter('city', '{{ context.account.city }}');">{{ context.account.city }}</a> / 
+                    <a href="#" class="underline-black" onclick="setFilter('state', '{{ context.account.state }}');">{{ context.account.state }}</a>
+                    </div>
+        
+                    <div>
+                    <a href="#" class="underline-black" onclick="setFilter('country', '{{ context.account.country }}');">{{ context.account.country }}</a>
+                    </div> 
+ 
+                    <div>
+                    {% for sensor in context.sensors %}
+                        <a href="#" class="underline-black" onclick="setFilter('sensor', '{{ sensor.name }}');">{{ sensor.name }}</a>
+                    {% endfor %}
+                    </div>
+
+                    <div>
+                    {% for tag in context.thingtags %}
+                        <a href="#" class="underline-black" onclick="setFilter('thing_tag', '{{ tag.name }}');">{{ tag.name }}</a>     
+                    {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="column">
+                    <div> <b class="font-13px">Última leitura</b> </div>
+                </div>
+
+                <div class="column">
+                    <div class="font-13px">{{ context.lastupdate }}</div>
+                </div>
+            </div>
+
+        </li>
+
     {% endfor %}
+{% endif %}
 </ul>
 
+<!-- things.html: END -->

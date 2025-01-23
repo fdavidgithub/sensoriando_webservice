@@ -1,0 +1,53 @@
+<!-- chart.html: BEGIN-->
+{% load static %}
+
+<ul>
+
+{% for detail in context.sensors %}
+    <li>
+        <div> <b>{{ detail.name }}</b> </div>
+
+        <div>
+        {% if detail.type == 'table' %}         
+            <table height=201 width=100% class="table table-striped">
+            <tr>
+                <th> Data </th>
+                <th> Mensagem </th>
+            </tr>
+
+            {% for tablelist in detail.data %}
+                <tr>
+                    <th>{{ tablelist.dtread }}</th>
+                    <th>{{ tablelist.message }}</th>
+                </tr>
+            {% endfor %}
+            </table>
+
+        {% elif detail.type == 'display' %}
+            <table height=201 width=100% class="table table-striped">
+            <tr>
+                <th> {{ detail.unit.name }} </th>
+                <th> {{ context.title }} </th>
+            </tr>
+
+            <tr>
+            {% for displaylist in detail.data %}
+                <th> <font size="20"> {{ displaylist.group_value }}</font> {{ detail.unit.initial }} </th>
+            {% endfor %}
+            </tr>
+            
+            <tr>
+                <th> {{ detail.lastdatum }}</th>
+            </tr>
+            </table>   
+
+        {% else %}
+            <canvas id="ChartDetail{{ forloop.counter }}"></canvas>
+        {% endif %}
+        </div>        
+    </li>
+{% endfor %}
+
+</ul>
+<!-- chart.html: END-->
+

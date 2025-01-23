@@ -1,0 +1,49 @@
+<!-- bardetail.html: BEGIN -->
+{% load static %}
+
+<div>
+    <h1 class="font-36px">{{ context.thing }}</h1>
+
+        <div class="home-button-list">
+            <div class="home-dropdown">
+              <button class="font-16px">Visualizar dados</button>
+              <div class="home-dropdown-content">
+                <a
+                  class="font-13px underline-white"
+                  href="javascript:setCookie('chartview','second',365);location.reload();"
+                  >Segundos</a
+                >
+                <a
+                  class="font-13px underline-white"
+                  href="javascript:setCookie('chartview','minute',365);location.reload();"
+                  >Minutos</a
+                >
+                <a
+                  class="font-13px underline-white"
+                  href="javascript:setCookie('chartview','hour',365);location.reload();"
+                  >Horas</a
+                >
+                <a
+                  class="font-13px underline-white"
+                  href="javascript:setCookie('chartview','day',365);location.reload();"
+                  >Dias</a
+                >
+                <a
+                  class="font-13px underline-white"
+                  href="javascript:setCookie('chartview','month',365);location.reload();"
+                  >Meses</a
+                >
+                <a
+                  class="font-13px underline-white"
+                  href="javascript:setCookie('chartview','year',365);location.reload();"
+                  >Anos</a
+                >
+              </div>
+            </div>
+            
+            <button class="font-16px"><a href="#export">Exportar</a></button>
+
+        </div>
+</div>
+
+<!-- bardetail.html: END -->

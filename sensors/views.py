@@ -148,5 +148,5 @@ def ThingDetails(request, uuid = None):
 
     }
 
-    return render(request, 'sensor.html', {'context': context})
+    return render(request, 'detail.html', {'context': context})
 
