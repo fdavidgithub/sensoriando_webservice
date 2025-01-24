@@ -173,3 +173,43 @@ class Thingstags(models.Model):
         managed = False
         db_table = 'thingstags'
         unique_together = (('id_thing', 'name'),)
+
+
+class Dailyaveragedata(models.Model):
+    dt = models.DateTimeField()
+    id_thingsensor = models.ForeignKey('Thingssensors', models.DO_NOTHING, db_column='id_thingsensor')
+    day = models.IntegerField()
+    month = models.IntegerField()
+    year = models.IntegerField()
+    value = models.FloatField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'dailyaveragedata'
+        unique_together = (('id_thingsensor', 'day', 'month', 'year'),)
+
+
+class Monthlyaveragedata(models.Model):
+    dt = models.DateTimeField()
+    id_thingsensor = models.ForeignKey('Thingssensors', models.DO_NOTHING, db_column='id_thingsensor')
+    month = models.IntegerField()
+    year = models.IntegerField()
+    value = models.FloatField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'monthlyaveragedata'
+        unique_together = (('id_thingsensor', 'month', 'year'),)
+        
+
+class Yearlyaveragedata(models.Model):
+    dt = models.DateTimeField()
+    id_thingsensor = models.ForeignKey(Thingssensors, models.DO_NOTHING, db_column='id_thingsensor')
+    year = models.IntegerField()
+    value = models.FloatField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'yearlyaveragedata'
+        unique_together = (('id_thingsensor', 'year'),)
+

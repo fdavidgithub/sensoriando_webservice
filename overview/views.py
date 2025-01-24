@@ -57,7 +57,7 @@ def Public(request):
 
     }
     
-    return render(request, 'home.html', {'contexts': contexts})
+    return render(request, 'index.html', {'contexts': contexts})
 
 def getStatistics():
     try:

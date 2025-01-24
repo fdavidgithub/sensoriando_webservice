@@ -2,6 +2,10 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import AuthenticationForm
+
+from django import forms
+from django.contrib.auth.forms import UserCreationForm
 
 from rest_framework_simplejwt.tokens import AccessToken
 
@@ -15,6 +19,18 @@ from base.views import callAPI
 
 CHART_DEFAULT = 'chart-line'
 MAX_PRECISION = 3
+
+class CustomSignIn(AuthenticationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({'class': 'font-16px'})
+        self.fields['password'].widget.attrs.update({'class': 'font-16px'})
+
+class CustomSignUn(AuthenticationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({'class': 'font-17px'})
+        self.fields['password'].widget.attrs.update({'class': 'font-17px'})
 
 # Create your views here.
 #https://simpleisbetterthancomplex.com/tutorial/2017/02/18/how-to-create-user-sign-up-view.html
@@ -53,6 +69,9 @@ def SignUp(request):
     return render(request, 'signup.html', {'form': form})
 
 class SignIn(LoginView):
+    template_name = 'signin.html'  # Especifique o caminho para o seu template
+    form_class = CustomSignIn      # Use o formulário personalizado
+
     def form_valid(self, form):
         # Chamando o método form_valid da classe pai para realizar a validação padrão do formulário
         response = super().form_valid(form)

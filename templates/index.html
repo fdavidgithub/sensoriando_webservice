@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+
+<script type="text/javascript">
+function clearFilter() {
+    const jsonString = JSON.stringify('');
+ 
+    var searchSensor = document.getElementById("SearchSensor");
+    var searchTag = document.getElementById("SearchTag");
+
+    searchSensor.selectedIndex = 0;
+    searchTag.selectedIndex = 0;
+    document.cookie = `setFilterHome = ${jsonString}; SameSite=None; secure=True`;
+    
+    location.reload();
+}
+
+function setFilter(key=null, value=null){
+    var selectSensor = document.getElementById("SearchSensor");
+    var selectTag = document.getElementById("SearchTag");
+    var data = {};
+
+    if ( selectSensor ) {
+        var SensorItem = selectSensor.options[selectSensor.selectedIndex];
+        if (SensorItem.value !== "") {
+            data["sensor"] = SensorItem.value;
+        }
+    }
+
+    if ( selectTag ) {
+        var TagItem =  selectTag.options[selectTag.selectedIndex];
+        if (TagItem.value !== "") {
+            data["sensor_tag"] = TagItem.value;
+        }
+    }
+
+    if ( key ) {
+        data[key] = value;
+
+        if ( key == "sensor" && selectSensor ) {
+            selectSensor.value = value;
+        }
+    }
+
+    if (Object.keys(data).length > 0) {
+        const jsonString = JSON.stringify(data);
+
+        document.cookie = `setFilterHome = ${jsonString}; SameSite=None; secure=True`;
+        location.reload();
+    }
+}    
+</script>
+
+<head>
+    {% include 'head.html' %}
+</head>
+
+<body>
+    <section class="background">
+        <img class="grayscale" src="{% static "img/background.jpeg" %}" alt="technology components">
+    </section>
+
+    <header>
+        {% include 'header.html' %}
+    </header>
+
+    <main>
+        <section class="home">
+            {% include 'barfilter.html' %}
+        </section>
+
+        <section class="cards">
+            {% include 'things.html' %}
+        </section>
+    </main>
+
+    <footer>
+        {% include 'footer.html' %}
+    </footer>
+    
+    <!-- modal css-->
+    <dialog id="filter">
+        <div class="dialog-container">
+            <div class="modal-header">
+                <h5 class="modal-title font-22px" id="exampleModalLongTitle">Filtros</h5>
+                <button>
+                    <a href="#!">X</a>
+                </button>
+            </div>
+
+            <div>
+                <label for="tag_input"><i class="fa fa-tags"></i>&nbsp;</label>
+                
+                
+                <select name="SearchTag" id="SearchTag" class="font-13px">
+                        <option value="" selected>Dispositivos publicos</option>
+                </select>
+            </div>
+            
+            <div>
+                <label for="tag_input"><i class="fa fa-dashboard"></i>&nbsp;</label>
+                <select name="SearchSensor" id="SearchSensor" class="font-13px">
+                            <option value="" selected>Todos sensores</option>
+                        
+                        {% for sensor in contexts.filters.sensors %}
+                        <option value={{ sensor.name }}>{{ sensor.name }}</option>
+                        {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="tag_input"><i class="fa fa-tags"></i>&nbsp;</label>
+                <select name="SearchTag" id="SearchTag" class="font-13px">
+                <option value="" selected>Todas tags</option>
+                
+                {% for tag in contexts.filters.tags %}
+                    <option value={{ tag.name }}>{{ tag.name }}</option>
+                {% endfor %}
+                
+                </select>
+            </div>
+
+            <div class="modal-button-div">
+                <button type="button" id="search" onclick="setFilter();" class="btn btn-primary btn-sm font-13px">Aplicar</button>
+                <button type="reset" id="clear" onclick="clearFilter();" class="btn btn-primary btn-sm font-13px">Limpar</button>
+            </div>
+        </div>
+    </dialog>
+
+</body>
+
+</html>
+

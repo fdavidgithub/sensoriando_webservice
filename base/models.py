@@ -4,6 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from base.legacy_tables import *
+from base.legacy_views import *
 
 class ThingsTagsModel(Thingstags):
     def __str__(self):
@@ -113,4 +114,38 @@ class ThingsSensorsDataModel(Thingssensorsdata):
         verbose_name_plural = 'ThingSensorsData'
         proxy = True  
 
+class DailyAverageDataModel(Dailyaveragedata):
+    class Meta:
+        verbose_name = "DailyAverageDatum"
+        verbose_name_plural = 'DailyAverageData'
+        proxy = True  
 
+class MonthlyAverageDataModel(Monthlyaveragedata):
+    class Meta:
+        verbose_name = "MonthlyAverageDatum"
+        verbose_name_plural = 'MonthlyAverageData'
+        proxy = True  
+
+class YearlyAverageDataModel(Yearlyaveragedata):
+    class Meta:
+        verbose_name = "YearlyAverageDatum"
+        verbose_name_plural = 'YearlyAverageData'
+        proxy = True  
+
+class vwThingsSensorsData_YearModel(vwThingssensorsdata_year):    
+    class Meta:
+        verbose_name = "ThingSensorDatum_year"
+        verbose_name_plural = 'ThingSensorsData_years'
+        proxy = True  
+
+class vwThingsSensorsData_MonthModel(vwThingssensorsdata_month):    
+    class Meta:
+        verbose_name = "ThingSensorDatum_month"
+        verbose_name_plural = 'ThingSensorsData_months'
+        proxy = True 
+
+class vwThingsSensorsData_DayModel(vwThingssensorsdata_day):    
+    class Meta:
+        verbose_name = "ThingSensorDatum_day"
+        verbose_name_plural = 'ThingSensorsData_days'
+        proxy = True  
