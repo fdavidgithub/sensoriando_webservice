@@ -42,6 +42,7 @@ export DJANGO_DEBUG="True"
 ```console
 docker exec -it sensoriando_webservice python manage.py makemigrations
 docker exec -it sensoriando_webservice python manage.py migrate
+docker exec -it sensoriando_webservice python manage.py createsuperuser
 ```
 
 5. Reload
