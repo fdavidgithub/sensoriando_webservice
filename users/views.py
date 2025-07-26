@@ -154,7 +154,7 @@ def MyAccount(request, username, tab):
             account = AccountsModel.objects.get(username = username)
             thing = ThingsModel.objects.get(uuid = uuid)
 
-            accountthing = Accountsthings(
+            accountthing = AccountsThingsModel(
                             dt=datetime.datetime.today(),
                             id_thing=thing,
                             id_account=account
