@@ -17,6 +17,11 @@ services:
   framework:
     container_name: sensoriando_webservice
     image: python:3.8
+    logging:
+        driver: json-file
+        options:
+            max-size: "10m"
+            max-file: "2"
     build: 
         context: ./
         dockerfile: Dockerfile
