@@ -6,33 +6,6 @@ from django.dispatch import receiver
 from base.legacy_tables import *
 from base.legacy_views import *
 
-class ThingsTagsModel(Thingstags):
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = "ThingTag"
-        verbose_name_plural = 'ThingTags'
-        proxy = True        
-
-class ThingsSensorsTagsModel(Thingssensorstags):
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = "SensorTag"
-        verbose_name_plural = 'SensorTags'
-        proxy = True        
-
-class SensorsUnitsModel(Sensorsunits):
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = "Unit"
-        verbose_name_plural = 'Units'
-        proxy = True        
-
 class PlansModel(Plans):
     def __str__(self):
         return self.name
@@ -40,7 +13,7 @@ class PlansModel(Plans):
     class Meta:
         verbose_name = "Plan"
         verbose_name_plural = 'Plans'
-        proxy = True        
+        proxy = True
 
 class AccountsModel(Accounts):
     def __str__(self):
@@ -49,16 +22,7 @@ class AccountsModel(Accounts):
     class Meta:
         verbose_name = "Account"
         verbose_name_plural = 'Accounts'
-        proxy = True       
-
-class AccountsThingsModel(Accountsthings):
-    def __str__(self):
-        return self.username
-
-    class Meta:
-        verbose_name = "AccountThing"
-        verbose_name_plural = 'AccountThings'
-        proxy = True  
+        proxy = True
 
 class ThingsModel(Things):
     def __str__(self):
@@ -67,16 +31,7 @@ class ThingsModel(Things):
     class Meta:
         verbose_name = "Thing"
         verbose_name_plural = 'Things'
-        proxy = True        
-
-class ThingsTagsModel(Thingstags):
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = "ThingTag"
-        verbose_name_plural = 'ThingTags'
-        proxy = True        
+        proxy = True
 
 class SensorsModel(Sensors):
     def __str__(self):
@@ -85,67 +40,112 @@ class SensorsModel(Sensors):
     class Meta:
         verbose_name = "Sensor"
         verbose_name_plural = 'Sensors'
-        proxy = True   
+        proxy = True
 
-class ThingsSensorsTagsModel(Thingssensorstags):
+class SensorsUnitsModel(Sensorsunits):
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name = "ThingSensorTag"
-        verbose_name_plural = 'ThingSensorTags'
-        proxy = True  
+        verbose_name = "Unit"
+        verbose_name_plural = 'Units'
+        proxy = True
+
+class ThingsTagsModel(Thingstags):
+    def __str__(self):
+        return f"{self.id_thing} - {self.name}"
+
+    class Meta:
+        verbose_name = "ThingTag"
+        verbose_name_plural = 'ThingTags'
+        proxy = True
 
 class ThingsSensorsModel(Thingssensors):
+    def __str__(self):
+        return f"{self.id_thing} - {self.id_sensor}"
+
     class Meta:
         verbose_name = "ThingSensor"
         verbose_name_plural = 'ThingSensors'
-        proxy = True  
+        proxy = True
+
+class ThingsSensorsTagsModel(Thingssensorstags):
+    def __str__(self):
+        return f"{self.id_thingsensor} - {self.name}"
+
+    class Meta:
+        verbose_name = "ThingSensorTag"
+        verbose_name_plural = 'ThingSensorTags'
+        proxy = True
 
 class AccountsThingsModel(Accountsthings):
+    def __str__(self):
+        return f"{self.id_account} - {self.id_thing}"
+
     class Meta:
         verbose_name = "AccountThing"
         verbose_name_plural = 'AccountThings'
-        proxy = True  
+        proxy = True
 
 class ThingsSensorsDataModel(Thingssensorsdata):
+    def __str__(self):
+        return f"{self.id_thingsensor} ({self.dtread})"
+
     class Meta:
         verbose_name = "ThingSensorDatum"
         verbose_name_plural = 'ThingSensorsData'
-        proxy = True  
+        proxy = True
 
 class DailyAverageDataModel(Dailyaveragedata):
+    def __str__(self):
+        return f"{self.id_thingsensor} - {self.year}/{self.month}/{self.day}"
+
     class Meta:
         verbose_name = "DailyAverageDatum"
         verbose_name_plural = 'DailyAverageData'
-        proxy = True  
+        proxy = True
 
 class MonthlyAverageDataModel(Monthlyaveragedata):
+    def __str__(self):
+        return f"{self.id_thingsensor} - {self.year}/{self.month}"
+
     class Meta:
         verbose_name = "MonthlyAverageDatum"
         verbose_name_plural = 'MonthlyAverageData'
-        proxy = True  
+        proxy = True
 
 class YearlyAverageDataModel(Yearlyaveragedata):
+    def __str__(self):
+        return f"{self.id_thingsensor} - {self.year}"
+
     class Meta:
         verbose_name = "YearlyAverageDatum"
         verbose_name_plural = 'YearlyAverageData'
-        proxy = True  
+        proxy = True
 
-class vwThingsSensorsData_YearModel(vwThingssensorsdata_year):    
+class vwThingsSensorsData_YearModel(vwThingssensorsdata_year):
+    def __str__(self):
+        return f"{self.id_thingsensor} ({self.dtread})"
+
     class Meta:
         verbose_name = "ThingSensorDatum_year"
         verbose_name_plural = 'ThingSensorsData_years'
-        proxy = True  
+        proxy = True
 
-class vwThingsSensorsData_MonthModel(vwThingssensorsdata_month):    
+class vwThingsSensorsData_MonthModel(vwThingssensorsdata_month):
+    def __str__(self):
+        return f"{self.id_thingsensor} ({self.dtread})"
+
     class Meta:
         verbose_name = "ThingSensorDatum_month"
         verbose_name_plural = 'ThingSensorsData_months'
-        proxy = True 
+        proxy = True
 
-class vwThingsSensorsData_DayModel(vwThingssensorsdata_day):    
+class vwThingsSensorsData_DayModel(vwThingssensorsdata_day):
+    def __str__(self):
+        return f"{self.id_thingsensor} ({self.dtread})"
+
     class Meta:
         verbose_name = "ThingSensorDatum_day"
         verbose_name_plural = 'ThingSensorsData_days'
-        proxy = True  
+        proxy = True
