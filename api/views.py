@@ -139,6 +139,7 @@ class DataViewSets(APIView):
     def get_queryset(self, request):
         data = None
         lastread = None
+        id_thingsensor = None
 
         try:
             thing = request.data["thing"]
@@ -149,6 +150,12 @@ class DataViewSets(APIView):
             sensor = request.data["sensor"]
         except:
             sensor = None
+
+        if thing and sensor:
+            id_thingsensor = ThingsSensorsModel.objects.get(
+                id_thing__uuid = thing,
+                id_sensor__name = sensor,
+            ).pk
 
         try:
             period = request.data["period"].lower()
@@ -168,9 +175,9 @@ class DataViewSets(APIView):
             "second": ThingsSensorsDataModel,
             "minute": ThingsSensorsDataModel,
             "hour": ThingsSensorsDataModel,
-            "day": DailyAverageDataModel,
-            "month": MonthlyAverageDataModel,
-            "year": YearlyAverageDataModel,
+            "day": vwThingsSensorsData_DayModel,
+            "month": vwThingsSensorsData_MonthModel,
+            "year": vwThingsSensorsData_YearModel,
         }
 
         checkPublic = AccountsThingsModel.objects.filter(
@@ -182,20 +189,17 @@ class DataViewSets(APIView):
             return
 
         lastread = lastread_mapping[period].objects.filter(
-            id_thingsensor__id_thing__uuid = thing,
-            id_thingsensor__id_sensor__name = sensor,
+            id_thingsensor = id_thingsensor,
 
-        ).last()
+        ).order_by("id").last()
  
         if lastread:
             trunc_class = period_mapping[period]
+            dt_lastread = lastread.dtread.astimezone() 
             
             if period == "second":
-                dt_lastread = lastread.dtread.astimezone()
-
                 data = ThingsSensorsDataModel.objects.filter(
-                    id_thingsensor__id_thing__uuid = thing,
-                    id_thingsensor__id_sensor__name = sensor,
+                    id_thingsensor = id_thingsensor,
 
                     dtread__year = dt_lastread.year,
                     dtread__month = dt_lastread.month,
@@ -212,11 +216,8 @@ class DataViewSets(APIView):
                     'timestamp_period'  # Order by dtread ascending
                 )
             elif period == "minute":
-                dt_lastread = lastread.dtread.astimezone()
-
                 data = ThingsSensorsDataModel.objects.filter(
-                    id_thingsensor__id_thing__uuid = thing,
-                    id_thingsensor__id_sensor__name = sensor,
+                    id_thingsensor = id_thingsensor,
 
                     dtread__year = dt_lastread.year,
                     dtread__month = dt_lastread.month,
@@ -232,11 +233,8 @@ class DataViewSets(APIView):
                     'timestamp_period'  # Order by dtread ascending
                 )
             elif period == "hour":
-                dt_lastread = lastread.dtread.astimezone()
-
                 data = ThingsSensorsDataModel.objects.filter(
-                    id_thingsensor__id_thing__uuid = thing,
-                    id_thingsensor__id_sensor__name = sensor,
+                    id_thingsensor = id_thingsensor,
 
                     dtread__year = dt_lastread.year,
                     dtread__month = dt_lastread.month,
@@ -252,9 +250,9 @@ class DataViewSets(APIView):
                 )
             elif period == "day":
                 data = vwThingsSensorsData_DayModel.objects.filter(
-                    id_thingsensor__id_thing__uuid = thing,
-                    id_thingsensor__id_sensor__name = sensor,
-                    dtread__month = lastread.month,
+                    id_thingsensor = id_thingsensor,
+                    
+                    dtread__month = dt_lastread.month,
 
                 ).values(
                     'timestamp_period',
@@ -266,9 +264,9 @@ class DataViewSets(APIView):
                 ).order_by('timestamp_period')
             elif period == "month":
                 data = vwThingsSensorsData_MonthModel.objects.filter(
-                    id_thingsensor__id_thing__uuid = thing,
-                    id_thingsensor__id_sensor__name = sensor,
-                    dtread__year = lastread.year,
+                    id_thingsensor = id_thingsensor,
+                    
+                    dtread__year = dt_lastread.year,
 
                 ).values(
                     'timestamp_period',
@@ -280,8 +278,7 @@ class DataViewSets(APIView):
                 ).order_by('timestamp_period')
             elif period == "year":
                 data = vwThingsSensorsData_YearModel.objects.filter(
-                    id_thingsensor__id_thing__uuid = thing,
-                    id_thingsensor__id_sensor__name = sensor,
+                    id_thingsensor = id_thingsensor,
 
                 ).values(
                     'timestamp_period',

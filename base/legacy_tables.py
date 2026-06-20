@@ -17,6 +17,9 @@ class Accounts(models.Model):
     country = models.CharField(max_length=2)
     status = models.BooleanField()
 
+    def __str__(self):
+        return self.username
+
     class Meta:
         managed = False
         db_table = 'accounts'
@@ -26,6 +29,9 @@ class Accountsthings(models.Model):
     dt = models.DateTimeField()
     id_account = models.ForeignKey(Accounts, models.DO_NOTHING, db_column='id_account')
     id_thing = models.ForeignKey('Things', models.DO_NOTHING, db_column='id_thing')
+
+    def __str__(self):
+        return f"{self.id_account} - {self.id_thing}"
 
     class Meta:
         managed = False
@@ -66,6 +72,9 @@ class Plans(models.Model):
     vltrigger = models.FloatField()
     visible = models.BooleanField()
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         managed = False
         db_table = 'plans'
@@ -74,6 +83,9 @@ class Plans(models.Model):
 class Sensors(models.Model):
     dt = models.DateTimeField()
     name = models.CharField(unique=True, max_length=50)
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         managed = False
@@ -89,6 +101,9 @@ class Sensorsunits(models.Model):
     isdefault = models.BooleanField()
     expression = models.CharField(max_length=50, blank=True, null=True)
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         managed = False
         db_table = 'sensorsunits'
@@ -99,6 +114,9 @@ class Things(models.Model):
     name = models.CharField(max_length=30)
     uuid = models.UUIDField(unique=True)
     isrelay = models.BooleanField()
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         managed = False
@@ -121,6 +139,9 @@ class Thingssensors(models.Model):
     dt = models.DateTimeField()
     id_thing = models.ForeignKey(Things, models.DO_NOTHING, db_column='id_thing')
     id_sensor = models.ForeignKey(Sensors, models.DO_NOTHING, db_column='id_sensor')
+
+    def __str__(self):
+        return f"{self.id_thing} - {self.id_sensor}"
 
     class Meta:
         managed = False
@@ -158,6 +179,9 @@ class Thingssensorstags(models.Model):
     id_thingsensor = models.ForeignKey(Thingssensors, models.DO_NOTHING, db_column='id_thingsensor')
     name = models.CharField(max_length=30)
 
+    def __str__(self):
+        return f"{self.id_thingsensor} - {self.name}"
+
     class Meta:
         managed = False
         db_table = 'thingssensorstags'
@@ -168,6 +192,9 @@ class Thingstags(models.Model):
     dt = models.DateTimeField()
     id_thing = models.ForeignKey(Things, models.DO_NOTHING, db_column='id_thing')
     name = models.CharField(max_length=30)
+
+    def __str__(self):
+        return f"{self.id_thing} - {self.name}"
 
     class Meta:
         managed = False
