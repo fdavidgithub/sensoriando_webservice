@@ -61,3 +61,6 @@ Thumbs.db
 venv/*
 
 staticfiles/
+.envrc
+.agents-bootstrap
+AGENTS.md
