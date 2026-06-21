@@ -7,19 +7,31 @@
 #   - starts the container so the entrypoint applies the migrations
 #   - creates the Django superuser from the DJANGO_SUPERUSER_* env vars
 #
-# Prerequisites: Docker, docker-compose, a populated .env file and the
+# Prerequisites: Docker, docker compose, a populated .env file and the
 # sensoriando_database (sensoriando_core repo) reachable on the network.
 #
 # Run this script ONCE before ./run.sh.
 
-set -e
+set -eu
+
+cd "$(dirname "$0")"
 
 NETWORK=sensoriando
 SERVICE=framework
 
 # Ensure the .env file exists
 if [ ! -f .env ]; then
-    echo "Error: .env file not found. Copy env.example to .env and fill it in."
+    echo "Error: .env file not found. Copy env.example to .env and fill it in." >&2
+    exit 1
+fi
+
+# Pick docker compose v2 (plugin) or v1 (standalone)
+if docker compose version >/dev/null 2>&1; then
+    COMPOSE="docker compose"
+elif command -v docker-compose >/dev/null 2>&1; then
+    COMPOSE="docker-compose"
+else
+    echo "Error: docker compose is not installed." >&2
     exit 1
 fi
 
@@ -31,16 +43,16 @@ fi
 
 # Build the webservice image
 echo "Building the webservice image..."
-docker-compose build
+$COMPOSE build
 
 # Start the container (the entrypoint applies the migrations automatically)
 echo "Starting the container to apply the migrations..."
-docker-compose up -d
+$COMPOSE up -d
 
 # Wait for the migrations to be applied (depends on the database being reachable)
 echo "Waiting for the database and the migrations..."
 attempt=0
-until docker-compose exec -T "$SERVICE" python manage.py migrate --check >/dev/null 2>&1; do
+until $COMPOSE exec -T "$SERVICE" python manage.py migrate --check >/dev/null 2>&1; do
     attempt=$((attempt + 1))
     if [ "$attempt" -ge 30 ]; then
         echo "Error: timed out waiting for the migrations. Check that sensoriando_database is up."
@@ -51,7 +63,7 @@ done
 
 # Create the superuser only if one does not exist yet
 echo "Checking the Django superuser..."
-has_superuser=$(docker-compose exec -T "$SERVICE" python manage.py shell -c \
+has_superuser=$($COMPOSE exec -T "$SERVICE" python manage.py shell -c \
     "from django.contrib.auth import get_user_model; print(get_user_model().objects.filter(is_superuser=True).exists())" \
     2>/dev/null)
 
@@ -59,7 +71,7 @@ if echo "$has_superuser" | grep -q "True"; then
     echo "Superuser already exists; skipping creation."
 else
     echo "Creating the superuser from the DJANGO_SUPERUSER_* env vars..."
-    docker-compose exec -T "$SERVICE" python manage.py createsuperuser --noinput
+    $COMPOSE exec -T "$SERVICE" python manage.py createsuperuser --noinput
 fi
 
 echo ""
