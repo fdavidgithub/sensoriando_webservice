@@ -17,7 +17,7 @@ set -eu
 cd "$(dirname "$0")"
 
 NETWORK=sensoriando
-SERVICE=framework
+SERVICE=webservice
 
 # Ensure the .env file exists
 if [ ! -f .env ]; then
