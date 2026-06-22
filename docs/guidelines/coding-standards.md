@@ -1,4 +1,4 @@
-# Padrões de Código — {{NOME_PROJETO}}
+# Padrões de Código — Sensoriando Webservice
 
 ## Linguagem
 
@@ -28,7 +28,34 @@ Todo código-fonte deve ser escrito em **inglês**, incluindo nomes de variávei
 
 ## Estrutura do Handler / Ponto de Entrada
 
-{{EXEMPLO_HANDLER}}
+Os pontos de entrada da API são views do Django REST Framework, registradas em
+`api/urls.py`. Endpoints de leitura usam `ModelViewSet`; endpoints com regra de
+negócio usam `APIView`. Endpoints privados são protegidos por JWT.
+
+```python
+# api/views.py
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.decorators import authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+class PrivateStatisticsViewSets(APIView):
+    def get(self, request, *args, **kwargs):
+        data = self.build_data(request.user)
+        serializer = serializers.DataStatsSerializer(data)
+        return Response(serializer.data)
+```
+
+```python
+# api/urls.py
+path('data/stats/private/', views.PrivateStatisticsViewSets.as_view(), name='PrivateStatistics'),
+```
+
+A documentação OpenAPI/Swagger é gerada por `drf-yasg` (acessível na raiz de
+`/api/`).
 
 ---
 
@@ -36,9 +63,23 @@ Todo código-fonte deve ser escrito em **inglês**, incluindo nomes de variávei
 
 - Todas as configurações de ambiente são lidas via variáveis de ambiente.
 - Nunca hardcode URLs, credenciais ou configurações sensíveis no código.
-- Variáveis obrigatórias para execução:
+- Variáveis obrigatórias para execução (lidas em `core/settings.py`; ver
+  `env.example`):
 
-{{VARIAVEIS_DE_AMBIENTE}}
+| Variável | Descrição |
+|----------|-----------|
+| `DJANGO_PORT` | Porta do servidor Django |
+| `DJANGO_PARAMS` | Parâmetros extras do `runserver` |
+| `DJANGO_DEBUG` | Ativa o modo debug |
+| `DJANGO_PREFIX_API` | URL base da API consumida pelas views web (`callAPI`) |
+| `POSTGRES_HOST` | Host/container do banco |
+| `POSTGRES_USER` | Usuário do banco |
+| `POSTGRES_PASSWORD` | Senha do banco |
+| `POSTGRES_DB` | Nome do banco |
+| `POSTGRES_PORT` | Porta do banco |
+
+> `SECRET_KEY` está atualmente fixada em `core/settings.py` (valor de
+> desenvolvimento) e deveria, em produção, ser lida de variável de ambiente.
 
 ---
 
@@ -58,4 +99,9 @@ Todo código-fonte deve ser escrito em **inglês**, incluindo nomes de variávei
 - Não bypassar as camadas de serviço ou repositório.
 - Não usar `print` para logs; use um mecanismo de logging estruturado.
 
-{{PROIBICOES_ADICIONAIS}}
+- Não criar nem alterar o schema do banco a partir deste serviço: as tabelas de
+  domínio são `managed = False` (ver `docs/guidelines/database.md`).
+- Não fixar `SECRET_KEY`, credenciais ou URLs no código — usar variáveis de
+  ambiente.
+- Não adicionar dependências fora de `requirements.txt` com versão fixada (ver
+  `docs/guidelines/stacks.md`).
