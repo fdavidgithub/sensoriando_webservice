@@ -13,8 +13,8 @@ version: "3.7"
 #
 # Shell:
 # docker exec -it yout-container <cmd>
-services: 
-  framework:
+services:
+  webservice:
     container_name: sensoriando_webservice
     image: python:3.8
     logging:

@@ -1,10 +1,4 @@
-# Diretrizes de Testes — Sensoriando Webservice
-
-> **Status atual:** o projeto ainda **não possui suíte de testes implementada**.
-> Os arquivos `tests.py` de cada app (`api`, `base`, `overview`, `sensors`,
-> `users`) estão vazios e não há `pytest` em `requirements.txt`. Este documento
-> descreve o padrão-alvo; os trechos não inferíveis do código permanecem como
-> placeholders a serem preenchidos quando os testes forem criados.
+# Diretrizes de Testes — {{NOME_PROJETO}}
 
 ## Fluxo de Desenvolvimento — TDD
 
@@ -20,13 +14,7 @@ Nunca escreva código de produção sem um teste que o justifique.
 
 ## Framework
 
-Framework de testes do **Django** (`django.test`, baseado em `unittest`),
-executado via `python manage.py test`. Cada app Django já contém um arquivo
-`tests.py` (atualmente vazio) como ponto de partida.
-
-A estrutura `tests/` com `pytest` descrita abaixo é o padrão-alvo do template;
-caso seja adotada, `pytest`/`pytest-django` deverão ser adicionados a
-`requirements.txt` (ver `docs/guidelines/stacks.md`).
+{{FRAMEWORK_TESTES}}
 
 ---
 
@@ -102,8 +90,7 @@ tests/
 ## Execução
 
 ```bash
-# Dentro do container (ver run.sh / docker-compose):
-docker-compose exec framework python manage.py test
+{{COMANDOS_EXECUCAO_TESTES}}
 ```
 
 ---
