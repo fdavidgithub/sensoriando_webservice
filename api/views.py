@@ -12,7 +12,7 @@ from drf_yasg.utils import swagger_auto_schema
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from django.db.models.functions import TruncSecond, TruncMinute, TruncHour, TruncDay, TruncMonth, TruncYear, Concat, Cast
+from django.db.models.functions import TruncSecond, TruncMinute, TruncHour, TruncDay, TruncMonth, TruncYear, Concat, Cast, Coalesce
 from django.db.models import Avg, F, Value, CharField, FloatField, DateTimeField, Func
 from django.utils.timezone import make_aware, utc, get_current_timezone
 
@@ -77,21 +77,13 @@ class PublicThingsViewSets(APIView):
         queryset = self.get_queryset(request.POST)
 
         q_objects = []
-        filters = {
-            "thing": lambda value: Q(id_thing__name = value),
-            "city": lambda value: Q(id_account__city = value),
-            "state": lambda value: Q(id_account__state = value),
-            "country": lambda value: Q(id_account__country = value),
-            "sensor": lambda value: Q(id_thing__in = self.filter_things_sensors(value)),
-            "thing_tag": lambda value: Q(id_thing__in = self.filter_things_tags(value)),
-            "sensor_tag": lambda value: Q(id_thing__in = self.filter_sensors_tags(value)),
-        }
+        filters = self.get_filters()
 
         for key, value in request.data.items():
             filter_func = filters.get(key)
             if filter_func:
                 q_objects.append(filter_func(value))
-        
+
         if q_objects:
             queryset = queryset.filter(*q_objects)
 
@@ -104,7 +96,18 @@ class PublicThingsViewSets(APIView):
             Q(accountsthings__id_account__status = True,
               accountsthings__id_account__id_plan__ispublic = True)
         ).distinct()
-   
+
+    def get_filters(self):
+        return {
+            "thing": lambda value: Q(name = value),
+            "city": lambda value: Q(accountsthings__id_account__city = value),
+            "state": lambda value: Q(accountsthings__id_account__state = value),
+            "country": lambda value: Q(accountsthings__id_account__country = value),
+            "sensor": lambda value: Q(id__in = self.filter_things_sensors(value)),
+            "thing_tag": lambda value: Q(id__in = self.filter_things_tags(value)),
+            "sensor_tag": lambda value: Q(id__in = self.filter_sensors_tags(value)),
+        }
+
     def filter_things_sensors(self, value):
         thing_ids = ThingsSensorsModel.objects.filter(id_sensor__name = value).values_list("id_thing_id", flat = True)
         return thing_ids
@@ -153,9 +156,11 @@ class DataViewSets(APIView):
             sensor = None
 
         if thing and sensor:
-            id_thingsensor = ThingsSensorsModel.objects.get(
+            id_thingsensor = ThingsSensorsModel.objects.annotate(
+                display_name = Coalesce('name', 'id_sensor__name')
+            ).get(
                 id_thing__uuid = thing,
-                id_sensor__name = sensor,
+                display_name = sensor,
             ).pk
 
         try:
@@ -181,10 +186,19 @@ class DataViewSets(APIView):
             "year": vwThingsSensorsData_YearModel,
         }
 
-        checkPublic = AccountsThingsModel.objects.filter(
-            id_thing__uuid = thing,
-            id_account__id_plan__ispublic = self.isPublic,
-        )
+        if self.isPublic:
+            checkPublic = ThingsModel.objects.filter(
+                uuid = thing,
+            ).filter(
+                Q(accountsthings__isnull = True) |
+                Q(accountsthings__id_account__status = True,
+                  accountsthings__id_account__id_plan__ispublic = True)
+            ).exists()
+        else:
+            checkPublic = AccountsThingsModel.objects.filter(
+                id_thing__uuid = thing,
+                id_account__id_plan__ispublic = False,
+            ).exists()
 
         if not checkPublic:
             return
@@ -323,21 +337,13 @@ class PrivateThingsViewSets(APIView):
         queryset = self.get_queryset(params = request.POST, user = request.user)
 
         q_objects = []
-        filters = {
-            "thing": lambda value: Q(id_thing__name = value),
-            "city": lambda value: Q(id_account__city = value),
-            "state": lambda value: Q(id_account__state = value),
-            "country": lambda value: Q(id_account__country = value),
-            "sensor": lambda value: Q(id_thing__in = self.filter_things_sensors(value)),
-            "thing_tag": lambda value: Q(id_thing__in = self.filter_things_tags(value)),
-            "sensor_tag": lambda value: Q(id_thing__in = self.filter_sensors_tags(value)),
-        }
+        filters = self.get_filters()
 
         for key, value in request.data.items():
             filter_func = filters.get(key)
             if filter_func:
                 q_objects.append(filter_func(value))
-        
+
         if q_objects:
             queryset = queryset.filter(*q_objects)
 
@@ -345,16 +351,25 @@ class PrivateThingsViewSets(APIView):
         return Response(serializer.data)
 
     def get_queryset(self, params, user):
-        Account = AccountsModel.objects.get(username = user)
-        account_id = Account.id
-        
-        return AccountsThingsModel.objects.filter(
-            id_account__status = True, 
-            id_account__id_plan__ispublic = False,
-            id_account = account_id,
+        account = AccountsModel.objects.get(username = user)
 
-        )
-   
+        return ThingsModel.objects.filter(
+            accountsthings__id_account__status = True,
+            accountsthings__id_account__id_plan__ispublic = False,
+            accountsthings__id_account = account,
+        ).distinct()
+
+    def get_filters(self):
+        return {
+            "thing": lambda value: Q(name = value),
+            "city": lambda value: Q(accountsthings__id_account__city = value),
+            "state": lambda value: Q(accountsthings__id_account__state = value),
+            "country": lambda value: Q(accountsthings__id_account__country = value),
+            "sensor": lambda value: Q(id__in = self.filter_things_sensors(value)),
+            "thing_tag": lambda value: Q(id__in = self.filter_things_tags(value)),
+            "sensor_tag": lambda value: Q(id__in = self.filter_sensors_tags(value)),
+        }
+
     def filter_things_sensors(self, value):
         thing_ids = ThingsSensorsModel.objects.filter(id_sensor__name = value).values_list("id_thing_id", flat = True)
         return thing_ids
