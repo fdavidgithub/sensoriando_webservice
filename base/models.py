@@ -149,3 +149,35 @@ class vwThingsSensorsData_DayModel(vwThingssensorsdata_day):
         verbose_name = "ThingSensorDatum_day"
         verbose_name_plural = 'ThingSensorsData_days'
         proxy = True
+
+
+from django.db.models.functions import Coalesce
+
+
+def get_thing_sensors_with_display_name(thing):
+    return ThingsSensorsModel.objects.filter(id_thing=thing).annotate(
+        display_name=Coalesce('name', 'id_sensor__name')
+    )
+
+
+def get_thing_account(thing):
+    return AccountsModel.objects.filter(
+        accountsthings__id_thing=thing
+    ).select_related('id_plan').first()
+
+
+def resolve_account_display(account):
+    if not account:
+        return {
+            "is_public": True,
+            "city": "não registrado",
+            "state": "",
+            "country": "NR",
+        }
+
+    return {
+        "is_public": account.id_plan.ispublic,
+        "city": account.city,
+        "state": account.state,
+        "country": account.country,
+    }
