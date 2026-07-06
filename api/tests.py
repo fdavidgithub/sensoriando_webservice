@@ -270,3 +270,41 @@ class GetFiltersFallbackPlaceholderTests(SimpleTestCase):
             filters["country"]("NR"),
             Q(accountsthings__isnull=True),
         )
+
+
+class FilterThingsSensorsTests(SimpleTestCase):
+    """The "sensor" search filter is fed the resolved display name clicked
+    in the listing (thingssensors.name when set, else sensors.name) — it
+    must match on that same resolved name, not the raw catalog name, or a
+    custom-named sensor's link returns zero things."""
+
+    @patch('api.views.ThingsSensorsModel.objects')
+    def test_public_matches_by_coalesced_display_name(self, mock_ts_objects):
+        mock_annotated = MagicMock()
+        mock_ts_objects.annotate.return_value = mock_annotated
+        mock_filtered = MagicMock()
+        mock_annotated.filter.return_value = mock_filtered
+        mock_filtered.values_list.return_value = [1, 2]
+
+        result = PublicThingsViewSets().filter_things_sensors("custom-name")
+
+        annotate_kwargs = mock_ts_objects.annotate.call_args.kwargs
+        self.assertIsInstance(annotate_kwargs['display_name'], Coalesce)
+        mock_annotated.filter.assert_called_once_with(display_name="custom-name")
+        mock_filtered.values_list.assert_called_once_with("id_thing_id", flat=True)
+        self.assertEqual(result, [1, 2])
+
+    @patch('api.views.ThingsSensorsModel.objects')
+    def test_private_matches_by_coalesced_display_name(self, mock_ts_objects):
+        mock_annotated = MagicMock()
+        mock_ts_objects.annotate.return_value = mock_annotated
+        mock_filtered = MagicMock()
+        mock_annotated.filter.return_value = mock_filtered
+        mock_filtered.values_list.return_value = [3]
+
+        result = PrivateThingsViewSets().filter_things_sensors("custom-name")
+
+        annotate_kwargs = mock_ts_objects.annotate.call_args.kwargs
+        self.assertIsInstance(annotate_kwargs['display_name'], Coalesce)
+        mock_annotated.filter.assert_called_once_with(display_name="custom-name")
+        self.assertEqual(result, [3])

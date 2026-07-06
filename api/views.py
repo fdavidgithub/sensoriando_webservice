@@ -109,7 +109,9 @@ class PublicThingsViewSets(APIView):
         }
 
     def filter_things_sensors(self, value):
-        thing_ids = ThingsSensorsModel.objects.filter(id_sensor__name = value).values_list("id_thing_id", flat = True)
+        thing_ids = ThingsSensorsModel.objects.annotate(
+            display_name = Coalesce('name', 'id_sensor__name')
+        ).filter(display_name = value).values_list("id_thing_id", flat = True)
         return thing_ids
 
     def filter_things_tags(self, value):
@@ -371,7 +373,9 @@ class PrivateThingsViewSets(APIView):
         }
 
     def filter_things_sensors(self, value):
-        thing_ids = ThingsSensorsModel.objects.filter(id_sensor__name = value).values_list("id_thing_id", flat = True)
+        thing_ids = ThingsSensorsModel.objects.annotate(
+            display_name = Coalesce('name', 'id_sensor__name')
+        ).filter(display_name = value).values_list("id_thing_id", flat = True)
         return thing_ids
 
     def filter_things_tags(self, value):
