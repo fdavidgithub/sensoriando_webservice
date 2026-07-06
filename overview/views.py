@@ -37,10 +37,20 @@ def readCookie(request):
 def getCountry(jsonResult):
     if jsonResult:
         for item in jsonResult:
-            if "country" in item["account"]:
-                country_code = item["account"]["country"]
-                country_name = pycountry.countries.get(alpha_2=country_code).name
-                item["account"]["country"] = country_name
+            account = item.get("account")
+
+            if not account:
+                continue
+
+            country_code = account.get("country")
+
+            if not country_code or country_code == "NR":
+                continue
+
+            country = pycountry.countries.get(alpha_2=country_code)
+
+            if country:
+                account["country"] = country.name
 
     return jsonResult
 
