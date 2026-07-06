@@ -139,6 +139,8 @@ class Thingssensors(models.Model):
     dt = models.DateTimeField()
     id_thing = models.ForeignKey(Things, models.DO_NOTHING, db_column='id_thing')
     id_sensor = models.ForeignKey(Sensors, models.DO_NOTHING, db_column='id_sensor')
+    name = models.CharField(max_length=30, blank=True, null=True)
+    channel = models.IntegerField()
 
     def __str__(self):
         return f"{self.id_thing} - {self.id_sensor}"
