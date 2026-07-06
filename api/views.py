@@ -99,10 +99,11 @@ class PublicThingsViewSets(APIView):
         return Response(serializer.data)
 
     def get_queryset(self, params):
-        return AccountsThingsModel.objects.filter(
-            id_account__status = True, 
-            id_account__id_plan__ispublic = True,
-        )
+        return ThingsModel.objects.filter(
+            Q(accountsthings__isnull = True) |
+            Q(accountsthings__id_account__status = True,
+              accountsthings__id_account__id_plan__ispublic = True)
+        ).distinct()
    
     def filter_things_sensors(self, value):
         thing_ids = ThingsSensorsModel.objects.filter(id_sensor__name = value).values_list("id_thing_id", flat = True)
