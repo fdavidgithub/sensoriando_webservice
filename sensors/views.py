@@ -6,9 +6,6 @@ from base.views import callAPI
 from users.views import check_and_refresh_token
 from base.models import (
     ThingsModel,
-    AccountsModel,
-    PlansModel,
-    ThingsSensorsModel,
     ThingsTagsModel,
     SensorsUnitsModel,
     get_thing_account,
