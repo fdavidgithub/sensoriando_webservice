@@ -4,7 +4,17 @@ from django.http import HttpResponse
 
 from base.views import callAPI
 from users.views import check_and_refresh_token
-from base.models import ThingsModel, AccountsModel, PlansModel, ThingsSensorsModel, ThingsTagsModel, SensorsUnitsModel
+from base.models import (
+    ThingsModel,
+    AccountsModel,
+    PlansModel,
+    ThingsSensorsModel,
+    ThingsTagsModel,
+    SensorsUnitsModel,
+    get_thing_account,
+    get_thing_sensors_with_display_name,
+    resolve_account_display,
+)
 
 from dateutil.parser import parse
 import pandas as pd
@@ -32,9 +42,10 @@ def ThingDetails(request, uuid = None):
     # Get data
     thing = ThingsModel.objects.get(uuid = uuid)
     thingtags = ThingsTagsModel.objects.filter(id_thing = thing.id)
-    thingssensors = ThingsSensorsModel.objects.filter(id_thing = thing.id)
-    account = AccountsModel.objects.get(accountsthings__id_thing = thing.id)
- 
+    thingssensors = get_thing_sensors_with_display_name(thing.id)
+    account = get_thing_account(thing.id)
+    account_display = resolve_account_display(account)
+
     tags = []
     for tag in thingtags:
         tags.append(tag.name)
@@ -42,7 +53,7 @@ def ThingDetails(request, uuid = None):
     sensors = []
     for thingsensor in thingssensors:
         id_sensor = thingsensor.id_sensor_id
-        sensor = thingsensor.id_sensor.name
+        sensor = thingsensor.display_name
         sensor_unit = SensorsUnitsModel.objects.get(isdefault = True, id_sensor = id_sensor)
 
         defaults["chartunit"] = sensor_unit
@@ -89,7 +100,7 @@ def ThingDetails(request, uuid = None):
 
         }
     
-        if account.id_plan.ispublic:
+        if account_display["is_public"]:
             jsonResult = callAPI(
                 endpoint = "/data/detail/", \
                 data = jsonParams, \
@@ -140,10 +151,10 @@ def ThingDetails(request, uuid = None):
         'thing': thing.name,
         'thing_tags': tags,
         'chart_file': 'chart.js',
-        'city': account.city,
-        'state': account.state,
+        'city': account_display["city"],
+        'state': account_display["state"],
         'title': chartView,
-        'country': account.country,
+        'country': account_display["country"],
         'sensors': sensors,
 
     }
