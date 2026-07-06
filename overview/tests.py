@@ -1,8 +1,10 @@
+import json
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from django.test import SimpleTestCase
 
-from overview.views import getCountry
+from overview.views import getCountry, readCookie
 
 
 class GetCountryTests(SimpleTestCase):
@@ -26,3 +28,39 @@ class GetCountryTests(SimpleTestCase):
 
         mock_pycountry.countries.get.assert_called_once_with(alpha_2="BR")
         self.assertEqual(result[0]["account"]["country"], "Brazil")
+
+
+def _request_with_cookie(payload):
+    return SimpleNamespace(COOKIES={"setFilterHome": json.dumps(payload)})
+
+
+class ReadCookieTests(SimpleTestCase):
+    def test_returns_none_without_cookie(self):
+        request = SimpleNamespace(COOKIES={})
+        self.assertIsNone(readCookie(request))
+
+    def test_keeps_nr_placeholder_without_crashing(self):
+        request = _request_with_cookie({"country": "NR"})
+
+        result = readCookie(request)
+
+        self.assertEqual(result["country"], "NR")
+
+    @patch('overview.views.pycountry')
+    def test_converts_recognized_country_name_to_alpha2(self, mock_pycountry):
+        mock_pycountry.countries.get.return_value = SimpleNamespace(alpha_2="BR")
+        request = _request_with_cookie({"country": "Brazil"})
+
+        result = readCookie(request)
+
+        mock_pycountry.countries.get.assert_called_once_with(name="Brazil")
+        self.assertEqual(result["country"], "BR")
+
+    @patch('overview.views.pycountry')
+    def test_unrecognized_country_name_does_not_crash(self, mock_pycountry):
+        mock_pycountry.countries.get.return_value = None
+        request = _request_with_cookie({"country": "Nonexistentland"})
+
+        result = readCookie(request)
+
+        self.assertEqual(result["country"], "Nonexistentland")
