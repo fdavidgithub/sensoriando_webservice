@@ -100,9 +100,9 @@ class PublicThingsViewSets(APIView):
     def get_filters(self):
         return {
             "thing": lambda value: Q(name = value),
-            "city": lambda value: Q(accountsthings__id_account__city = value),
+            "city": lambda value: Q(accountsthings__isnull = True) if value == "não registrado" else Q(accountsthings__id_account__city = value),
             "state": lambda value: Q(accountsthings__id_account__state = value),
-            "country": lambda value: Q(accountsthings__id_account__country = value),
+            "country": lambda value: Q(accountsthings__isnull = True) if value == "NR" else Q(accountsthings__id_account__country = value),
             "sensor": lambda value: Q(id__in = self.filter_things_sensors(value)),
             "thing_tag": lambda value: Q(id__in = self.filter_things_tags(value)),
             "sensor_tag": lambda value: Q(id__in = self.filter_sensors_tags(value)),
@@ -362,9 +362,9 @@ class PrivateThingsViewSets(APIView):
     def get_filters(self):
         return {
             "thing": lambda value: Q(name = value),
-            "city": lambda value: Q(accountsthings__id_account__city = value),
+            "city": lambda value: Q(accountsthings__isnull = True) if value == "não registrado" else Q(accountsthings__id_account__city = value),
             "state": lambda value: Q(accountsthings__id_account__state = value),
-            "country": lambda value: Q(accountsthings__id_account__country = value),
+            "country": lambda value: Q(accountsthings__isnull = True) if value == "NR" else Q(accountsthings__id_account__country = value),
             "sensor": lambda value: Q(id__in = self.filter_things_sensors(value)),
             "thing_tag": lambda value: Q(id__in = self.filter_things_tags(value)),
             "sensor_tag": lambda value: Q(id__in = self.filter_sensors_tags(value)),

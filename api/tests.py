@@ -215,3 +215,58 @@ class DataViewSetsCheckPublicGateTests(SimpleTestCase):
         )
         mock_filtered.exists.assert_called_once()
         self.assertIsNone(result)
+
+
+class GetFiltersFallbackPlaceholderTests(SimpleTestCase):
+    """Clicking the "não registrado"/"NR" placeholders shown for accountless
+    things must return things with no account at all, not a literal
+    equality match against Accounts.city/country (which never holds those
+    placeholder strings)."""
+
+    def test_public_city_placeholder_matches_accountless_things(self):
+        filters = PublicThingsViewSets().get_filters()
+
+        self.assertEqual(
+            filters["city"]("não registrado"),
+            Q(accountsthings__isnull=True),
+        )
+
+    def test_public_city_real_value_still_matches_by_equality(self):
+        filters = PublicThingsViewSets().get_filters()
+
+        self.assertEqual(
+            filters["city"]("Curitiba"),
+            Q(accountsthings__id_account__city="Curitiba"),
+        )
+
+    def test_public_country_placeholder_matches_accountless_things(self):
+        filters = PublicThingsViewSets().get_filters()
+
+        self.assertEqual(
+            filters["country"]("NR"),
+            Q(accountsthings__isnull=True),
+        )
+
+    def test_public_country_real_value_still_matches_by_equality(self):
+        filters = PublicThingsViewSets().get_filters()
+
+        self.assertEqual(
+            filters["country"]("BR"),
+            Q(accountsthings__id_account__country="BR"),
+        )
+
+    def test_private_city_placeholder_matches_accountless_things(self):
+        filters = PrivateThingsViewSets().get_filters()
+
+        self.assertEqual(
+            filters["city"]("não registrado"),
+            Q(accountsthings__isnull=True),
+        )
+
+    def test_private_country_placeholder_matches_accountless_things(self):
+        filters = PrivateThingsViewSets().get_filters()
+
+        self.assertEqual(
+            filters["country"]("NR"),
+            Q(accountsthings__isnull=True),
+        )
