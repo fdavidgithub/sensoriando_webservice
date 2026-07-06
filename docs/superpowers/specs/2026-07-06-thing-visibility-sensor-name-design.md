@@ -199,6 +199,7 @@ reais, cobrindo:
   qualquer outro consumidor desse serializer (se houver) precisa ser
   revisado.
 - `Coalesce` em campo `CharField(null=True, blank=True)`: strings vazias
-  (`""`) não são `NULL` — se `thingssensors.name` for gravado como `""` em
-  vez de `NULL`, o `Coalesce` não aplica o fallback. Validar com o
-  Sensoriando Core qual convenção é usada ao gravar essa coluna.
+  (`""`) não são `NULL`, então normalmente seria preciso validar a convenção
+  de gravação. Confirmado com o time: o Sensoriando Core nunca grava `""` em
+  `thingssensors.name`, sempre `NULL` quando não informado — `Coalesce` pode
+  ser usado diretamente, sem tratamento extra para string vazia.
