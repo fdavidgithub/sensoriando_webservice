@@ -64,3 +64,4 @@ staticfiles/
 .envrc
 .agents-bootstrap
 AGENTS.md
+.superpowers/
