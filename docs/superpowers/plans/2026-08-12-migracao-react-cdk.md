@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Substituir a camada web Django deste repositório por um SPA React que consome o `SENSORIANDO_API`, publicado em S3 + CloudFront por uma stack AWS CDK.
+**Goal:** Substituir a camada web Django deste repositório por um SPA React que consome a Sensoriando API, publicado em S3 + CloudFront por uma stack AWS CDK.
 
 **Architecture:** O SPA é estático e não tem servidor de aplicação. `web/vite.config.ts` descobre a URL da API no build consultando o output `SensoriandoApiUrl` da stack `sensoriando-<ambiente>-api` no CloudFormation, e injeta em `VITE_API_BASE_URL`. Uma stack CDK (`sensoriando-<ambiente>-web`) cria bucket privado + CloudFront com OAC e publica `web/dist`.
 
@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - Todo código-fonte em **inglês** (identificadores, comentários, mensagens de log). Texto de interface visível ao usuário permanece em **português**, como hoje. Ver `docs/guidelines/coding-standards.md`.
-- **Não** alterar nenhum arquivo fora de `/mnt/storage/git/sensoriando_webservice`. `../UDUU` e `../SENSORIANDO_API` são referência de leitura apenas.
+- **Não** alterar nenhum arquivo fora de `/mnt/storage/git/sensoriando_webservice`. Nenhuma task exige ler ou escrever em outro repositório; tudo o que é preciso saber está neste plano.
 - Versões fixadas em `package.json` e `infra/requirements.txt`. Nenhuma dependência além das listadas neste plano.
 - Nenhum segredo, URL ou credencial fixado em código.
 - Nenhuma lógica de conversão ou arredondamento de unidade no front-end (D4 do spec).
@@ -24,7 +24,7 @@
 
 ## Formas de dados da API (referência para todas as tasks)
 
-Derivadas de `api/serializers.py` do Django, que o `SENSORIANDO_API` reproduz.
+Derivadas de `api/serializers.py` do Django, que a Sensoriando API reproduz.
 
 ```
 GET  /sensors            → [{ id: number, name: string }]
@@ -272,7 +272,7 @@ def load_dotenv(path: Path) -> dict[str, str]:
 
 - [ ] **Step 2: Criar `scripts/resolve_api_url.py`**
 
-Difere da versão do `SENSORIANDO_API` em dois pontos deliberados: lê o `.env` (porque `npm run build` não herda o `set -a` do `make`) e honra `AWS_PROFILE` (porque sem isso o boto3 cai no perfil default do shell, que pode ser outra conta).
+Dois pontos merecem atenção: o script lê o `.env` (porque `npm run build` não herda o `set -a` do `make`) e honra `AWS_PROFILE` (porque sem isso o boto3 cai no perfil default do shell, que pode ser outra conta).
 
 ```python
 #!/usr/bin/env python3
@@ -3773,7 +3773,7 @@ Esperado: FAIL — `ModuleNotFoundError: No module named 'stacks.settings'`.
 
 - [ ] **Step 6: Implementar `infra/stacks/settings.py`**
 
-Portado de `SENSORIANDO_API/infra/stacks/settings.py`, para que os dois repositórios derivem os nomes de recurso da mesma forma.
+Segue a convenção de nomes já usada nos outros serviços da plataforma, para que todos derivem os nomes de recurso da mesma forma.
 
 ```python
 """Deploy-time settings, read from the repository `.env`.
@@ -4501,7 +4501,7 @@ git status --short | head -20
 # Sensoriando Webservice
 
 Front-end da plataforma Sensoriando: um SPA em React que apresenta os dados de
-sensores lidos da [Sensoriando API](https://github.com/fdavidgithub/sensoriando_api).
+sensores lidos da Sensoriando API.
 
 Publicado como site estático em S3 + CloudFront.
 
@@ -4511,7 +4511,7 @@ Publicado como site estático em S3 + CloudFront.
 Navegador → CloudFront → S3 (bundle estático)
     │
     └── HTTPS → API Gateway → Lambdas → PostgreSQL (Neon)
-                (repositório sensoriando_api)
+                (Sensoriando API, serviço externo)
 ```
 
 Este repositório não tem servidor de aplicação nem fala com o banco: toda
@@ -4718,7 +4718,7 @@ O Sensoriando Webservice é a camada de apresentação da plataforma Sensoriando
 banco de dados e não guarda estado no servidor.
 
 Todos os dados vêm da Sensoriando API, que por sua vez lê o PostgreSQL populado
-pelo [Sensoriando Core](https://github.com/fdavidgithub/sensoriando_core/).
+pelo Sensoriando Core via MQTT.
 
 ```
 Navegador → CloudFront → S3 (bundle estático)
@@ -4903,8 +4903,8 @@ O corte de DNS **não** faz parte desta entrega.
 
 ## Pendências deixadas para outros repositórios
 
-Nada abaixo é trabalho deste repositório. Registrado para virar issue na
-`SENSORIANDO_API`.
+Nada abaixo é trabalho deste repositório. Registrado para virar issue no serviço
+que expõe a API.
 
 | Rota | Método | Serve |
 |---|---|---|

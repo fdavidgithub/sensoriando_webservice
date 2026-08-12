@@ -10,9 +10,9 @@ uma API REST (`api/`) e renderiza páginas HTML no servidor (`overview/`,
 `sensors/`, `users/`, `templates/`). A implantação é self-hosted via
 `docker-compose`.
 
-A API já foi migrada para outro repositório. O `SENSORIANDO_API` expõe os mesmos
-oito endpoints em AWS Lambda atrás de API Gateway, lendo o mesmo PostgreSQL
-(Neon). O app `api/` deste repositório virou, portanto, duplicação: dois lugares
+A API já foi migrada para fora deste repositório. O serviço **Sensoriando
+API** expõe os mesmos oito endpoints em AWS Lambda atrás de API Gateway, lendo o
+mesmo PostgreSQL (Neon). O app `api/` deste repositório virou, portanto, duplicação: dois lugares
 servindo o mesmo contrato, livres para divergir.
 
 Sobra para este repositório um único papel: **ser o front-end**. Este documento
@@ -21,14 +21,14 @@ site estático em S3 + CloudFront, provisionado por AWS CDK.
 
 ## Objetivo
 
-Um SPA React que reproduz fielmente as telas atuais, consome o `SENSORIANDO_API`
+Um SPA React que reproduz fielmente as telas atuais, consome a Sensoriando API
 por HTTP, descobre a URL da API dinamicamente, e é implantado por uma stack CDK
 neste repositório. Nenhum código Python de aplicação permanece.
 
 ## Não-objetivos
 
-- **Não** alterar o `SENSORIANDO_API` nem qualquer outro repositório. `../UDUU` e
-  `../SENSORIANDO_API` são referência de leitura apenas.
+- **Não** alterar nada fora deste repositório. As rotas que a API precisa passar
+  a expor estão especificadas aqui, mas implementá-las é trabalho de outro time.
 - **Não** implementar autenticação real. Entra depois, provavelmente com Cognito.
 - **Não** redesenhar a interface. O visual atual é portado como está.
 - **Não** apontar o DNS de `web.sensoriando.com.br` para a nova infraestrutura.
@@ -47,8 +47,8 @@ razoáveis à primeira vista.
 `SensoriandoApiUrl` da stack `sensoriando-<ambiente>-api` no CloudFormation, e
 injeta o valor em `VITE_API_BASE_URL`.
 
-É exatamente o mecanismo já em uso em `UDUU/dashboard` e `SENSORIANDO_API` — um
-só modelo mental para os três repositórios, e o script existe pronto para portar.
+É o mesmo mecanismo já adotado nos outros serviços da plataforma, o que mantém
+um só modelo mental para quem opera qualquer um deles.
 
 Alternativas descartadas: um `config.json` lido em runtime (a consulta ao
 CloudFormation não desaparece, só muda do Vite para o synth do CDK, em troca de
@@ -102,7 +102,7 @@ agora seria construir código com data de validade conhecida.
 **Consequência registrada:** enquanto `/data/detail` devolver apenas `dtread`,
 `value` e `message`, o gráfico fica sem o símbolo da unidade no rótulo. Quando a
 API passar a converter, faz sentido devolver o símbolo junto. Isso é trabalho do
-`SENSORIANDO_API`, anotado aqui apenas como nota de contrato.
+lado da API, anotado aqui apenas como nota de contrato.
 
 ### D5 — Filtros na query string, não em cookie
 
@@ -127,8 +127,8 @@ previstos, como o resto daquela aba.
 ### D6 — Escritas chamam o endpoint previsto e exibem o erro
 
 As telas de escrita são implementadas por completo, contra o contrato de rotas
-definido abaixo. Enquanto essas rotas não existirem no `SENSORIANDO_API`, a
-chamada retorna 404 e a tela mostra uma mensagem clara.
+definido abaixo. Enquanto essas rotas não existirem na API, a chamada retorna 404
+e a tela mostra uma mensagem clara.
 
 Assim o código deste repositório fica pronto: quando a API subir, funciona sem
 precisar voltar aqui. As alternativas — botão desabilitado, ou salvar em
@@ -151,8 +151,7 @@ padrão de referência, com o manifesto de chaves vazio.
 
 As decisões acima esvaziaram a lista de segredos: não há credencial (D2), a URL
 da API vem do CloudFormation (D1) e não há domínio nem certificado (D3). As
-constantes de comportamento ficam em `web/src/config.ts`, como no
-`UDUU/dashboard`.
+constantes de comportamento ficam em `web/src/config.ts`.
 
 O mecanismo entra agora para que a primeira chave real — configuração do Cognito,
 domínio, ARN de certificado — seja só uma declaração no manifesto.
@@ -183,11 +182,11 @@ produção, além das já listadas em D4 e na remoção dos itens do menu.
 Navegador → CloudFront → S3 (bundle estático)
     │
     └── HTTPS → API Gateway → Lambdas → PostgreSQL (Neon)
-                (SENSORIANDO_API, outro repositório)
+                (Sensoriando API, serviço externo)
 ```
 
 O SPA é estático. Não há servidor de aplicação neste repositório depois da
-migração: toda leitura e escrita passa pelo `SENSORIANDO_API`.
+migração: toda leitura e escrita passa pela Sensoriando API.
 
 ### Layout do repositório
 
@@ -268,7 +267,7 @@ para o Swagger do Django, que deixa de existir.
 
 ## Contrato de API
 
-### Endpoints existentes (`SENSORIANDO_API`)
+### Endpoints existentes
 
 | Método | Rota | Consumido por |
 |---|---|---|
@@ -328,13 +327,13 @@ O React é escrito contra estas rotas. Até existirem, retornam 404 e a tela exi
 - **Output** `SensoriandoWebUrl`.
 
 Se `web/dist` não existir no synth, o upload é pulado com aviso em `stderr` em
-vez de quebrar o deploy — mesmo comportamento do `DashboardStack` do UDUU.
-Atenção ao mesmo ponto cego de lá: um `dist/` **desatualizado** não é detectado,
-e é publicado silenciosamente. Por isso `make deploy` sempre rebuilda antes.
+vez de quebrar o deploy. Atenção ao ponto cego que isso deixa: um `dist/`
+**desatualizado** não é detectado, e é publicado silenciosamente. Por isso
+`make deploy` sempre rebuilda antes.
 
-`infra/stacks/settings.py` é o de `SENSORIANDO_API` portado: lê o `.env`, exige
-`SENSORIANDO_ENVIRONMENT` e `AWS_REGION`, e monta o prefixo
-`sensoriando-<ambiente>`.
+`infra/stacks/settings.py` segue a convenção já usada nos outros serviços da
+plataforma: lê o `.env`, exige `SENSORIANDO_ENVIRONMENT` e `AWS_REGION`, e monta
+o prefixo `sensoriando-<ambiente>`.
 
 ### Build
 
@@ -389,8 +388,7 @@ tela branca.
 - `api/client.ts` — montagem de URL, serialização do corpo, e a normalização de
   erro para 404, 500 e falha de rede.
 
-**pytest + `aws_cdk.assertions.Template`**, espelhando
-`UDUU/infra/tests/unit/test_dashboard_stack.py`:
+**pytest + `aws_cdk.assertions.Template`**:
 
 - o bucket bloqueia todo acesso público;
 - os dois `error_responses` (403 e 404) apontam para `/index.html` com status 200;
