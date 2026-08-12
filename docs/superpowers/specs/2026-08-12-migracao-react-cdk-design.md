@@ -157,6 +157,24 @@ constantes de comportamento ficam em `web/src/config.ts`, como no
 O mecanismo entra agora para que a primeira chave real — configuração do Cognito,
 domínio, ARN de certificado — seja só uma declaração no manifesto.
 
+### D9 — Layout unificado: a home privada e o 404 migram para o design atual
+
+O repositório tem dois layouts convivendo. `index.html`, `detail.html`,
+`signin.html`, `signup.html` e `account.html` usam o design atual (`head.html` +
+`static/css/style.css`, cards, background em grayscale). `home.html` (a home
+privada) e `404.html` ficaram no layout anterior, em Bootstrap via
+`common.html`, com `panel panel-primary` e grid `col-sm-*`.
+
+No SPA, as duas passam a usar o layout atual. A home privada reaproveita o mesmo
+`ThingCard` da home pública e ganha um painel "Indicadores" com plano, total de
+registros e retenção (de `/data/stats/private`).
+
+Reproduzir o Bootstrap legado obrigaria o bundle a carregar dois sistemas de
+estilo e preservaria no código novo uma inconsistência que já era dívida.
+
+**Consequência registrada:** é a única diferença visual deliberada em relação à
+produção, além das já listadas em D4 e na remoção dos itens do menu.
+
 ---
 
 ## Arquitetura
@@ -413,7 +431,8 @@ despercebido, mas quem builda precisa saber disso.
 
 **Paridade visual.** O critério de aceitação é comparação lado a lado com
 `web.sensoriando.com.br`. As diferenças conhecidas e aceitas são: ausência do
-símbolo da unidade nos gráficos (D4), e os dois itens removidos do menu.
+símbolo da unidade nos gráficos (D4), os dois itens removidos do menu, e a home
+privada e o 404 migrados para o layout atual (D9).
 
 **Sessão sem valor de segurança.** Por D2, o portão não protege dado nenhum. Se
 alguém interpretar `/home/private` como conteúdo protegido, a leitura está
