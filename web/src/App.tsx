@@ -8,6 +8,7 @@ import LoginPage from "./views/LoginPage";
 import NotFound from "./views/NotFound";
 import PrivateHome from "./views/PrivateHome";
 import PublicHome from "./views/PublicHome";
+import SignUp from "./views/SignUp";
 import ThingDetail from "./views/ThingDetail";
 import { config } from "./config";
 
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="/home" element={<PublicHome />} />
             <Route path="/thing/detail/:uuid" element={<ThingDetail />} />
             <Route path="/users/login" element={<LoginPage />} />
+            <Route path="/users/signup" element={<SignUp />} />
             <Route
               path="/home/private"
               element={
