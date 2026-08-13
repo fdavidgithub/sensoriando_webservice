@@ -12,7 +12,7 @@ repositório.
 
 ## Linguagem e Runtime
 
-- **TypeScript 5.5** sobre **React 18**, empacotado por **Vite 8**
+- **TypeScript 5.9** sobre **React 18**, empacotado por **Vite 8**
 - **Python 3.11+** apenas para a infraestrutura (AWS CDK) e os scripts de build
 
 ---
