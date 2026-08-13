@@ -5,6 +5,7 @@ import Footer from "./components/Footer";
 import Header from "./components/Header";
 import NotFound from "./views/NotFound";
 import PublicHome from "./views/PublicHome";
+import ThingDetail from "./views/ThingDetail";
 import { config } from "./config";
 
 function ConfigurationNotice() {
@@ -34,6 +35,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<PublicHome />} />
             <Route path="/home" element={<PublicHome />} />
+            <Route path="/thing/detail/:uuid" element={<ThingDetail />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         ) : (

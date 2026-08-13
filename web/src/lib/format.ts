@@ -1,5 +1,17 @@
 import type { Period } from "../api/endpoints";
 
+/**
+ * The API sends timestamps as "dd/mm/aaaa HH:MM:SS". JS's new Date(string)
+ * would read them as month/day, so the components are built explicitly in
+ * local time.
+ */
+export function parseDtread(value: string): Date {
+  const [datePart, timePart] = value.split(" ");
+  const [day, month, year] = datePart.split("/").map(Number);
+  const [hour, minute, second] = timePart.split(":").map(Number);
+  return new Date(year, month - 1, day, hour, minute, second);
+}
+
 function pad(value: number): string {
   return String(value).padStart(2, "0");
 }
