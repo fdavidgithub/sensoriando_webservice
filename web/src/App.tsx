@@ -4,6 +4,7 @@ import Background from "./components/Background";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
 import NotFound from "./views/NotFound";
+import PublicHome from "./views/PublicHome";
 import { config } from "./config";
 
 function ConfigurationNotice() {
@@ -31,7 +32,8 @@ export default function App() {
       <main>
         {config.apiConfigured ? (
           <Routes>
-            <Route path="/" element={<NotFound />} />
+            <Route path="/" element={<PublicHome />} />
+            <Route path="/home" element={<PublicHome />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         ) : (
