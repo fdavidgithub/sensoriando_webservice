@@ -1,10 +1,12 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
+import AuthGate from "./auth/AuthGate";
 import Background from "./components/Background";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
 import LoginPage from "./views/LoginPage";
 import NotFound from "./views/NotFound";
+import PrivateHome from "./views/PrivateHome";
 import PublicHome from "./views/PublicHome";
 import ThingDetail from "./views/ThingDetail";
 import { config } from "./config";
@@ -38,6 +40,14 @@ export default function App() {
             <Route path="/home" element={<PublicHome />} />
             <Route path="/thing/detail/:uuid" element={<ThingDetail />} />
             <Route path="/users/login" element={<LoginPage />} />
+            <Route
+              path="/home/private"
+              element={
+                <AuthGate>
+                  <PrivateHome />
+                </AuthGate>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         ) : (
