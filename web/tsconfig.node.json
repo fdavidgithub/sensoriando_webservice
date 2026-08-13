@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "types": ["node"],
+    // A project reference (see tsconfig.json) may not disable emit (TS6310),
+    // so this still compiles vite.config.ts -- but into an out-of-the-way
+    // directory. Left at the default, `tsc -b` would drop a vite.config.js
+    // next to vite.config.ts, and Vite's config resolution prefers the .js
+    // over the .ts: every `npm run dev` after the first build would silently
+    // run a stale, pre-compiled config.
+    "outDir": "node_modules/.tsc-out"
+  },
+  "include": ["vite.config.ts"]
+}

@@ -2,106 +2,79 @@
 
 ## Linguagem
 
-Todo código-fonte deve ser escrito em **inglês**, incluindo nomes de variáveis, funções, classes, arquivos, campos de banco de dados, comentários, mensagens de log e mensagens de erro.
+Todo código-fonte em **inglês**: identificadores, nomes de arquivo, comentários
+e mensagens de log.
+
+O texto visível ao usuário permanece em **português**.
 
 ---
 
 ## Convenções de Nomenclatura
 
-| Elemento                      | Padrão                              |
-|-------------------------------|-------------------------------------|
-| Classes                       | PascalCase                          |
-| Funções / métodos             | snake_case                          |
-| Variáveis                     | snake_case                          |
-| Constantes                    | UPPER_CASE                          |
-| Arquivos                      | snake_case                          |
-| Tabelas (banco de dados)      | snake_case (plural)                 |
-| Colunas (banco de dados)      | snake_case                          |
-| Índices                       | snake_case com prefixo `idx_`       |
-| Primary Keys                  | snake_case com prefixo `pk_`        |
-| Foreign Keys                  | snake_case com prefixo `fk_`        |
-| Constraints Unique            | snake_case com prefixo `uq_`        |
-| Views                         | snake_case                          |
-| Functions / Procedures (DB)   | snake_case                          |
+| Elemento | Padrão |
+|---|---|
+| Componentes React | PascalCase, arquivo `PascalCase.tsx` |
+| Funções e variáveis (TS) | camelCase |
+| Tipos e interfaces (TS) | PascalCase |
+| Constantes (TS) | UPPER_SNAKE_CASE |
+| Módulos TS | `camelCase.ts` |
+| Classes (Python) | PascalCase |
+| Funções e variáveis (Python) | snake_case |
+| Módulos Python | snake_case |
 
 ---
 
-## Estrutura do Handler / Ponto de Entrada
+## Estrutura das Telas
 
-Os pontos de entrada da API são views do Django REST Framework, registradas em
-`api/urls.py`. Endpoints de leitura usam `ModelViewSet`; endpoints com regra de
-negócio usam `APIView`. Endpoints privados são protegidos por JWT.
+Uma view busca dados por `useApi` e compõe componentes. Componentes de
+apresentação recebem tudo por props e não fazem rede.
 
-```python
-# api/views.py
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.decorators import authentication_classes, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.authentication import JWTAuthentication
+```tsx
+export default function PublicHome() {
+  const things = useApi(() => listPublicThings(filters), [search]);
 
-@authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
-class PrivateStatisticsViewSets(APIView):
-    def get(self, request, *args, **kwargs):
-        data = self.build_data(request.user)
-        serializer = serializers.DataStatsSerializer(data)
-        return Response(serializer.data)
+  return (
+    <section className="cards">
+      {things.loading && <Loading />}
+      {things.error && <ErrorBanner message={things.error} />}
+      {things.data?.length === 0 && <EmptyState />}
+      {things.data && things.data.length > 0 && (
+        <ul>{things.data.map((thing) => <ThingCard key={thing.uuid} thing={thing} />)}</ul>
+      )}
+    </section>
+  );
+}
 ```
 
-```python
-# api/urls.py
-path('data/stats/private/', views.PrivateStatisticsViewSets.as_view(), name='PrivateStatistics'),
-```
-
-A documentação OpenAPI/Swagger é gerada por `drf-yasg` (acessível na raiz de
-`/api/`).
-
----
-
-## Variáveis de Ambiente
-
-- Todas as configurações de ambiente são lidas via variáveis de ambiente.
-- Nunca hardcode URLs, credenciais ou configurações sensíveis no código.
-- Variáveis obrigatórias para execução (lidas em `core/settings.py`; ver
-  `env.example`):
-
-| Variável | Descrição |
-|----------|-----------|
-| `DJANGO_PORT` | Porta do servidor Django |
-| `DJANGO_PARAMS` | Parâmetros extras do `runserver` |
-| `DJANGO_DEBUG` | Ativa o modo debug |
-| `DJANGO_PREFIX_API` | URL base da API consumida pelas views web (`callAPI`) |
-| `POSTGRES_HOST` | Host/container do banco |
-| `POSTGRES_USER` | Usuário do banco |
-| `POSTGRES_PASSWORD` | Senha do banco |
-| `POSTGRES_DB` | Nome do banco |
-| `POSTGRES_PORT` | Porta do banco |
-
-> `SECRET_KEY` está atualmente fixada em `core/settings.py` (valor de
-> desenvolvimento) e deveria, em produção, ser lida de variável de ambiente.
+Nenhuma tela monta URL na mão: toda chamada passa por `api/endpoints.ts`.
 
 ---
 
 ## Tratamento de Erros
 
-- Erros operacionais (entrada inválida, campo ausente) retornam código `400`.
-- Erros de infraestrutura retornam código `500`.
-- Erros de contrato (payload fora do formato esperado) retornam `200` com `status: "error"` no body.
-- Nunca deixe exceções não tratadas propagarem sem retornar uma resposta estruturada.
+- Toda tela trata três estados: carregando, erro e vazio.
+- Toda falha da API chega como `ApiError`, com `status` 0 para falha de rede.
+- Um 404 de rota marcada como pendente vira a mensagem
+  `Recurso ainda não disponível na API`.
+- Falha de rede nunca resulta em tela branca.
+
+---
+
+## Configuração
+
+- Nenhuma URL, credencial ou identificador de conta fixado em código.
+- A URL da API é resolvida no build a partir do CloudFormation.
+- Nomes de recurso derivam do `.env` (`SENSORIANDO_ENVIRONMENT`, `AWS_REGION`).
 
 ---
 
 ## Proibições
 
-- Não modificar arquivos gerados (ex: `dist/`, artefatos de build).
-- Não introduzir bibliotecas não listadas em `docs/guidelines/stacks.md`.
-- Não bypassar as camadas de serviço ou repositório.
-- Não usar `print` para logs; use um mecanismo de logging estruturado.
-
-- Não criar nem alterar o schema do banco a partir deste serviço: as tabelas de
-  domínio são `managed = False` (ver `docs/guidelines/database.md`).
-- Não fixar `SECRET_KEY`, credenciais ou URLs no código — usar variáveis de
-  ambiente.
-- Não adicionar dependências fora de `requirements.txt` com versão fixada (ver
-  `docs/guidelines/stacks.md`).
+- Não usar `eval()` nem `new Function()`.
+- Não modificar artefatos de build (`web/dist/`, `infra/cdk.out/`).
+- Não introduzir bibliotecas fora de `docs/guidelines/stacks.md`.
+- Não fazer rede a partir de componentes de apresentação.
+- Não converter nem arredondar valores de sensor no front-end — a API é quem
+  entrega o valor pronto (decisão D4 do documento de design).
+- Não tratar o portão de sessão como controle de acesso: ele não protege dado
+  nenhum (decisão D2).

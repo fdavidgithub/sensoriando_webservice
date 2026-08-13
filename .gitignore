@@ -65,3 +65,19 @@ staticfiles/
 .agents-bootstrap
 AGENTS.md
 .superpowers/
+
+# Front-end
+web/node_modules/
+web/dist/
+web/tsconfig.tsbuildinfo
+web/tsconfig.node.tsbuildinfo
+web/vite.config.js
+web/vite.config.d.ts
+
+# CDK
+infra/cdk.out/
+infra/.venv/
+
+# Session files
+claude.session
+opencode.session
