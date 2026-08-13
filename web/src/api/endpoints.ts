@@ -8,17 +8,24 @@ import type { Reading, Sensor, SensorTag, SensorUnit, Stats, Thing } from "./typ
  */
 export const PENDING_MESSAGE = "Recurso ainda não disponível na API";
 
+// API Gateway answers a route with no method configured with 403, not 404 --
+// verified against the deployed API. A plain REST resource with nothing wired
+// to it would 404, but these paths have no resource at all yet, so the
+// gateway's default "Missing Authentication Token" response (403) is what a
+// pending route actually returns.
+const PENDING_STATUSES = new Set([403, 404]);
+
 /**
- * Marks a call whose route is not deployed yet. A 404 from such a route is the
- * expected state, not an error worth a stack trace; anything else passes
+ * Marks a call whose route is not deployed yet. The expected failure status
+ * from such a route is not an error worth a stack trace; anything else passes
  * through untouched so real failures stay visible.
  */
 async function pending<T>(call: () => Promise<T>): Promise<T> {
   try {
     return await call();
   } catch (error) {
-    if (error instanceof ApiError && error.status === 404) {
-      throw new ApiError(404, PENDING_MESSAGE);
+    if (error instanceof ApiError && PENDING_STATUSES.has(error.status)) {
+      throw new ApiError(error.status, PENDING_MESSAGE);
     }
     throw error;
   }

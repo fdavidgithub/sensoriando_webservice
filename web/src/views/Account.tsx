@@ -269,7 +269,10 @@ function SensorRow({ sensor }: { sensor: ThingSensor; }) {
             disabled={sensorUnits.length === 0}
             value={unitId ?? ""}
             onChange={(event) => {
-              const next = Number(event.target.value);
+              // Number("") is 0, not NaN -- the "—" placeholder must clear the
+              // selection, not silently pick unit id 0.
+              const raw = event.target.value;
+              const next = raw === "" ? null : Number(raw);
               setUnitId(next);
               void persist(next, precision);
             }}

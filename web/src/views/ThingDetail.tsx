@@ -13,7 +13,7 @@ import EmptyState from "../components/EmptyState";
 import ErrorBanner from "../components/ErrorBanner";
 import Loading from "../components/Loading";
 import SensorChart from "../components/SensorChart";
-import { chartLabel, chartLegend, parseDtread } from "../lib/format";
+import { chartLabel, chartLegend } from "../lib/format";
 import { readChartType, readPeriod, writePeriod } from "../lib/prefs";
 import { useApi } from "../lib/useApi";
 
@@ -54,7 +54,7 @@ function SensorPanel({
   const points = useMemo(
     () =>
       (readings.data ?? []).map((reading) => ({
-        legend: chartLegend(period, parseDtread(reading.dtread)),
+        legend: chartLegend(period, new Date(reading.dtread)),
         value: reading.value,
       })),
     [readings.data, period],
@@ -62,7 +62,7 @@ function SensorPanel({
 
   const label = useMemo(() => {
     const last = readings.data?.at(-1);
-    return last ? chartLabel(period, parseDtread(last.dtread)) : "";
+    return last ? chartLabel(period, new Date(last.dtread)) : "";
   }, [readings.data, period]);
 
   return (

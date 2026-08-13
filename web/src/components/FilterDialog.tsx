@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { Sensor, SensorTag } from "../api/types";
 import type { Filters } from "../lib/filters";
@@ -25,10 +25,26 @@ export default function FilterDialog({
   const [sensor, setSensor] = useState(filters.sensor ?? "");
   const [sensorTag, setSensorTag] = useState(filters.sensor_tag ?? "");
 
+  // The dialog stays mounted (only hidden) so its selects can hold draft
+  // state, but that means the initial useState above only ever runs once. A
+  // filter picked from a card (e.g. clicking a sensor name) changes `filters`
+  // without this component remounting, so the selects must resync whenever
+  // the dialog is reopened -- otherwise they show stale values and pressing
+  // Aplicar would revert the very filter that was just clicked.
+  useEffect(() => {
+    if (open) {
+      setSensor(filters.sensor ?? "");
+      setSensorTag(filters.sensor_tag ?? "");
+    }
+  }, [open, filters.sensor, filters.sensor_tag]);
+
   if (!open) return null;
 
   function apply() {
-    onApply({ sensor, sensor_tag: sensorTag });
+    // Merge onto the full filter set: this dialog only edits sensor and
+    // sensor_tag, so city/state/country/thing/thing_tag (set by clicking a
+    // card) must survive an Aplicar click instead of being dropped.
+    onApply({ ...filters, sensor, sensor_tag: sensorTag });
   }
 
   function clear() {

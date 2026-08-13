@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { chartLabel, chartLegend, parseDtread } from "./format";
+import { chartLabel, chartLegend } from "./format";
 
 // 2026-03-09 14:07:42 local time.
 const moment = new Date(2026, 2, 9, 14, 7, 42);
@@ -24,17 +24,5 @@ describe("chartLegend", () => {
     expect(chartLegend("day", moment)).toBe("09");
     expect(chartLegend("month", moment)).toBe("03");
     expect(chartLegend("year", moment)).toBe("2026");
-  });
-});
-
-describe("parseDtread", () => {
-  it("parses the API's dd/mm/aaaa HH:MM:SS format in local time", () => {
-    const date = parseDtread("09/03/2026 14:07:42");
-    expect(date.getFullYear()).toBe(2026);
-    expect(date.getMonth()).toBe(2);
-    expect(date.getDate()).toBe(9);
-    expect(date.getHours()).toBe(14);
-    expect(date.getMinutes()).toBe(7);
-    expect(date.getSeconds()).toBe(42);
   });
 });

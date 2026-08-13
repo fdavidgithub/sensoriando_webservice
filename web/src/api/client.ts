@@ -47,8 +47,17 @@ async function request<T>(
     throw new ApiError(response.status, `A API respondeu ${response.status}`);
   }
 
+  // A 204, or any other empty body, is a valid success -- several write
+  // endpoints are typed Promise<void> and never return a payload. response
+  // .json() would throw SyntaxError on "" and turn a save that worked into a
+  // reported failure, so an empty body short-circuits before parsing.
+  const text = await response.text();
+  if (!text) {
+    return undefined as T;
+  }
+
   try {
-    return (await response.json()) as T;
+    return JSON.parse(text) as T;
   } catch {
     throw new ApiError(0, "A API respondeu num formato inesperado");
   }

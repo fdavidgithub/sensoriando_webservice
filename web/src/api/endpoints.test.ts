@@ -34,6 +34,15 @@ describe("pending endpoints", () => {
     });
   });
 
+  it("turns a 403 into the pending message too, matching API Gateway's response for an unwired route", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(respond({}, 403)));
+
+    await expect(listSensorUnits()).rejects.toMatchObject({
+      status: 403,
+      message: PENDING_MESSAGE,
+    });
+  });
+
   it("leaves other failures untouched", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(respond({}, 500)));
 

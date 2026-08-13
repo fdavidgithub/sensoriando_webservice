@@ -75,6 +75,16 @@ def load_settings(app: cdk.App) -> InfrastructureSettings:
         or app.node.try_get_context("aws_account")
         or os.getenv("CDK_DEFAULT_ACCOUNT")
     )
+    # An unresolved account is not a safe "figure it out later": the bucket
+    # name in web_stack.py interpolates it directly, and a literal "None"
+    # would collide across every account/environment that hit this same
+    # failure instead of producing a clear error at synth time.
+    if not aws_account:
+        raise ValueError(
+            "AWS account could not be determined. Set AWS_ACCOUNT_ID in .env, "
+            "pass -c aws_account=<id>, or configure credentials so the CDK CLI "
+            "can resolve CDK_DEFAULT_ACCOUNT"
+        )
 
     return InfrastructureSettings(
         tenant=TENANT,

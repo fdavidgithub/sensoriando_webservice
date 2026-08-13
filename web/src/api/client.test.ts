@@ -64,6 +64,15 @@ describe("apiGet", () => {
 
     await expect(apiGet("/sensors")).rejects.toBeInstanceOf(ApiError);
   });
+
+  it("treats an empty body as a valid success instead of a parse failure", async () => {
+    // The Fetch spec forbids a body on 204, so it is constructed with null --
+    // exactly what fetch() itself hands back for a real 204 response.
+    const noContent = new Response(null, { status: 204 });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(noContent));
+
+    await expect(apiGet("/accounts/private")).resolves.toBeUndefined();
+  });
 });
 
 describe("apiPost", () => {
