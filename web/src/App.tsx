@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
+import Account from "./views/Account";
 import AuthGate from "./auth/AuthGate";
 import Background from "./components/Background";
 import Footer from "./components/Footer";
@@ -47,6 +48,14 @@ export default function App() {
               element={
                 <AuthGate>
                   <PrivateHome />
+                </AuthGate>
+              }
+            />
+            <Route
+              path="/users/account/:username/:tab"
+              element={
+                <AuthGate>
+                  <Account />
                 </AuthGate>
               }
             />
