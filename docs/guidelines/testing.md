@@ -1,11 +1,5 @@
 # Diretrizes de Testes — Sensoriando Webservice
 
-> **Status atual:** o projeto ainda **não possui suíte de testes implementada**.
-> Os arquivos `tests.py` de cada app (`api`, `base`, `overview`, `sensors`,
-> `users`) estão vazios e não há `pytest` em `requirements.txt`. Este documento
-> descreve o padrão-alvo; os trechos não inferíveis do código permanecem como
-> placeholders a serem preenchidos quando os testes forem criados.
-
 ## Fluxo de Desenvolvimento — TDD
 
 Toda implementação neste projeto segue o ciclo **Red → Green → Refactor**:
@@ -18,100 +12,65 @@ Nunca escreva código de produção sem um teste que o justifique.
 
 ---
 
-## Framework
+## Frameworks
 
-Framework de testes do **Django** (`django.test`, baseado em `unittest`),
-executado via `python manage.py test`. Cada app Django já contém um arquivo
-`tests.py` (atualmente vazio) como ponto de partida.
+- **SPA (`web/`)** — **Vitest**, executado via `npm test` (`vitest run`). Os
+  testes são colocalizados com o módulo que testam, no padrão `src/**/*.test.ts`.
+- **Infraestrutura (`infra/`)** — **pytest**, executado via
+  `./.venv/bin/python -m pytest tests/unit -v` (ou `make test-infra`).
 
-A estrutura `tests/` com `pytest` descrita abaixo é o padrão-alvo do template;
-caso seja adotada, `pytest`/`pytest-django` deverão ser adicionados a
-`requirements.txt` (ver `docs/guidelines/stacks.md`).
+O alvo `make test` roda as duas suítes (`test-web` e `test-infra`).
 
 ---
 
 ## Estrutura de Testes
 
 ```
-tests/
-├── units/          → testes unitários por módulo
-│   ├── conftest.py
-│   └── test_<module_name>.py
-├── integration/    → testes de contrato e fluxo entre componentes
-│   ├── conftest.py
-│   └── test_<flow_name>.py
-└── e2e/            → testes end-to-end contra o ambiente real
-    ├── conftest.py
-    ├── features/
-    │   └── <flow_name>.feature
-    └── test_<flow_name>.py
+web/src/**/*.test.ts   → testes colocalizados com o módulo (api, auth, lib)
+infra/tests/unit/      → testes de síntese da stack CDK (settings, web_stack)
 ```
 
----
-
-## Testes Unitários (`tests/units/`)
-
-### Regras
-
-- Cada módulo deve ter um arquivo de teste correspondente em `tests/units/`.
-- Testes unitários **não devem depender de serviços externos reais**.
-- Dependências externas devem ser substituídas por mocks ou stubs.
-
-### Padrão de Carregamento de Módulo
-
-{{EXEMPLO_CARREGAMENTO_MODULO}}
+Não há testes e2e nem suíte de integração neste repositório: o SPA é estático e
+depende apenas da Sensoriando API, e a infraestrutura é validada por síntese.
 
 ---
 
-## Testes de Integração (`tests/integration/`)
+## Testes Unitários
 
 ### Regras
 
-- Testam o contrato entre componentes e o fluxo completo sem dependência de infraestrutura real.
-- Utilizam fakes locais definidos em `tests/integration/conftest.py`.
-
-### Fixtures Disponíveis
-
-{{FIXTURES_INTEGRACAO}}
+- Cada módulo do SPA deve ter um arquivo de teste correspondente, no mesmo
+  diretório (`*.test.ts`).
+- Testes **não devem depender de serviços externos reais**: `fetch`, `localStorage`
+  e variáveis de ambiente são mockados ou stubados.
+- Os testes da infra não sobem stack nem chamam a AWS; validam os objetos CDK
+  sintetizados em memória.
 
 ---
 
 ## Cobertura
 
 - Toda nova lógica implementada deve ter testes correspondentes antes do merge.
-- A cobertura é verificada com as ferramentas definidas em `docs/guidelines/stacks.md`.
-- Arquivos de configuração de infraestrutura não precisam de cobertura unitária obrigatória.
-
----
-
-## Testes E2E (`tests/e2e/`)
-
-### Regras
-
-- Testam o fluxo completo contra o ambiente real.
-- Requerem credenciais e arquivo de configuração de ambiente (`.env.e2e`).
-- Executados manualmente via comando dedicado (nunca junto com o `pytest` geral).
-- O ambiente de teste deve estar provisionado antes de rodar.
-
-### Ciclo de Vida
-
-{{COMANDOS_E2E}}
+- A cobertura é verificada com as ferramentas definidas em
+  `docs/guidelines/stacks.md`.
+- Arquivos de configuração de infraestrutura não precisam de cobertura unitária
+  obrigatória.
 
 ---
 
 ## Execução
 
 ```bash
-# Dentro do container (ver run.sh / docker-compose):
-docker-compose exec framework python manage.py test
+make test          # suíte completa (web + infra)
+make test-web      # somente os testes do SPA
+make test-infra    # somente os testes da infra
 ```
 
 ---
 
 ## Proibições
 
-As regras abaixo aplicam-se às camadas **units** e **integration**. A camada **e2e** é uma exceção explícita — ela conecta em serviços reais por design.
-
 - Proibido conectar em serviços externos reais durante os testes.
 - Proibido usar `time.sleep` em testes.
-- Proibido usar variáveis de ambiente reais; sempre usar mecanismo de mock/patch para variáveis de ambiente.
+- Proibido usar variáveis de ambiente reais; sempre usar mecanismo de mock/patch
+  para variáveis de ambiente.
