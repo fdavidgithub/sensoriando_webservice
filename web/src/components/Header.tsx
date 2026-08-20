@@ -7,8 +7,9 @@ export default function Header() {
   const navigate = useNavigate();
 
   // clearSession only touches localStorage and a module-level variable, and
-  // React observes neither. The reload is what makes every screen see that the
-  // session is gone.
+  // React observes neither. The navigate() below is what makes the page see
+  // that the session is gone -- it unmounts whatever private screen was open,
+  // and Header itself re-reads readSession() on its next render.
   function signOut() {
     clearSession();
     navigate("/", { replace: true });
