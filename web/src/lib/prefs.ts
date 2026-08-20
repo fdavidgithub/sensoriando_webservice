@@ -33,3 +33,25 @@ export function readChartType(sensorId: number): ChartType {
 export function writeChartType(sensorId: number, type: ChartType): void {
   localStorage.setItem(chartTypeKey(sensorId), type);
 }
+
+const preferredUnitKey = (sensorId: number) => `unit${sensorId}`;
+
+/**
+ * Which unit this browser shows for a sensor.
+ *
+ * It is a browser preference, not an account setting: the schema has no table
+ * linking an account to a unit -- `sensorsunits` is a catalogue with a global
+ * `isdefault` -- and adding one would mean changing the Core's database. So it
+ * sits beside the period and the chart type, which are stored the same way.
+ */
+export function readPreferredUnit(sensorId: number): number | null {
+  const stored = localStorage.getItem(preferredUnitKey(sensorId));
+  if (stored === null) return null;
+
+  const parsed = Number(stored);
+  return Number.isInteger(parsed) ? parsed : null;
+}
+
+export function writePreferredUnit(sensorId: number, unitId: number): void {
+  localStorage.setItem(preferredUnitKey(sensorId), String(unitId));
+}

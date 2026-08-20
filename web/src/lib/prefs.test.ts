@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { readChartType, readPeriod, writeChartType, writePeriod } from "./prefs";
+import {
+  readChartType,
+  readPeriod,
+  readPreferredUnit,
+  writeChartType,
+  writePeriod,
+  writePreferredUnit,
+} from "./prefs";
 
 function memoryStorage(): Storage {
   const entries = new Map<string, string>();
@@ -58,5 +65,24 @@ describe("readChartType", () => {
   it("falls back to the default when the stored value is not a chart type", () => {
     localStorage.setItem("chart7", "pie");
     expect(readChartType(7)).toBe("line");
+  });
+});
+
+describe("preferred unit", () => {
+  it("has none until one is chosen", () => {
+    expect(readPreferredUnit(3)).toBeNull();
+  });
+
+  it("returns the unit that was chosen for that sensor", () => {
+    writePreferredUnit(3, 7);
+    writePreferredUnit(4, 9);
+
+    expect(readPreferredUnit(3)).toBe(7);
+    expect(readPreferredUnit(4)).toBe(9);
+  });
+
+  it("treats a corrupted entry as no preference", () => {
+    localStorage.setItem("unit3", "nem numero");
+    expect(readPreferredUnit(3)).toBeNull();
   });
 });
