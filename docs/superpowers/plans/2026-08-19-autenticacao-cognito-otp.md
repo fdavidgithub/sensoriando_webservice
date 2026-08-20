@@ -1497,11 +1497,35 @@ git commit -m "docs: guidelines refletem a autenticacao real"
 
 ---
 
-## Ordem de deploy
+## Deploy
 
-1. `SENSORIANDO_API` fase 1 — rotas de auth no ar (aditivo).
-2. **Este repositório, fase 1** (Tasks 1–7) — `make deploy`.
-3. `SENSORIANDO_API` fases 2 e 3 — o authorizer entra.
-4. **Este repositório, fase 3** (Tasks 8–10).
+**Publicação única, ao fim de tudo.** As fases são marcos de desenvolvimento,
+não publicações separadas.
 
-Publicar o authorizer antes do passo 2 derruba todas as telas privadas.
+A API vai **sempre antes** deste repositório, por uma razão que já existe hoje e
+não tem a ver com autenticação: o `vite.config.ts` chama
+`scripts/resolve_api_url.py` **durante o build**, que lê o output
+`SensoriandoApiUrl` do CloudFormation. Sem a API no ar, o bundle sai com URL
+vazia e o app renderiza "Aplicação sem configuração".
+
+```bash
+cd SENSORIANDO_API        && make deploy
+cd sensoriando_webservice && make deploy
+```
+
+Entre os dois comandos o bundle antigo leva 401 nas rotas privadas — alguns
+minutos, sem usuário real afetado, e o `distribution_paths=["/*"]` do
+`web_stack.py` invalida o CloudFront assim que o bundle novo sobe.
+
+### Antes de escrever a Fase 3
+
+A Fase 1 da API tem uma **verificação obrigatória** contra a AWS de verdade
+(cadastro e login ponta a ponta), descrita no plano dela. Duas das três coisas
+que ela valida decidem o formato de módulos deste repositório:
+
+- se `POST /accounts/confirm` **não** devolver tokens, o `SignUp.tsx` da Task 6
+  precisa mandar o usuário ao login em vez de entrar direto;
+- se o `SECRET_HASH` sobre o e-mail **não** for aceito, `login()` e
+  `verifyOtp()` na Task 3 mudam de assinatura, e a tela da Task 5 junto.
+
+Confirme o resultado dessa verificação antes de começar as Tasks 3, 5 e 6.
