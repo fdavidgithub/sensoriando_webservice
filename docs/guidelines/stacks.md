@@ -30,6 +30,8 @@ repositório.
 - **CloudFront** — distribuição
 - **CloudFormation** — origem da URL da API, lida no build
 - **SSM Parameter Store** — mecanismo de configuração (sem chaves declaradas hoje)
+- **Cognito** — identidade dos usuários. Alcançado **pela API**, nunca pelo
+  navegador: o SPA não conhece pool id nem client id.
 
 ---
 
@@ -46,6 +48,8 @@ repositório.
 - `react`, `react-dom` — 18.3
 - `react-router-dom` — 7.1
 - `chart.js` — 4.4
+- Nenhuma biblioteca de autenticação. Como a API intermedia o Cognito, o SPA não
+  precisa de `oidc-client-ts` nem `amazon-cognito-identity-js`.
 
 ### Desenvolvimento
 
@@ -75,7 +79,8 @@ repositório.
 
 ```
 web/src/api/         cliente HTTP, endpoints tipados e formas dos dados
-web/src/auth/        portão de sessão
+web/src/auth/        sessão (refresh token em localStorage, ID token em memória) e
+                     portão que renova o token antes de renderizar
 web/src/lib/         funções puras (filtros, preferências, formatação, país)
 web/src/components/  apresentação, sem rede
 web/src/views/       telas, que buscam dados e compõem componentes
