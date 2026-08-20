@@ -141,7 +141,7 @@ export function readPrivateStats(): Promise<Stats> {
   return authGet<Stats>("/data/stats/private");
 }
 
-// --- Routes the API still has to expose -------------------------------------
+// --- Account and catalogue routes -------------------------------------------
 
 export function listSensorUnits(): Promise<SensorUnit[]> {
   return apiGet<SensorUnit[]>("/sensors/units");

@@ -37,6 +37,19 @@ function buildUrl(path: string, baseUrl: string): string {
   return `${baseUrl.replace(/\/$/, "")}${path}`;
 }
 
+// The server explains its refusal in the error body ("código inválido", a 502
+// provisioning message, ...). That text is what the user should see, so it is
+// pulled out when present; a body that is empty or not JSON falls back to the
+// status line.
+async function readErrorMessage(response: Response): Promise<string> {
+  try {
+    const body = JSON.parse(await response.text());
+    return body?.message ?? body?.detail ?? `A API respondeu ${response.status}`;
+  } catch {
+    return `A API respondeu ${response.status}`;
+  }
+}
+
 async function request<T>(
   method: "GET" | "POST" | "PUT",
   path: string,
@@ -67,7 +80,8 @@ async function request<T>(
   }
 
   if (!response.ok) {
-    throw new ApiError(response.status, `A API respondeu ${response.status}`);
+    const detail = await readErrorMessage(response);
+    throw new ApiError(response.status, detail);
   }
 
   // A 204, or any other empty body, is a valid success -- several write
@@ -175,7 +189,17 @@ async function authenticated<T>(
     // a second 401 means the problem is the session, not the token.
     clearIdToken();
     const renewed = await ensureIdToken(baseUrl);
-    return request<T>(method, path, body, baseUrl, renewed);
+    try {
+      return await request<T>(method, path, body, baseUrl, renewed);
+    } catch (retryError) {
+      if (retryError instanceof ApiError && retryError.status === 401) {
+        // The fresh token was refused too: the session is gone. Clear it so
+        // the AuthGate sends the user to login instead of failing everywhere.
+        clearSession();
+        throw new ApiError(401, SESSION_EXPIRED);
+      }
+      throw retryError;
+    }
   }
 }
 

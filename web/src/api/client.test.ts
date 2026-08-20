@@ -102,6 +102,37 @@ describe("apiPost", () => {
     const [, init] = fetchMock.mock.calls[0];
     expect(init.body).toBeUndefined();
   });
+
+  it("uses the message field of the error body", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(jsonResponse({ message: "código inválido" }, 400)),
+    );
+
+    await expect(apiPost("/auth/verify", {})).rejects.toMatchObject({
+      status: 400,
+      message: "código inválido",
+    });
+  });
+
+  it("uses the detail field of the error body", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse({ detail: "algo" }, 400)));
+
+    await expect(apiPost("/accounts", {})).rejects.toMatchObject({
+      status: 400,
+      message: "algo",
+    });
+  });
+
+  it("falls back to the status line when the error body is not JSON", async () => {
+    const plain = new Response("not found", { status: 404 });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(plain));
+
+    await expect(apiPost("/missing")).rejects.toMatchObject({
+      status: 404,
+      message: "A API respondeu 404",
+    });
+  });
 });
 
 function memoryStorage(): Storage {
@@ -176,6 +207,23 @@ describe("authenticated requests", () => {
 
     await expect(authGet("/accounts/private")).resolves.toEqual({ username: "fulano" });
     expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it("clears the session and reports SESSION_EXPIRED when the retry is also 401", async () => {
+    setIdToken("velho", 3600);
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({}, 401))
+      .mockResolvedValueOnce(jsonResponse({ id_token: "novo", expires_in: 3600 }))
+      .mockResolvedValueOnce(jsonResponse({}, 401));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(authGet("/accounts/private")).rejects.toMatchObject({
+      status: 401,
+      message: SESSION_EXPIRED,
+    });
+    // A fresh token was refused too: the session is gone, not just the token.
+    expect(readSession()).toBeNull();
   });
 
   it("gives up and clears the session when the refresh itself is rejected", async () => {
