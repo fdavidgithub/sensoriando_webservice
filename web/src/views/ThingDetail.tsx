@@ -135,8 +135,14 @@ export default function ThingDetail() {
   const isPublic = Boolean(publicThing);
 
   const loading = publicThings.loading || privateThings.loading;
-  const error = publicThings.error ?? privateThings.error;
-  const settled = Boolean(publicThings.data) && Boolean(privateThings.data);
+  // This route is public: a visitor who never authenticates must be able to
+  // read it. The private listing only enriches the page for a signed-in owner,
+  // so its failure -- including a stale session rejected by the API -- is
+  // never shown here. Only the public listing, which every visitor depends on,
+  // can produce the page-level error.
+  const error = publicThings.error;
+  const privateSettled = Boolean(privateThings.data) || Boolean(privateThings.error);
+  const settled = Boolean(publicThings.data) && privateSettled;
 
   function choosePeriod(next: Period) {
     writePeriod(next);
