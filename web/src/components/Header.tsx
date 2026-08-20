@@ -6,9 +6,9 @@ export default function Header() {
   const session = readSession();
   const navigate = useNavigate();
 
-  // clearSession only touches localStorage, which React does not observe. The
-  // navigation is what re-renders this component so the menu flips back to
-  // "Cadastrar / Entrar" instead of still showing the username.
+  // clearSession only touches localStorage and a module-level variable, and
+  // React observes neither. The reload is what makes every screen see that the
+  // session is gone.
   function signOut() {
     clearSession();
     navigate("/", { replace: true });
