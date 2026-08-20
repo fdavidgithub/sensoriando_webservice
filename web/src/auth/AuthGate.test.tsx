@@ -1,17 +1,25 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import AuthGate from "./AuthGate";
 
-vi.mock("./session", () => ({ readSession: vi.fn() }));
+vi.mock("./session", () => ({ readSession: vi.fn(), onSessionExpired: vi.fn() }));
 vi.mock("../api/client", () => ({
   ensureIdToken: vi.fn(),
   SESSION_EXPIRED: "Sua sessão expirou. Entre novamente.",
 }));
 
 import { ensureIdToken } from "../api/client";
-import { readSession } from "./session";
+import { onSessionExpired, readSession } from "./session";
+
+// Reads the state a <Navigate> handed the login route, so a test can tell a
+// plain denial (no message) apart from one that followed an expiry.
+function LoginPlaceholder() {
+  const location = useLocation();
+  const message = (location.state as { message?: string } | null)?.message;
+  return <p>tela de login{message ? `: ${message}` : ""}</p>;
+}
 
 function renderGate() {
   return render(
@@ -25,7 +33,7 @@ function renderGate() {
             </AuthGate>
           }
         />
-        <Route path="/users/login" element={<p>tela de login</p>} />
+        <Route path="/users/login" element={<LoginPlaceholder />} />
       </Routes>
     </MemoryRouter>,
   );
@@ -34,6 +42,7 @@ function renderGate() {
 beforeEach(() => {
   vi.mocked(readSession).mockReset();
   vi.mocked(ensureIdToken).mockReset();
+  vi.mocked(onSessionExpired).mockReset().mockReturnValue(() => {});
 });
 
 describe("AuthGate", () => {
@@ -63,5 +72,30 @@ describe("AuthGate", () => {
     renderGate();
 
     await waitFor(() => expect(screen.getByText("tela de login")).toBeTruthy());
+  });
+
+  it("sends an already-allowed screen to login when the session expires mid-use", async () => {
+    // A private screen's own request can fail long after AuthGate let it
+    // through -- the refresh token can expire, or the API can reject it. This
+    // is client.ts's client-side signal for that, since nothing else tells an
+    // already-rendered AuthGate.
+    vi.mocked(readSession).mockReturnValue({ username: "fulano" });
+    vi.mocked(ensureIdToken).mockResolvedValue("id-token");
+    let expiredListener: (() => void) | undefined;
+    vi.mocked(onSessionExpired).mockImplementation((listener) => {
+      expiredListener = listener;
+      return () => {};
+    });
+
+    renderGate();
+    await waitFor(() => expect(screen.getByText("conteúdo privado")).toBeTruthy());
+
+    expiredListener?.();
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("tela de login: Sua sessão expirou. Entre novamente."),
+      ).toBeTruthy(),
+    );
   });
 });

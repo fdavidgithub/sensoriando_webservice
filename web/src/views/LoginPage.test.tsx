@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../api/endpoints", () => ({ login: vi.fn(), verifyOtp: vi.fn() }));
@@ -84,5 +84,23 @@ describe("LoginPage", () => {
     await userEvent.click(screen.getByRole("button", { name: /entrar/i }));
 
     await waitFor(() => expect(screen.getByText(/código inválido/i)).toBeTruthy());
+  });
+
+  it("shows the reason AuthGate sent the user here", () => {
+    // AuthGate hands this in location.state when a session expires mid-use;
+    // otherwise the user lands here with no explanation for the redirect.
+    render(
+      <MemoryRouter
+        initialEntries={[
+          { pathname: "/users/login", state: { message: "Sua sessão expirou. Entre novamente." } },
+        ]}
+      >
+        <Routes>
+          <Route path="/users/login" element={<LoginPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText("Sua sessão expirou. Entre novamente.")).toBeTruthy();
   });
 });

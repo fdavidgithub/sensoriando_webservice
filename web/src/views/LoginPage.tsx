@@ -1,5 +1,5 @@
 import { type FormEvent, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { ApiError } from "../api/client";
 import { login, verifyOtp } from "../api/endpoints";
@@ -25,12 +25,18 @@ function apiMessage(caught: unknown): string {
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  // AuthGate hands this in when a session expires mid-use and it redirects
+  // here on its own: without it the user lands on a blank login form with no
+  // explanation for why they were signed out.
+  const location = useLocation();
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [session, setSession] = useState("");
   const [destination, setDestination] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    (location.state as { message?: string } | null)?.message ?? null,
+  );
   const [sending, setSending] = useState(false);
 
   async function requestCode(event: FormEvent) {

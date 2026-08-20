@@ -32,6 +32,24 @@ interface StoredSession {
 let idToken: string | null = null;
 let idTokenExpiresAt = 0;
 
+// Lets an AuthGate that already let a screen through learn that the session
+// it approved just failed -- the refresh token expired, or the API rejected
+// it mid-use. client.ts is the only caller: it notifies right after a 401
+// that survives a retry clears the session. A manual "Sair" does not go
+// through this -- Header already navigates on its own, and showing "your
+// session expired" after a voluntary sign-out would be a false explanation.
+type Listener = () => void;
+const expiredListeners = new Set<Listener>();
+
+export function onSessionExpired(listener: Listener): () => void {
+  expiredListeners.add(listener);
+  return () => expiredListeners.delete(listener);
+}
+
+export function notifySessionExpired(): void {
+  expiredListeners.forEach((listener) => listener());
+}
+
 function readStored(): StoredSession | null {
   const stored = localStorage.getItem(SESSION_KEY);
   if (!stored) return null;

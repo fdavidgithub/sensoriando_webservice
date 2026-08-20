@@ -3,6 +3,7 @@ import {
   clearIdToken,
   clearSession,
   getIdToken,
+  notifySessionExpired,
   readRefreshToken,
   readSession,
   setIdToken,
@@ -147,8 +148,11 @@ async function renew(baseUrl: string): Promise<string> {
   if (!response.ok) {
     // The refresh token is spent, revoked or past its 30 days. Nothing here
     // can recover the session, so it is cleared rather than left to fail
-    // again on every screen.
+    // again on every screen. notifySessionExpired() is what lets an AuthGate
+    // that already rendered its children -- this call can run well after the
+    // gate approved the screen -- learn to send the user back to login.
     clearSession();
+    notifySessionExpired();
     throw new ApiError(401, SESSION_EXPIRED);
   }
 
@@ -193,9 +197,11 @@ async function authenticated<T>(
       return await request<T>(method, path, body, baseUrl, renewed);
     } catch (retryError) {
       if (retryError instanceof ApiError && retryError.status === 401) {
-        // The fresh token was refused too: the session is gone. Clear it so
-        // the AuthGate sends the user to login instead of failing everywhere.
+        // The fresh token was refused too: the session is gone. Clear it and
+        // notify so the AuthGate already showing this screen sends the user
+        // to login instead of leaving them on a dead screen.
         clearSession();
+        notifySessionExpired();
         throw new ApiError(401, SESSION_EXPIRED);
       }
       throw retryError;
