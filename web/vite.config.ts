@@ -62,6 +62,9 @@ export default defineConfig(({ command }) => {
     server: { proxy },
     test: {
       environment: "jsdom",
+      // Exposes the vitest hooks (afterEach, ...) as globals, which the
+      // @testing-library/react auto-cleanup relies on to unmount between tests.
+      globals: true,
       include: ["src/**/*.test.{ts,tsx}"],
     },
   };

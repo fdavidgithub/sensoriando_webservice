@@ -52,6 +52,7 @@ repositório.
 - `vite`, `@vitejs/plugin-react`, `typescript`, `vitest`, `@types/*`
 - `@testing-library/react` — 16.3.2 (testes de componente)
 - `@testing-library/dom` — 10.4.1 (dependência dos testes de componente)
+- `@testing-library/user-event` — 14.6.5 (interações de usuário nos testes)
 - `jsdom` — 30.0.1 (ambiente de DOM para testes de componente)
 
 ### Infraestrutura (`infra/requirements.txt`, versões fixadas)
