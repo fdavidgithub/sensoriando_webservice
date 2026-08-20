@@ -1,6 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { clearSession, readSession, writeSession } from "./session";
+import {
+  clearIdToken,
+  clearSession,
+  getIdToken,
+  readRefreshToken,
+  readSession,
+  setIdToken,
+  writeSession,
+} from "./session";
 
 function memoryStorage(): Storage {
   const entries = new Map<string, string>();
@@ -18,6 +26,7 @@ function memoryStorage(): Storage {
 
 beforeEach(() => {
   vi.stubGlobal("localStorage", memoryStorage());
+  clearIdToken();
 });
 
 describe("session", () => {
@@ -26,14 +35,19 @@ describe("session", () => {
   });
 
   it("returns the session that was written", () => {
-    writeSession("visitante");
-    expect(readSession()).toEqual({ username: "visitante" });
+    writeSession("fulano", "refresh-token");
+    expect(readSession()).toEqual({ username: "fulano" });
+    expect(readRefreshToken()).toBe("refresh-token");
   });
 
-  it("clears the session", () => {
-    writeSession("visitante");
+  it("clears both the session and the token in memory", () => {
+    writeSession("fulano", "refresh-token");
+    setIdToken("id-token", 3600);
+
     clearSession();
+
     expect(readSession()).toBeNull();
+    expect(getIdToken()).toBeNull();
   });
 
   it("treats a corrupted entry as no session instead of crashing", () => {
@@ -41,8 +55,32 @@ describe("session", () => {
     expect(readSession()).toBeNull();
   });
 
-  it("treats an entry without a username as no session", () => {
-    localStorage.setItem("sensoriando.session", JSON.stringify({ other: 1 }));
+  it("rejects a session left by the old convenience gate", () => {
+    // It carried a username and no refresh token: it never authenticated
+    // anyone, so it must not be honoured as a session now.
+    localStorage.setItem("sensoriando.session", JSON.stringify({ username: "visitante" }));
     expect(readSession()).toBeNull();
+  });
+});
+
+describe("the id token", () => {
+  it("never reaches localStorage", () => {
+    writeSession("fulano", "refresh-token");
+    setIdToken("id-token", 3600);
+
+    const stored = localStorage.getItem("sensoriando.session") ?? "";
+    expect(stored).not.toContain("id-token");
+    expect(getIdToken()).toBe("id-token");
+  });
+
+  it("is treated as absent once it is close to expiring", () => {
+    setIdToken("id-token", 30);
+    expect(getIdToken()).toBeNull();
+  });
+
+  it("is dropped by clearIdToken", () => {
+    setIdToken("id-token", 3600);
+    clearIdToken();
+    expect(getIdToken()).toBeNull();
   });
 });
