@@ -103,24 +103,17 @@ describe("apiPost", () => {
     expect(init.body).toBeUndefined();
   });
 
-  it("uses the message field of the error body", async () => {
+  it("uses the error field of the error body, which is what the API actually sends", async () => {
+    // common/http.py's json_response wraps every BadRequest, ApiFailure and
+    // unhandled exception as {"error": "..."} -- never "message" or "detail".
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(jsonResponse({ message: "código inválido" }, 400)),
+      vi.fn().mockResolvedValue(jsonResponse({ error: "código inválido" }, 400)),
     );
 
     await expect(apiPost("/auth/verify", {})).rejects.toMatchObject({
       status: 400,
       message: "código inválido",
-    });
-  });
-
-  it("uses the detail field of the error body", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse({ detail: "algo" }, 400)));
-
-    await expect(apiPost("/accounts", {})).rejects.toMatchObject({
-      status: 400,
-      message: "algo",
     });
   });
 

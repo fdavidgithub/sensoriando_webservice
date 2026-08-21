@@ -39,13 +39,15 @@ function buildUrl(path: string, baseUrl: string): string {
 }
 
 // The server explains its refusal in the error body ("código inválido", a 502
-// provisioning message, ...). That text is what the user should see, so it is
-// pulled out when present; a body that is empty or not JSON falls back to the
-// status line.
+// provisioning message, ...), always as {"error": "..."} -- api_handler in
+// common/http.py wraps every BadRequest, ApiFailure and unhandled exception
+// that way, never as "message" or "detail". That text is what the user should
+// see, so it is pulled out when present; a body that is empty or not JSON
+// falls back to the status line.
 async function readErrorMessage(response: Response): Promise<string> {
   try {
     const body = JSON.parse(await response.text());
-    return body?.message ?? body?.detail ?? `A API respondeu ${response.status}`;
+    return body?.error ?? `A API respondeu ${response.status}`;
   } catch {
     return `A API respondeu ${response.status}`;
   }
