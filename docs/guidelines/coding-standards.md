@@ -76,5 +76,9 @@ Nenhuma tela monta URL na mão: toda chamada passa por `api/endpoints.ts`.
 - Não fazer rede a partir de componentes de apresentação.
 - Não converter nem arredondar valores de sensor no front-end — a API é quem
   entrega o valor pronto (decisão D4 do documento de design).
-- Não tratar o portão de sessão como controle de acesso: ele não protege dado
-  nenhum (decisão D2).
+- Não persistir o ID token: ele vive só em memória (`auth/session.ts`) e some
+  ao fechar a aba. Só o refresh token vai para o `localStorage`. Ver a decisão
+  D3 do spec de autenticação.
+- Não tratar `AuthGate` como decisão única: uma sessão já aprovada pode
+  expirar no meio do uso, e o gate precisa reagir a isso (`onSessionExpired`
+  em `auth/session.ts`), não só decidir uma vez no mount.

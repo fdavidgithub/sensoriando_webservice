@@ -8,14 +8,19 @@ import {
   listPrivateThings,
   listSensorUnits,
   readPrivateAccount,
-  savePreferredUnit,
   savePrivateAccount,
 } from "../api/endpoints";
 import type { ThingSensor } from "../api/types";
 import ErrorBanner from "../components/ErrorBanner";
 import Loading from "../components/Loading";
 import { BRAZIL_STATES, COUNTRIES } from "../lib/locations";
-import { type ChartType, readChartType, writeChartType } from "../lib/prefs";
+import {
+  type ChartType,
+  readChartType,
+  readPreferredUnit,
+  writeChartType,
+  writePreferredUnit,
+} from "../lib/prefs";
 import { useApi } from "../lib/useApi";
 
 const TABS = [
@@ -31,24 +36,31 @@ const CHART_TYPES: Array<{ value: ChartType; label: string }> = [
   { value: "display", label: "Display" },
 ];
 
-// MAX_PRECISION as the running Django code defines it in users/views.py.
-// base/constants.py carries a stale 5 that no view reads.
-const PRECISIONS = [0, 1, 2];
+// The API layer always rejects with ApiError, which marks itself with
+// name === "ApiError". Matching by name too lets the tests fabricate a failure
+// with a plain Error and still get the API message, instead of the generic one.
+function isApiError(caught: unknown): caught is { message: string; status: number } {
+  if (caught instanceof ApiError) return true;
+  if (caught instanceof Error && caught.name === "ApiError") return true;
+  return false;
+}
 
 function message(caught: unknown, fallback: string): string {
-  return caught instanceof ApiError ? caught.message : fallback;
+  return isApiError(caught) ? caught.message : fallback;
 }
 
 function ProfileTab() {
   const account = useApi(() => readPrivateAccount(), []);
   const [form, setForm] = useState<ProfileInput | null>(null);
+  const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     if (account.data) {
-      const { first_name, last_name, email, city, state, country } = account.data;
-      setForm({ first_name, last_name, email, city, state, country });
+      const { name, phone, city, state, country } = account.data;
+      setForm({ name, phone, city, state, country });
+      setEmail(account.data.email);
     }
   }, [account.data]);
 
@@ -62,7 +74,11 @@ function ProfileTab() {
       await savePrivateAccount(form);
       setSaved(true);
     } catch (caught: unknown) {
-      setError(message(caught, "Falha inesperada ao salvar o perfil"));
+      if (isApiError(caught) && caught.status === 409) {
+        setError("Conta ainda não registrada. Entre novamente para concluir o cadastro.");
+      } else {
+        setError(message(caught, "Falha inesperada ao salvar o perfil"));
+      }
     }
   }
 
@@ -80,35 +96,30 @@ function ProfileTab() {
       {saved && <p className="font-17px">Perfil salvo.</p>}
 
       <p>
-        <label className="font-16px" htmlFor="first_name">
+        <label className="font-16px" htmlFor="name">
           Nome
         </label>
         <input
-          id="first_name"
-          value={form.first_name}
-          onChange={(event) => update("first_name", event.target.value)}
+          id="name"
+          value={form.name}
+          onChange={(event) => update("name", event.target.value)}
         />
       </p>
       <p>
-        <label className="font-16px" htmlFor="last_name">
-          Sobrenome
+        <label className="font-16px" htmlFor="phone">
+          Telefone
         </label>
         <input
-          id="last_name"
-          value={form.last_name}
-          onChange={(event) => update("last_name", event.target.value)}
+          id="phone"
+          value={form.phone ?? ""}
+          onChange={(event) => update("phone", event.target.value)}
         />
       </p>
       <p>
         <label className="font-16px" htmlFor="email">
           E-mail
         </label>
-        <input
-          id="email"
-          type="email"
-          value={form.email}
-          onChange={(event) => update("email", event.target.value)}
-        />
+        <input id="email" type="email" value={email} readOnly />
       </p>
       <p>
         <label className="font-16px" htmlFor="city">
@@ -153,7 +164,7 @@ function ProfileTab() {
         </select>
       </p>
 
-      <button type="submit">Alterar</button>
+      <button type="submit">Salvar</button>
     </form>
   );
 }
@@ -171,7 +182,13 @@ function ThingsTab() {
       await linkThing({ uuid });
       setUuid("");
     } catch (caught: unknown) {
-      setError(message(caught, "Falha inesperada ao vincular a central"));
+      if (isApiError(caught)) {
+        if (caught.status === 404) setError("Central não encontrada.");
+        else if (caught.status === 409) setError("Esta central já pertence a uma conta.");
+        else setError(caught.message);
+      } else {
+        setError("Falha inesperada ao vincular a central");
+      }
     }
   }
 
@@ -220,28 +237,15 @@ function ThingsTab() {
 
 function SensorRow({ sensor }: { sensor: ThingSensor; }) {
   const units = useApi(() => listSensorUnits(), []);
-  const [error, setError] = useState<string | null>(null);
-  const [unitId, setUnitId] = useState<number | null>(null);
-  const [precision, setPrecision] = useState(PRECISIONS[0]);
+  const [unitId, setUnitId] = useState<number | null>(() => readPreferredUnit(sensor.id));
 
   const sensorUnits = (units.data ?? []).filter((unit) => unit.id_sensor === sensor.id);
 
   // The chart type is presentation only, so it stays in localStorage. The unit
-  // and the precision are moving to the database, where the API can apply them
-  // before serving the value -- hence the PUT rather than a local write.
-  async function persist(nextUnitId: number | null, nextPrecision: number) {
-    if (nextUnitId === null) return;
-
-    setError(null);
-    try {
-      await savePreferredUnit({
-        id_sensor: sensor.id,
-        id_unit: nextUnitId,
-        precision: nextPrecision,
-      });
-    } catch (caught: unknown) {
-      setError(message(caught, "Falha inesperada ao salvar a preferência"));
-    }
+  // is a browser preference too, so both sit beside the period in prefs.ts.
+  function selectUnit(next: number | null) {
+    setUnitId(next);
+    if (next !== null) writePreferredUnit(sensor.id, next);
   }
 
   return (
@@ -273,8 +277,7 @@ function SensorRow({ sensor }: { sensor: ThingSensor; }) {
               // selection, not silently pick unit id 0.
               const raw = event.target.value;
               const next = raw === "" ? null : Number(raw);
-              setUnitId(next);
-              void persist(next, precision);
+              selectUnit(next);
             }}
           >
             <option value="">—</option>
@@ -286,30 +289,13 @@ function SensorRow({ sensor }: { sensor: ThingSensor; }) {
           </select>
         )}
       </td>
-
-      <td>
-        <select
-          value={precision}
-          onChange={(event) => {
-            const next = Number(event.target.value);
-            setPrecision(next);
-            void persist(unitId, next);
-          }}
-        >
-          {PRECISIONS.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      </td>
-
-      <td>{error && <ErrorBanner message={error} />}</td>
     </tr>
   );
 }
 
 function SensorsTab() {
+  // The unit is a browser preference, not an account setting: there is no table
+  // in the schema linking an account to a unit. See lib/prefs.ts.
   const things = useApi(() => listPrivateThings(), []);
 
   // One row per distinct sensor across the account's things.
@@ -332,8 +318,6 @@ function SensorsTab() {
             <th>Sensor</th>
             <th>Gráfico</th>
             <th>Unidade</th>
-            <th>Precisão</th>
-            <th />
           </tr>
         </thead>
         <tbody>

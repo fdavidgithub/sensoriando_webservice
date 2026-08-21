@@ -13,6 +13,8 @@ pelo Sensoriando Core via MQTT.
 Navegador → CloudFront → S3 (bundle estático)
     │
     └── HTTPS → API Gateway → Lambdas → PostgreSQL (Neon)
+                     │            └────→ Cognito (identidade)
+                     └── authorizer valida o ID token
 ```
 
 ---
@@ -24,8 +26,8 @@ web/src/
   api/          client.ts     → única camada que conhece fetch; normaliza erro em ApiError
                 endpoints.ts  → uma função por rota; marca as rotas ainda inexistentes
                 types.ts      → formas dos dados da API
-  auth/         session.ts    → portão de conveniência em localStorage
-                AuthGate.tsx  → redireciona rotas privadas para o login
+  auth/         session.ts    → refresh token no localStorage, ID token em memória
+                AuthGate.tsx  → renova antes de renderizar; redireciona quem não tem sessão
   lib/          filters.ts    → filtros ↔ query string
                 prefs.ts      → período e tipo de gráfico em localStorage
                 format.ts     → rótulos de gráfico por período
@@ -51,6 +53,10 @@ scripts/        resolve_api_url.py    → descobre a URL da API no CloudFormatio
 2. No navegador, cada view chama `useApi` com uma função de `api/endpoints.ts`.
 3. `api/client.ts` faz a requisição e converte qualquer falha em `ApiError`.
 4. A view renderiza um de três estados: carregando, erro ou vazio.
+5. Nas rotas privadas, `client.ts` injeta o ID token (`Authorization: Bearer`) e,
+   num 401, renova o token exatamente uma vez antes de repetir a requisição — a
+   renovação é compartilhada entre chamadas concorrentes, então várias telas
+   abrindo juntas disparam uma única troca de token.
 
 Rotas que a API ainda não expõe estão marcadas em `endpoints.ts`: um 404 vindo
 delas vira a mensagem `Recurso ainda não disponível na API`, distinta de um erro

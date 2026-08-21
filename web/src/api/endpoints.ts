@@ -1,5 +1,6 @@
-import { ApiError, apiGet, apiPost, apiPut } from "./client";
+import { ApiError, apiGet, apiPost, authGet, authPost, authPut } from "./client";
 import type { Reading, Sensor, SensorTag, SensorUnit, Stats, Thing } from "./types";
+import { normalizePhone } from "../lib/phone";
 
 /**
  * Shown when a route this app already calls does not exist in the API yet.
@@ -20,7 +21,7 @@ const PENDING_STATUSES = new Set([403, 404]);
  * from such a route is not an error worth a stack trace; anything else passes
  * through untouched so real failures stay visible.
  */
-async function pending<T>(call: () => Promise<T>): Promise<T> {
+export async function pending<T>(call: () => Promise<T>): Promise<T> {
   try {
     return await call();
   } catch (error) {
@@ -43,38 +44,78 @@ export interface DetailQuery {
 
 export interface AccountInput {
   username: string;
-  first_name: string;
-  last_name: string;
+  name: string;
   email: string;
-  password: string;
+  phone?: string;
   city: string;
   state: string;
   country: string;
 }
 
 export interface ProfileInput {
-  first_name: string;
-  last_name: string;
-  email: string;
+  name: string;
+  phone?: string;
   city: string;
   state: string;
   country: string;
 }
 
-export interface PreferredUnitInput {
-  id_sensor: number;
-  id_unit: number;
-  precision: number;
-}
-
-export interface PrivateAccount {
+export interface PrivateAccount extends ProfileInput {
   username: string;
-  first_name: string;
-  last_name: string;
   email: string;
-  city: string;
-  state: string;
-  country: string;
+}
+
+export interface AuthTokens {
+  username: string;
+  id_token: string;
+  refresh_token: string;
+  expires_in: number;
+}
+
+// --- Identity ---------------------------------------------------------------
+//
+// The browser never talks to Cognito: every one of these is an endpoint of the
+// API, which brokers the conversation. That is why this app carries no
+// authentication library and the build injects no pool or client id.
+
+export function signUp(input: AccountInput): Promise<{ destination: string }> {
+  // Cognito's phone_number attribute requires E.164; a number typed with no
+  // country code ("16999991234") is what produced a 400 with no explanation
+  // of which field was wrong. The form is Brazil-only, so this is safe here.
+  return apiPost<{ destination: string }>("/accounts", {
+    ...input,
+    phone: input.phone !== undefined ? normalizePhone(input.phone) : input.phone,
+  });
+}
+
+// Takes the username, not the e-mail: the user has just chosen it in the form,
+// and the API does not have to resolve an alias to confirm the account.
+export function confirmSignUp(input: {
+  username: string;
+  code: string;
+}): Promise<AuthTokens> {
+  return apiPost<AuthTokens>("/accounts/confirm", input);
+}
+
+export function resendCode(input: { username: string }): Promise<{ destination: string }> {
+  return apiPost<{ destination: string }>("/accounts/code", input);
+}
+
+// The answer looks the same whether or not the address is registered: the pool
+// runs with PreventUserExistenceErrors so this cannot be used to find out who
+// has an account. An unknown address only fails at verifyOtp.
+export function login(input: {
+  email: string;
+}): Promise<{ session: string; destination: string }> {
+  return apiPost<{ session: string; destination: string }>("/auth/login", input);
+}
+
+export function verifyOtp(input: {
+  email: string;
+  code: string;
+  session: string;
+}): Promise<AuthTokens> {
+  return apiPost<AuthTokens>("/auth/verify", input);
 }
 
 // --- Routes that exist ------------------------------------------------------
@@ -92,7 +133,7 @@ export function listPublicThings(filters: ThingFilters = {}): Promise<Thing[]> {
 }
 
 export function listPrivateThings(filters: ThingFilters = {}): Promise<Thing[]> {
-  return apiPost<Thing[]>("/things/private", filters);
+  return authPost<Thing[]>("/things/private", filters);
 }
 
 export function readPublicDetail(query: DetailQuery): Promise<Reading[]> {
@@ -100,35 +141,30 @@ export function readPublicDetail(query: DetailQuery): Promise<Reading[]> {
 }
 
 export function readPrivateDetail(query: DetailQuery): Promise<Reading[]> {
-  return apiPost<Reading[]>("/data/detail/private", query);
+  return authPost<Reading[]>("/data/detail/private", query);
 }
 
 export function readPrivateStats(): Promise<Stats> {
-  return apiGet<Stats>("/data/stats/private");
+  return authGet<Stats>("/data/stats/private");
 }
 
-// --- Routes the API still has to expose -------------------------------------
+// --- Account and catalogue routes -------------------------------------------
 
 export function listSensorUnits(): Promise<SensorUnit[]> {
-  return pending(() => apiGet<SensorUnit[]>("/sensors/units"));
-}
-
-export function savePreferredUnit(input: PreferredUnitInput): Promise<void> {
-  return pending(() => apiPut<void>("/accounts/private/sensors/units", input));
+  return apiGet<SensorUnit[]>("/sensors/units");
 }
 
 export function readPrivateAccount(): Promise<PrivateAccount> {
-  return pending(() => apiGet<PrivateAccount>("/accounts/private"));
+  return authGet<PrivateAccount>("/accounts/private");
 }
 
 export function savePrivateAccount(input: ProfileInput): Promise<void> {
-  return pending(() => apiPut<void>("/accounts/private", input));
-}
-
-export function createAccount(input: AccountInput): Promise<void> {
-  return pending(() => apiPost<void>("/accounts", input));
+  return authPut<void>("/accounts/private", {
+    ...input,
+    phone: input.phone !== undefined ? normalizePhone(input.phone) : input.phone,
+  });
 }
 
 export function linkThing(input: { uuid: string }): Promise<void> {
-  return pending(() => apiPost<void>("/accounts/private/things", input));
+  return authPost<void>("/accounts/private/things", input);
 }

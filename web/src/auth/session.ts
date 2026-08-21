@@ -1,37 +1,100 @@
 /**
- * A convenience gate, not a security boundary.
+ * The signed-in user, and the two tokens that keep them signed in.
  *
- * The app is a static bundle: there is no server here to verify anything, and
- * any password shipped in it would be readable by anyone with the URL. So there
- * is no password at all — the gate only keeps the private screens out of the
- * way until real authentication (Cognito) lands.
+ * The ID token -- the one that opens every private route -- lives only in this
+ * module's memory and dies with the tab. Persisting it would leave the
+ * credential that grants immediate access sitting in storage for its whole
+ * hour; keeping it here narrows that window to the page's lifetime.
  *
- * It also grants no access to data: the API's /private endpoints serve the one
- * account named by PRIVATE_ACCOUNT_USERNAME regardless of who signed in here.
+ * The refresh token does persist, because a session that ended on every reload
+ * would be unusable. It buys nothing on its own: it has to be exchanged at
+ * POST /auth/refresh before anything can be read.
+ *
+ * Cognito issues it for 30 days and does not rotate it, so the window does not
+ * slide -- 30 days after signing in, the user does the OTP again.
  */
 
 const SESSION_KEY = "sensoriando.session";
+
+// A token that expires while the request is still in flight costs a round trip
+// and a retry. Renewing a minute early costs nothing.
+const EXPIRY_SLACK_MS = 60_000;
 
 export interface Session {
   username: string;
 }
 
-export function readSession(): Session | null {
+interface StoredSession {
+  username: string;
+  refreshToken: string;
+}
+
+let idToken: string | null = null;
+let idTokenExpiresAt = 0;
+
+// Lets an AuthGate that already let a screen through learn that the session
+// it approved just failed -- the refresh token expired, or the API rejected
+// it mid-use. client.ts is the only caller: it notifies right after a 401
+// that survives a retry clears the session. A manual "Sair" does not go
+// through this -- Header already navigates on its own, and showing "your
+// session expired" after a voluntary sign-out would be a false explanation.
+type Listener = () => void;
+const expiredListeners = new Set<Listener>();
+
+export function onSessionExpired(listener: Listener): () => void {
+  expiredListeners.add(listener);
+  return () => expiredListeners.delete(listener);
+}
+
+export function notifySessionExpired(): void {
+  expiredListeners.forEach((listener) => listener());
+}
+
+function readStored(): StoredSession | null {
   const stored = localStorage.getItem(SESSION_KEY);
   if (!stored) return null;
 
   try {
-    const parsed = JSON.parse(stored) as Partial<Session>;
-    return typeof parsed.username === "string" ? { username: parsed.username } : null;
+    const parsed = JSON.parse(stored) as Partial<StoredSession>;
+    // A session written by the old convenience gate has a username and no
+    // refresh token. It never authenticated anyone, so it is not a session.
+    return typeof parsed.username === "string" && typeof parsed.refreshToken === "string"
+      ? { username: parsed.username, refreshToken: parsed.refreshToken }
+      : null;
   } catch {
     return null;
   }
 }
 
-export function writeSession(username: string): void {
-  localStorage.setItem(SESSION_KEY, JSON.stringify({ username }));
+export function readSession(): Session | null {
+  const stored = readStored();
+  return stored ? { username: stored.username } : null;
+}
+
+export function readRefreshToken(): string | null {
+  return readStored()?.refreshToken ?? null;
+}
+
+export function writeSession(username: string, refreshToken: string): void {
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ username, refreshToken }));
 }
 
 export function clearSession(): void {
   localStorage.removeItem(SESSION_KEY);
+  clearIdToken();
+}
+
+export function getIdToken(): string | null {
+  if (!idToken || Date.now() >= idTokenExpiresAt - EXPIRY_SLACK_MS) return null;
+  return idToken;
+}
+
+export function setIdToken(token: string, expiresIn: number): void {
+  idToken = token;
+  idTokenExpiresAt = Date.now() + expiresIn * 1000;
+}
+
+export function clearIdToken(): void {
+  idToken = null;
+  idTokenExpiresAt = 0;
 }

@@ -1,6 +1,7 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ApiError, apiGet, apiPost } from "./client";
+import { ApiError, SESSION_EXPIRED, apiGet, apiPost, authGet, authPost } from "./client";
+import { clearIdToken, readSession, setIdToken, writeSession } from "../auth/session";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -100,5 +101,154 @@ describe("apiPost", () => {
 
     const [, init] = fetchMock.mock.calls[0];
     expect(init.body).toBeUndefined();
+  });
+
+  it("uses the error field of the error body, which is what the API actually sends", async () => {
+    // common/http.py's json_response wraps every BadRequest, ApiFailure and
+    // unhandled exception as {"error": "..."} -- never "message" or "detail".
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(jsonResponse({ error: "código inválido" }, 400)),
+    );
+
+    await expect(apiPost("/auth/verify", {})).rejects.toMatchObject({
+      status: 400,
+      message: "código inválido",
+    });
+  });
+
+  it("falls back to the status line when the error body is not JSON", async () => {
+    const plain = new Response("not found", { status: 404 });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(plain));
+
+    await expect(apiPost("/missing")).rejects.toMatchObject({
+      status: 404,
+      message: "A API respondeu 404",
+    });
+  });
+});
+
+function memoryStorage(): Storage {
+  const entries = new Map<string, string>();
+  return {
+    get length() {
+      return entries.size;
+    },
+    clear: () => entries.clear(),
+    getItem: (key: string) => entries.get(key) ?? null,
+    key: (index: number) => Array.from(entries.keys())[index] ?? null,
+    removeItem: (key: string) => void entries.delete(key),
+    setItem: (key: string, value: string) => void entries.set(key, value),
+  } as Storage;
+}
+
+describe("authenticated requests", () => {
+  beforeEach(() => {
+    vi.stubGlobal("localStorage", memoryStorage());
+    clearIdToken();
+    writeSession("fulano", "refresh-token");
+  });
+
+  it("sends the id token as a bearer credential", async () => {
+    setIdToken("id-token", 3600);
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ username: "fulano" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await authGet("/accounts/private");
+
+    const [, init] = fetchMock.mock.calls[0];
+    expect(init.headers.Authorization).toBe("Bearer id-token");
+  });
+
+  it("does not send a token on a public request", async () => {
+    setIdToken("id-token", 3600);
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse([]));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await apiGet("/sensors");
+
+    const [, init] = fetchMock.mock.calls[0];
+    expect(init.headers?.Authorization).toBeUndefined();
+  });
+
+  it("renews before the first call when only the refresh token survives", async () => {
+    // The state right after a page reload: the id token died with the tab.
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ id_token: "novo", expires_in: 3600 }))
+      .mockResolvedValueOnce(jsonResponse({ username: "fulano" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await authGet("/accounts/private");
+
+    expect(fetchMock.mock.calls[0][0]).toBe("/auth/refresh");
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
+      refresh_token: "refresh-token",
+      username: "fulano",
+    });
+    expect(fetchMock.mock.calls[1][1].headers.Authorization).toBe("Bearer novo");
+  });
+
+  it("renews once and retries when a call comes back 401", async () => {
+    setIdToken("velho", 3600);
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({}, 401))
+      .mockResolvedValueOnce(jsonResponse({ id_token: "novo", expires_in: 3600 }))
+      .mockResolvedValueOnce(jsonResponse({ username: "fulano" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(authGet("/accounts/private")).resolves.toEqual({ username: "fulano" });
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it("clears the session and reports SESSION_EXPIRED when the retry is also 401", async () => {
+    setIdToken("velho", 3600);
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({}, 401))
+      .mockResolvedValueOnce(jsonResponse({ id_token: "novo", expires_in: 3600 }))
+      .mockResolvedValueOnce(jsonResponse({}, 401));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(authGet("/accounts/private")).rejects.toMatchObject({
+      status: 401,
+      message: SESSION_EXPIRED,
+    });
+    // A fresh token was refused too: the session is gone, not just the token.
+    expect(readSession()).toBeNull();
+  });
+
+  it("gives up and clears the session when the refresh itself is rejected", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({}, 401));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(authGet("/accounts/private")).rejects.toMatchObject({
+      status: 401,
+      message: SESSION_EXPIRED,
+    });
+    // 30 days elapsed: there is nothing left to renew with.
+    expect(readSession()).toBeNull();
+  });
+
+  it("renews only once for concurrent callers", async () => {
+    // Several views mount at the same time. Without a shared promise this
+    // would fire one refresh per view.
+    const fetchMock = vi.fn().mockImplementation((url: string) => {
+      if (url === "/auth/refresh") {
+        return Promise.resolve(jsonResponse({ id_token: "novo", expires_in: 3600 }));
+      }
+      return Promise.resolve(jsonResponse([]));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await Promise.all([
+      authGet("/accounts/private"),
+      authPost("/things/private", {}),
+      authGet("/data/stats/private"),
+    ]);
+
+    const refreshes = fetchMock.mock.calls.filter(([url]) => url === "/auth/refresh");
+    expect(refreshes).toHaveLength(1);
   });
 });
