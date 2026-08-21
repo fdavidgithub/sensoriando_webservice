@@ -1,5 +1,6 @@
 import { ApiError, apiGet, apiPost, authGet, authPost, authPut } from "./client";
 import type { Reading, Sensor, SensorTag, SensorUnit, Stats, Thing } from "./types";
+import { normalizePhone } from "../lib/phone";
 
 /**
  * Shown when a route this app already calls does not exist in the API yet.
@@ -78,7 +79,13 @@ export interface AuthTokens {
 // authentication library and the build injects no pool or client id.
 
 export function signUp(input: AccountInput): Promise<{ destination: string }> {
-  return apiPost<{ destination: string }>("/accounts", input);
+  // Cognito's phone_number attribute requires E.164; a number typed with no
+  // country code ("16999991234") is what produced a 400 with no explanation
+  // of which field was wrong. The form is Brazil-only, so this is safe here.
+  return apiPost<{ destination: string }>("/accounts", {
+    ...input,
+    phone: input.phone !== undefined ? normalizePhone(input.phone) : input.phone,
+  });
 }
 
 // Takes the username, not the e-mail: the user has just chosen it in the form,
@@ -152,7 +159,10 @@ export function readPrivateAccount(): Promise<PrivateAccount> {
 }
 
 export function savePrivateAccount(input: ProfileInput): Promise<void> {
-  return authPut<void>("/accounts/private", input);
+  return authPut<void>("/accounts/private", {
+    ...input,
+    phone: input.phone !== undefined ? normalizePhone(input.phone) : input.phone,
+  });
 }
 
 export function linkThing(input: { uuid: string }): Promise<void> {
